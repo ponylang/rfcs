@@ -76,7 +76,7 @@ The author of an RFC is not obligated to implement it. Of course, the RFC author
 
 If you are interested in working on the implementation for an 'active' RFC, but cannot determine if someone else is already working on it, feel free to ask (e.g. by leaving a comment on the associated issue).
 
-**Pony's RFC process owes its inspiration to the [Rust RFC process]**
+**Pony's RFC process owes its inspiration to the [Rust RFC process]** additionally, we also borrowed from the [Ember RFC process]. Thanks folks.
 
 [Rust RFC process]: https://github.com/rust-lang/rfcs
-
+[Ember RFC process]: https://github.com/emberjs/rfcs

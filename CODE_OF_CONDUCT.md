@@ -16,14 +16,11 @@ Examples of behavior that contributes to creating a positive environment include
 
 Examples of unacceptable behavior by participants include:
 
-* The use of sexualized language or imagery and unwelcome sexual attention or
-advances
+* The use of sexualized language or imagery and unwelcome sexual attention or advances
 * Trolling, insulting/derogatory comments, and personal or political attacks
 * Public or private harassment
-* Publishing others' private information, such as a physical or electronic
-  address, without explicit permission
-* Other conduct which could reasonably be considered inappropriate in a
-  professional setting
+* Publishing others' private information, such as a physical or electronic address, without explicit permission
+* Other conduct which could reasonably be considered inappropriate in a professional setting
 
 ## Our Responsibilities
 
@@ -50,9 +47,12 @@ This Code of Conduct is adapted from the [Contributor Covenant][homepage], versi
 
 # Social Rules
 
-In addition to having a code of conduct as an anti-harassment policy, we have a small set of [social rules](https://www.recurse.com/manual#sub-sec-social-rules) we follow. We (the project maintainers) lifted these rules from the [Recurse Center](https://www.recurse.com). We've seen these rules in effect in other environments. We'd like Pony community to share a similar positive environment. These rules are intended to be lightweight, and to make more explicit certain social norms that  are normally implicit. Most of our social rules really boil down to “don't be a  jerk“ or “don't be annoying.” Of course, almost nobody sets out to be a jerk or annoying, so telling people not to be jerks isn't a very productive strategy.
+In addition to having a code of conduct as an anti-harassment policy, we have a small set of [social rules][socialrules] we follow. We (the project maintainers) lifted these rules from the [Recurse Center][recursecenter]. We've seen these rules in effect in other environments. We'd like Pony community to share a similar positive environment. These rules are intended to be lightweight, and to make more explicit certain social norms that  are normally implicit. Most of our social rules really boil down to “don't be a  jerk“ or “don't be annoying.” Of course, almost nobody sets out to be a jerk or annoying, so telling people not to be jerks isn't a very productive strategy.
 
 Unlike the anti-harassment policy, violation of the social rules will not result in expulsion from the Pony community or a strong warning from project maintainers. Rather, they are designed to provide some lightweight social structure for community members to use when interacting with each other.
+
+[socialrules]: https://www.recurse.com/manual#sub-sec-social-rules
+[recursecenter]: https://www.recurse.com
 
 ## No feigning surprise.
 
