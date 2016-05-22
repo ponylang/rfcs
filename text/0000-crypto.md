@@ -40,24 +40,39 @@ The package will include the following interfaces:
         let enc = des.encrypt("abcdefgh")
         des.decrypt(enc) // returns "abcdefgh"
 
-- PublicKey
+- Asymmetric
 
-	Implemented as primitives that provide a generate() function which produces a Key object. The generate function will take a cryptographically secure pseudorandom number generator.
+    An Asymmetric constructor will take in a cryptographically secure pseudorandom number generator. It can then produce a private and a public key.
     
-    The Key object will have the ability to encrypt data, decrypt data, sign data, verify a signature, and create a public key.
+    The PrivateKey will have the ability to encrypt data, decrypt data, sign data, verify a signature, and create a public key.
+    
+    The PublicKey will have the ability to encrypt data and verify a signature.
     
     Example use:
     	
         let rand = CryptoRandom()
-        let key = RSA.generate(rand)
-        let enc = key.encrypt("abcdefgh")
-        key.decrypt(enc) // returns "abcdefgh"
+       	let rsa = RSA(rand)
+        let private_key = rsa.private_key()
+        let public_key = rsa.public_key()
+        
+        let enc = public_key.encrypt("abcdefgh")
+        private_key.decrypt(enc) // returns "abcdefgh"
         
         hash = SHA256.hash("abcdefgh")
-        let signature = key.sign(hash, "")
-        key.verify(hash, signature) // returns true
+        let signature = private_key.sign(hash, "")
+        public_key.verify(hash, signature) // returns true
         
-	
+- Symmetric
+    
+    A Symmetric constructor will take in a cryptographically secure pseudorandom number generator. It can then produce a single key that may encrypt and decrypt data.
+
+    Example use:
+    	
+    	let rand = CryptoRandom()
+       	let key = AES(rand).key()
+       	let enc = key.encrypt("abcdefgh")
+        key.decrypt(enc) // returns "abcdefgh"
+       	
 The package must also allow the user to do the following:
 
 - Perform constant time comparisons of byte sequences
@@ -73,6 +88,7 @@ This package should be used with some knowledge of basic concepts such as:
   - Block ciphers work on blocks of a fixed size (8 or 16 bytes). e.g. DES
   - Stream ciphers work byte-by-byte. Knowing the key, you can decrypt the cipher. e.g. XOR
 - Public-key algorithms - there are two different keys: one to encrypt and one to decrypt. You only need to share the encryption key and only you can decrypt the message with your private decryption key. e.g. RSA
+- Symmetric-key algorithms - the same key is used for both encryption and decryption. The keys maintain a private information link between two or more parties. e.g. Twofish or Blowfish
 
 # Drawbacks
 
@@ -84,4 +100,5 @@ The impact of not providing cryptographic security to various Pony applications 
 
 # Unresolved questions
 
-None
+- Should the package be implemented in pure Pony or through FFI with an established library such as OpenSSL? 
+- Inclusion of secret-key encryption
