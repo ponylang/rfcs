@@ -49,7 +49,7 @@ more likely to make progress than those that don't receive any comments.
 * We may request that the author and/or relevant stakeholders to get together to discuss the issues in greater detail.
 * The Pony committers will discuss the RFC PR, as much as possible in the comment thread of the PR itself. Offline discussion will be summarized on the PR comment thread.
 * You can make edits, big and small, to the RFC to clarify or change the design, but make changes as new commits to the PR, and leave a comment on the PR explaining your changes. Specifically, do not squash or rebase commits after they are visible on the PR.
-* Once both proponents and opponents have clarified and defended positions and the conversation has settled, the RFC will enter its *final comment period* (FCP). This is a final opportunity for the community to comment on the PR and is a reminder for all members of the sub-team to be aware of the RFC.
+* Once both proponents and opponents have clarified and defended positions and the conversation has settled, the RFC will enter its *final comment period* (FCP). This is a final opportunity for the community to comment on the PR and is a reminder for all committers to be aware of the RFC.
 * The FCP lasts one week. It may be extended if consensus between committers cannot be reached. At the end of the FCP,  the committers will either accept the RFC by merging the pull request, assigning the RFC a number (corresponding to the pull request number), at which point the RFC is 'active', or reject it by closing the pull request.
 
 ## The RFC life-cycle
