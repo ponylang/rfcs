@@ -104,7 +104,9 @@ I propose the following API changes to the `builtin` package.
 
 # Alternatives
 
-What other designs have been considered? What is the impact of not doing this?
+Other designs considered:
+
+* Use a wrapper object that is a `ByteSeq` and can apply as a virtual "slice" of any other `ByteSeq`, acting as an intermediary and erroring if the range is violated.
 
 # Unresolved questions
 
