@@ -96,7 +96,7 @@ I propose the following API changes to the `builtin` package.
 
 * We should extend the Pony pattern about [limiting string allocations](https://github.com/ponylang/pony-patterns/blob/master/performance/limiting-string-allocations.md) to include a section about using `trim` and `trimmed`.
 
-We should lead by example, using `trim` and `trimmed` wherever applicable in the standard library and official Pony examples.
+* We should lead by example, using `trim` and `trimmed` wherever applicable in the standard library and official Pony examples.
 
 # Drawbacks
 
