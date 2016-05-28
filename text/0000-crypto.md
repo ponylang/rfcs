@@ -15,11 +15,11 @@ Cryptography is a vital tool in the areas of authentication, confidentiality, da
 
 *Security must be the first priority of this package.*
 
-The package will include the following interfaces:
+This package will use the OpenSSL crypto library through the C FFI. The following API will be used:
 
 - HashFunc
 
-	provides a hash() function that produces a fixed-length byte sequence based on the input sequence.
+    interface providing a hash() function that produces a fixed-length byte sequence based on the input sequence.
     
     Example use:
     	
@@ -28,67 +28,26 @@ The package will include the following interfaces:
     	
         [80 216 88 224 152 94 204 127 96 65 138 175 12 197 171 88 127 66 194 87 10 136 64 149 169 232 204 172 208 246 84 92]
 
-- Cypher
 
-	provides encrypt() and decrypt() functions that both produce a byte sequence from the input sequence. If the result of encrypting a given byte sequence is then passed into the decrypt function, the result should be the given byte sequence.
-    
-    primitives must be provided for the various Block cypher modes of operation: CBC, ECB, CFB, OFB, and CTR. These will be passed into the constructors of any block cyphers along with the encryption key.
-    
-    Example use:
-    	
-        let des = DES("01234567", ECB)
-        let enc = des.encrypt("abcdefgh")
-        des.decrypt(enc) // returns "abcdefgh"
-
-- Asymmetric
-
-    An Asymmetric constructor will take in a cryptographically secure pseudorandom number generator. It can then produce a private and a public key.
-    
-    The PrivateKey will have the ability to encrypt data, decrypt data, sign data, verify a signature, and create a public key.
-    
-    The PublicKey will have the ability to encrypt data and verify a signature.
-    
-    Example use:
-    	
-        let rand = CryptoRandom()
-       	let rsa = RSA(rand)
-        let private_key = rsa.private_key()
-        let public_key = rsa.public_key()
-        
-        let enc = public_key.encrypt("abcdefgh")
-        private_key.decrypt(enc) // returns "abcdefgh"
-        
-        hash = SHA256.hash("abcdefgh")
-        let signature = private_key.sign(hash, "")
-        public_key.verify(hash, signature) // returns true
-        
-- Symmetric
-    
-    A Symmetric constructor will take in a cryptographically secure pseudorandom number generator. It can then produce a single key that may encrypt and decrypt data.
+- ConstantTimeCompare
+ 
+    primitive where the apply function takes in two byteseq arguments and returns a Bool, true if they are equal and false otherwise.
 
     Example use:
     	
-    	let rand = CryptoRandom()
-       	let key = AES(rand).key()
-       	let enc = key.encrypt("abcdefgh")
-        key.decrypt(enc) // returns "abcdefgh"
-       	
-The package must also allow the user to do the following:
-
-- Perform constant time comparisons of byte sequences
-- Create a cryptographically secure pseudorandom number generators
-
+    	let s1 = [U8(1), U8(2), U8(3), U8(4), U8(5)]
+    	let s2 = [U8(5), U8(4), U8(3), U8(2), U8(1)]
+    	ConstantTimeCompare(s1, s1) // returns true
+    	ConstantTimeCompare(s1, s2) // returns false
+   
+   see also: [Golang implementation](https://golang.org/src/crypto/subtle/constant_time.go?s=490:531#L2)
 
 # How We Teach This
 
 This package should be used with some knowledge of basic concepts such as:
 
 - Hash functions - can be used to calculate the checksum of some data. It can be used in digital signatures and authentication. e.g. SHA-256 or MD5
-- Encryption algorithms - take some byte sequence as input and produce a cipher byte sequence using a variable key. You have 2 types of ciphers: block and stream.
-  - Block ciphers work on blocks of a fixed size (8 or 16 bytes). e.g. DES
-  - Stream ciphers work byte-by-byte. Knowing the key, you can decrypt the cipher. e.g. XOR
-- Public-key algorithms - there are two different keys: one to encrypt and one to decrypt. You only need to share the encryption key and only you can decrypt the message with your private decryption key. e.g. RSA
-- Symmetric-key algorithms - the same key is used for both encryption and decryption. The keys maintain a private information link between two or more parties. e.g. Twofish or Blowfish
+- Constant time comparison - used to prevent [timing attacks](http://crypto.stanford.edu/~dabo/papers/ssl-timing.pdf) with the use of constant-time algorithms
 
 # Drawbacks
 
@@ -100,5 +59,4 @@ The impact of not providing cryptographic security to various Pony applications 
 
 # Unresolved questions
 
-- Should the package be implemented in pure Pony or through FFI with an established library such as OpenSSL? 
-- Inclusion of secret-key encryption
+None
