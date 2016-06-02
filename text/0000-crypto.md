@@ -17,13 +17,13 @@ Cryptography is a vital tool in the areas of authentication, confidentiality, da
 
 This package will use the OpenSSL crypto library through the C FFI. The following API will be used:
 
-- HashFunc
+- HashFn
 
-    interface providing a hash() function that produces a fixed-length byte sequence based on the input sequence.
+    interface providing an apply() function that produces a fixed-length byte sequence based on the input sequence.
     
     Example use:
     	
-    	SHA256.hash([101 120 97 109 112 108 101])
+    	SHA256([101 120 97 109 112 108 101])
     Return value:
     	
         [80 216 88 224 152 94 204 127 96 65 138 175 12 197 171 88 127 66 194 87 10 136 64 149 169 232 204 172 208 246 84 92]
