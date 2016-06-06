@@ -21,12 +21,12 @@ Since we're talking about benchmarking and performance analysis, this new constr
 In C, this is possible by using inline assembly marked `volatile`. For example:
 
 ```c
-void escape(void* p)
+void do_not_optimise(void* p)
 {
     asm volatile("" : : "g"(p) : "memory");
 }
 
-void clobber()
+void observe()
 {
     asm volatile("" : : : "memory");
 }
@@ -34,28 +34,28 @@ void clobber()
 int main(void)
 {
     int a = 0;
-    escape(&a);
+    do_not_optimise(&a);
     a = 42;
-    clobber();
+    observe();
 }
 ```
 
-Without the use of `escape`, the variable `a` would be eliminated by the optimiser. Here, it is kept on the stack and initialised to 0, then modified to 42. No additional instruction is inserted in the final assembly code.
+Without the use of `do_not_optimise`, the variable `a` would be eliminated by the optimiser. Here, it is kept on the stack and initialised to 0. The call to `observe` prevents the removal of the modification of `a` to 42. No additional instruction is inserted in the final assembly code.
 
-In Pony, we do not have inline assembly but fortunately we can generate it via LLVM. It would be easy to replicate `escape` and `clobber` as Pony `compile_intrinsic` functions. These functions should be sufficient to prevent most cases of code elimination in Pony. If uncovered cases are discovered, we can add new functions.
+In Pony, we do not have inline assembly but fortunately we can generate it via LLVM. It would be easy to replicate `do_not_optimise` and `observe` as Pony `compile_intrinsic` functions. These functions should be sufficient to prevent most cases of code elimination in Pony. If uncovered cases are discovered, we can add new functions.
 
 ## Pony interface
 
 Add the following to the `builtin` package.
 
 ```pony
-primitive Optimiser
+primitive DoNotOptimise
   """
   Contains functions preventing some compiler optimisations, namely dead code
   removal. This is useful for benchmarking purposes.
   """
 
-  fun escape[A](obj: A) =>
+  fun apply[A](obj: A) =>
     """
     Prevent the compiler from optimising out obj and any computation it is
     derived from.
@@ -63,24 +63,24 @@ primitive Optimiser
 
     compile_intrinsic
 
-  fun clobber() =>
+  fun observe() =>
     """
-    Prevent the compiler from optimising out memory operations related to an
-    escaped object.
+    Prevent the compiler from optimising out writes to an object marked by
+    `DoNotOptimise.apply`.
     """
 
     compile_intrinsic
 ```
 
-`escape` is generic to avoid boxing machine words, as the overhead is unacceptable.
+`DoNotOptimise.apply` is generic to avoid boxing machine words, as the overhead is unacceptable.
 
-The `escape` function shall compile down to the following (pseudo-)LLVM IR.
+The `DoNotOptimise.apply` function shall compile down to the following (pseudo-)LLVM IR.
 
 ```llvm
 call void asm sideeffect "", "imr,~{memory}"(A obj)
 ```
 
-The `clobber` function shall compile down to the following LLVM IR.
+The `DoNotOptimise.observe` function shall compile down to the following LLVM IR.
 
 ```llvm
 call void asm sideeffect "", "~{memory}"()
@@ -100,4 +100,4 @@ None.
 
 # Unresolved questions
 
-The names in the Pony interface must be discussed. Since this is in the `builtin` package, we must choose names carefuly to minimise name collision with user code.
+None.
