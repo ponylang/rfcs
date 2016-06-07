@@ -29,24 +29,10 @@ Python and communicates its semantic quite clearly.
 
 # Detailed design
 
-The "then" clause is syntax sugar that could expand to:
-```pony
-let success = \
-try
-   something()
-   true
-else
-   handle_error()
-   false
-end
-
-if success then
-   then_block()
-end
-```
-
-Note that in an actual implementation, a "try" block can be used as an
-expression which changes the above expansion a little.
+The most efficient and simplest implementation is to simply have the
+compiler generate the LLVM IR as if the "then" block was tacked on to
+the end of the try block, and to make sure that the Pony compiler
+enforces that the then block cannot raise an error.
 
 
 # How We Teach This
@@ -68,11 +54,30 @@ construct and vice versa.
 
 # Alternatives
 
-The unsugared syntax exhibited in the detailed design notes can be
-thought of as an alternative. It has the drawback that a "try" block
-needs to be named (in the sense that a "let" symbol is used) and
-naming is hard. This leads to common names such as "success" except
-this obviously can't be reused in the same scope.
+The "then" clause could be expanded to something like:
+```pony
+let success = \
+try
+   something()
+   true
+else
+   handle_error()
+   false
+end
+
+if success then
+   then_block()
+end
+```
+
+Due to compiler limitations in the tracking of ``consume`` branches
+this expansion is not exactly equivalent to the LLVM IR-based
+implementation.
+
+It also has the drawback that a "try" block needs to be named (in the
+sense that a "let" symbol is used) and naming is hard. This leads to
+common names such as "success" except this obviously can't be reused
+in the same scope.
 
 
 # Unresolved questions
