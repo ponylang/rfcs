@@ -18,8 +18,8 @@ Add the following function to `builtin.Array`:
 ```pony
 fun ref shrink_unused(): Array[A]^
   """
-  Try to remove unused space. The request may be ignored.
-  The array is returned to allow call chaining.
+  Try to remove unused space, making it available for garbage collection. The
+  request may be ignored. The array is returned to allow call chaining.
   """
 ```
 
@@ -28,12 +28,14 @@ Add the following function to `builtin.String`:
 ```pony
 fun ref shrink_unused(): String ref^
   """
-  Try to remove unused space. The request may be ignored.
-  The string is returned to allow call chaining.
+  Try to remove unused space, making it available for garbage collection. The
+  request may be ignored. The string is returned to allow call chaining.
   """
 ```
 
-As said in the docstrings the function may not do anything, specifically for small arrays. This is because small allocations (realised by `pony_alloc_small`, i.e. <= 512 bytes) are always rounded to a power of two. Unfortunately, because `Array` is generic we can't know the exact size of each stored object (which may be a numeric primitive or a tuple) and we can't know when trying to shrink would be unnecessary. To address this we'd need something akin to the `sizeof` operator in C but this is outside of this RFC's scope. `String` can only store `U8`s so there is no problem here.
+The function will reallocate sufficient storage for the existing elements in the collection and will copy them to this new storage. The old storage can then be garbage collected.
+
+As said in the docstrings the function may not do anything, specifically for small arrays. This is because small allocations (realised by `pony_alloc_small`, i.e. <= 512 bytes) are always rounded to a power of two. We can compute stored object sizes with `Pointer._offset` so we'll always know when shrinking is impossible.
 
 For performance reasons shrinking should only be requested by the user and no function on `Array` and `String` should call `shrink_unused`.
 
@@ -47,7 +49,7 @@ None.
 
 # Alternatives
 
-None.
+Integrate the function with the runtime memory allocator and split allocated chunks when shrinking is requested. This could lead to a lot of memory fragmentation.
 
 # Unresolved questions
 
