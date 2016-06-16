@@ -67,20 +67,106 @@ This proposal is thus about helping Pony's type system to be able to prove the s
 
 # Detailed design
 
+The data involved has to be declared as having a special restriction. This special restriction is about not leaking the scope of the variable. The details has to still be worked on, but the main idea that such typed data should not be able to be assigned to a field of an object nor sent to an actor.
+
+There are two things which need to be declared to the Pony type system so that the previous examples would be provably safe:
+- the caller has to declare that the data passed will have a restriction: it has the declare that the data is _borrowed_, the alias created for the purpose of the function call must not survive the lifetime of the function call.
+- the argument of the function will have to be declared as _borrowed_, that the data represented by the variables won't be allowed to leak from the function.
+
+## The syntax
+
+The suggested design is to add a new keyword: `borrow` which would be used like `consume`. `borrow` will create a special kind of alias. So rather than using directly the variable as an argument of the function, it will have to be `borrow`ed. For instance:
+```
+let s: String iso = recover String.create() end
+let n: USize = count(borrow s)
+s.append(n.string())
+```
+
+Then the signature of the function will also declare the argument as _borrowed_. As the other ref cap modifiers a single character is suggested. The character `&` is avoided because in Rust (which also has data safety type system checker) `&` means the opposite of what is being declared here. Here `~` is suggested.
+
+So the previous example would be written as follow:
+```
+fun count(s: String box~): USize =>
+  [...]
+```
+
+## Typing Rules
+
+### Passing and Sharing
+
+A `~` alias is not sendable.
+
+### Subtyping
+
+Basically a `~` alias won't be assignable to anything other than another `~` alias.
+
+TODO: study every kind of subtyping
+
+### View Point Adaptation
+
+To be check, but probably the rule will be about: any ref cap viewed via a `~` will be also seen as a `~` alias.
+
+TODO: study every kind of view point
+
+### Generics
+
 TODO
 
 # How We Teach This
 
-TODO
+This new ref cap modifier should be documented as well as the other ones.
 
 # Drawbacks
 
-TODO
+This is a new ref cap modifier to know.
 
 # Alternatives
 
-TODO
+## Borrow by default
+
+Currently in Pony creating an alias by default create a `!` alias. The design suggested above add a new kind of alias: `~` ones which will be explicit via a `borrow` keyword.
+
+When passing data as arguments, there are probably much more cases where the arguments are not leaked into caller object. And the default behavior could be chosen as the safer one for the caller, thus that the variable will be borrowed and will not leak. So it may be preferred to have by default borrowed alias, and have explicit data leaking.
+
+So the previous example would be simply written as:
+```
+fun foo() =>
+  let s: String iso = recover String.create() end
+  let n: USize = count(s)
+  s.append(n.string())
+
+fun count(s: String box): USize =>
+  [...]
+```
+
+```
+let s1: String iso = recover String.create() end
+let s2: String iso = recover String.create() end
+s1.append(s2)
+```
+
+But then for functions which argument are part of a side effect:
+```
+class Array[A]
+  var _ptr: Pointer[A]
+  [...]
+  fun ref update(i: USize, value: A!): A^ ? =>
+    """
+    Change the i-th element, raising an error if the index is out of bounds.
+    """
+    if i < _size then
+      _ptr._update(i, consume value)
+    else
+      error
+    end
+```
+And calling a side effect function will require an explicit alias creation, with a new syntax token; `alias` suggested here:
+```
+fun update_foo(i: USize, a: Array[String] iso) =>
+  let s: String val = "foo"
+  a.update(i, alias s)
+```
 
 # Unresolved questions
 
-TODO
+The current proposal is only studying function call. Probably it can be generalized at every kind of scope nesting.
