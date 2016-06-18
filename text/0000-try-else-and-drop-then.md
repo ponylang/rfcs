@@ -19,6 +19,14 @@ addition the "with" statement supports multiple such resources at the
 same time without additional nesting.
 
 
+# How We Teach This
+
+In the documentation we need to talk about what resource management is
+and how the "with" statement conceivably solves the problem. Since in
+some languages exception handling is used for flow control it might
+also be good to talk about this.
+
+
 # Drawbacks
 
 The main drawback is that code that uses "try/else/then" today will
