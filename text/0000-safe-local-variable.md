@@ -67,46 +67,62 @@ This proposal is thus about helping Pony's type system to be able to prove the s
 
 # Detailed design
 
-The data involved has to be declared as having a special restriction. This special restriction is about not leaking the scope of the variable. The details has to still be worked on, but the main idea that such typed data should not be able to be assigned to a field of an object nor sent to an actor.
+Ephemeral types (`~`) and the alias types (`!`) can be viewed as types which describe the lifetime of the bindings involved. An ephemeral type has a lifetime of just an instruction, either an assignment or a call of a function; it also specifies that the lifetime of the aliased binding ends at the start of the new one. An alias type has a lifetime which is allowed to be infinite; and the lifetime of the aliased binding is not ended. Hence the present design is suggesting a third kind of lifetime: the current scope, of a function, or a loop, etc..., which suspends the lifetime of the aliased binding for the during of the temporary one.
 
-There are two things which need to be declared to the Pony type system so that the previous examples would be provably safe:
-- the caller has to declare that the data passed will have a restriction: it has the declare that the data is _borrowed_, the alias created for the purpose of the function call must not survive the lifetime of the function call.
-- the argument of the function will have to be declared as _borrowed_, that the data represented by the variables won't be allowed to leak from the function.
+A such _scoped_ lifetime would have then to be declared and used like ephemeral and alias types: it will be a reference capability modifier. As the other modifiers a single character is suggested. Rust which has a similar concept and uses `&`, but it is avoided because the semantic differs a little bit, Rust is about ownership and Pony is about deny capabilities. And `&` is confusing to people used to write C code. So here `~` is suggested.
 
-## The syntax
+Such scope-related type can be declared as such when it is an argument of a function. It will be up to the caller of the function to provide a such type. The caller will need to transform classical type into scoped one, via a special kind of aliasing. A new operator is needed, just like there is the `consume` operator. This operator will create from a binding another binding with special restrictions, the orginal binding will be _borrowed_. Hence the operator `borrow` is suggested.
 
-The suggested design is to add a new keyword: `borrow` which would be used like `consume`. `borrow` will create a special kind of alias. So rather than using directly the variable as an argument of the function, it will have to be `borrow`ed. For instance:
+Here is an example of use of `borrow`:
 ```
 let s: String iso = recover String.create() end
 let n: USize = count(borrow s)
 s.append(n.string())
 ```
 
-Then the signature of the function will also declare the argument as _borrowed_. As the other ref cap modifiers a single character is suggested. The character `&` is avoided because in Rust (which also has data safety type system checker) `&` means the opposite of what is being declared here. Here `~` is suggested.
-
-So the previous example would be written as follow:
+And the `count` function would be declared as such:
 ```
 fun count(s: String box~): USize =>
   [...]
 ```
 
+An important rule to maintain safety is that the lifetime of the aliased binding must be suspended of the duration of the scope of the new binding. Here is an example of code which *must* be prevented:
+```
+fun foo() =>
+  let s: String iso = recover String.create() end
+  bar(borrow s, consume s)
+fun bar(s: String iso~, s2: String iso) =>
+  another_actor.send(consume s2)
+  s.append("bar") // <- this is not safe !
+```
+
+So, like the `consume` which acts on the aliased binding to destroy it, the `borrow` must act on the alias binding too. A `borrow` must forbid the use of the original binding during the lifetime of the new alias. For instance if it is an argument of a function, then the original can be reused only after the function call.
+
 ## Typing Rules
 
 ### Passing and Sharing
 
-A `~` alias is not sendable.
+A _borrowed_ type is not sendable.
 
 ### Subtyping
 
-Basically a `~` alias won't be assignable to anything other than another `~` alias.
+When considering the capabilities of a _borrowed_ type, any capabilities involving an another actor is denied, since the lifetime of the data must be the current scope.
 
-TODO: study every kind of subtyping
+Also the lifetime of the type cannot be subtyped. It obviously cannot be an alias one since it is not infinite, and it cannot be an ephemeral type since the borrowed binding was not ended. The only exception is `tag` which is a black box.
+
+Hence the following subtyping:
+* `iso~ <: ref~`
+* `trn~ <: ref~`
+* `ref~ <: ref~`, `ref~ <: box~`
+* `val~ <: box~`
+* `box~ <: box~`, `box~ <: tag~`
+* `tag~ <: tag`
+
+`iso`, `trn` and `ref` are the three reference capabilities which are authorizing local write and read; so with a _borrowed_ type they can all be a `ref~`. Then a `ref~` being able to read and write, it can read without being denied to write, thus being subtyped as `box~`. Same principle for the two reference capabilities which are authorizing local read: `val` and `box` as _borrowed_ types can be a `box~`. And then everything can be subtyped as the `tag`.
 
 ### View Point Adaptation
 
-To be check, but probably the rule will be about: any ref cap viewed via a `~` will be also seen as a `~` alias.
-
-TODO: study every kind of view point
+Any reference capability viewed via a _borrowed_ type will be also seen as a _borrowed_ type.
 
 ### Generics
 
