@@ -44,14 +44,14 @@ This package will use the OpenSSL crypto library through the C FFI. The followin
    
 - Digest
 
-    class that produces a hash from chunks of input. The hash can be calculated at any time and updated with the update method.
+    class that produces a hash from chunks of input.
     
     Example use:
 
         let d = Digest.sha1()
         d.update("message1")
         d.update("message2")
-        d.hash()
+        d.final()
 
 # How We Teach This
 
