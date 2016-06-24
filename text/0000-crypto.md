@@ -41,6 +41,17 @@ This package will use the OpenSSL crypto library through the C FFI. The followin
     	ConstantTimeCompare(s1, s2) // returns false
    
    see also: [Golang implementation](https://golang.org/src/crypto/subtle/constant_time.go?s=490:531#L2)
+   
+- Digest
+
+    class that produces a hash from chunks of input. The hash can be calculated at any time and updated with the update method.
+    
+    Example use:
+
+        let d = Digest.sha1()
+        d.update("message1")
+        d.update("message2")
+        d.hash()
 
 # How We Teach This
 
