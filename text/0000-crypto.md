@@ -49,8 +49,8 @@ This package will use the OpenSSL crypto library through the C FFI. The followin
     Example use:
 
         let d = Digest.sha1()
-        d.update("message1")
-        d.update("message2")
+        d.append("message1")
+        d.append("message2")
         d.final()
 
 # How We Teach This
