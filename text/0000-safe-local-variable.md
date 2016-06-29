@@ -67,11 +67,63 @@ This proposal is thus about helping Pony's type system to be able to prove the s
 
 # Detailed design
 
+In order to prove that the data move described in the previous part are safe, the type system has to be aware that the data involved is not leaking from its scope. The capabilities which are in motion here are just local ones, and is just about the ability to write or read. But in order to prevent the data from leaking its scope, there should be strict aliasing rules.
+
+## 2 new reference capabilities
+
+The suggested design introduce two new reference capabilities which will have the same capabilities as a `box` or `ref`; one for read, another for write. While the capabilities are quite relaxed, the lifetime of the data will be controlled by strict aliasing rules, way more strict than `box` and `ref`. So per se, it is not the capabilities which will ensure the data safety, but the aliasing rules. And these aliasing rules that the data is not leaking, and thus that other stricter reference capabilities like `iso` or `trn` and convertible into the two new ones.
+
+The idea is that these new reference capabilities won't be used when creating objects, they are only intended to be used in a narrow scope. The other reference capabilities will be transformed temporary into these local ones. After these tricky data moves done on the local alias, the local variable goes out of scope, the original reference capability guarantees can still stand.
+
+Thus, a new reference capability will be about declaring a local variable read only: `lro`. Another reference capability will be about local writable data: `lrw`.
+
+## Capabilities
+
+`lrw` can read and write, so it is denying read and write from other actors. `lro` can only read so is denying write but not read from other actors. But locally to the actor, `lrw` and `lro` are not denying anything.
+
+A first simple subtyping rule, since `lrw` has just a write capability more than a `lro`, is: `lrw <: lro <: tag`
+
+## Controlling the scope
+
+To be able to control the scope of a `lrw` or a `lro` variable, fields of a class cannot be of a such reference capability, only actual _local_ binding are allowed.
+
+And naturally, `lrw` and `lro` data are not sendable.
+
+They can only be aliased as themselves, so that once a binding is declared _local_, every associated data is still _local_:
+* `lrw! <: lrw`
+* `lro! <: lro`
+
+Last but not least, the return type of a function cannot be of a such _local_ reference capability, which would be an explicit leak of data we don't want to leak. A consequence is that the default reference capability of a type cannot be a _local_ one.
+
+## Subtyping
+
+When only considering reference capabilities, a `lrw` is not different from a `ref` and a `lro` is not different from a `box`, so the subtyping is rather simple:
+* `iso <: trn <: ref <: lrw`
+* `val <: box <: lro`
+
+And consuming a _local_ variable just creat another _local_ variable, so simply:
+* `lrw^ <: lrw`
+* `lro^ <: lro`
+
+## Borrow
+
+Since `ref`, `val` and `box` are aliasing as themselves, it is simple to transform such data binding into local ones: aliasing is sufficient. But we need something for `iso` and `trn`.
+
 Ephemeral types (`~`) and the alias types (`!`) can be viewed as types which describe the lifetime of the bindings involved. An ephemeral type has a lifetime of just an instruction, either an assignment or a call of a function; it also specifies that the lifetime of the aliased binding ends at the start of the new one. An alias type has a lifetime which is allowed to be infinite; and the lifetime of the aliased binding is not ended. Hence the present design is suggesting a third kind of lifetime: the current scope, of a function, or a loop, etc..., which suspends the lifetime of the aliased binding for the during of the temporary one.
 
 A such _scoped_ lifetime would have then to be declared and used like ephemeral and alias types: it will be a reference capability modifier. As the other modifiers a single character is suggested. Rust which has a similar concept and uses `&`, but it is avoided because the semantic differs a little bit, Rust is about ownership and Pony is about deny capabilities. And `&` is confusing to people used to write C code. So here `~` is suggested.
 
-Such scope-related type can be declared as such when it is an argument of a function. It will be up to the caller of the function to provide a such type. The caller will need to transform classical type into scoped one, via a special kind of aliasing. A new operator is needed, just like there is the `consume` operator. This operator will create from a binding another binding with special restrictions, the orginal binding will be _borrowed_. Hence the operator `borrow` is suggested.
+Such scope-related type can be declared as such when it is an argument of a function. It will be up to the caller of the function to provide a such type. The caller will need to transform classical type into scoped one, via a special kind of aliasing. A new operator is needed, just like there is the `consume` operator. This operator will create from a binding another binding with special restrictions, the original binding will be _borrowed_. Hence the operator `borrow` is suggested.
+
+The typing rules regarding borrow variable is then the following:
+* `iso~ <: lrw`
+* `trn~ <: lrw`
+* `ref~ <: lrw`
+* `val~ <: lro`
+* `box~ <: lro`
+* `tag~ <: tag`
+* `lrw~ <: lrw`
+* `lro~ <: lro`
 
 Here is an example of use of `borrow`:
 ```
@@ -82,7 +134,7 @@ s.append(n.string())
 
 And the `count` function would be declared as such:
 ```
-fun count(s: String box~): USize =>
+fun count(s: String lro): USize =>
   [...]
 ```
 
@@ -91,97 +143,46 @@ An important rule to maintain safety is that the lifetime of the aliased binding
 fun foo() =>
   let s: String iso = recover String.create() end
   bar(borrow s, consume s)
-fun bar(s: String iso~, s2: String iso) =>
+fun bar(s: String lrw, s2: String iso) =>
   another_actor.send(consume s2)
   s.append("bar") // <- this is not safe !
 ```
 
 So, like the `consume` which acts on the aliased binding to destroy it, the `borrow` must act on the alias binding too. A `borrow` must forbid the use of the original binding during the lifetime of the new alias. For instance if it is an argument of a function, then the original can be reused only after the function call.
 
-## Typing Rules
-
-### Passing and Sharing
-
-A _borrowed_ type is not sendable.
-
-### Subtyping
-
-When considering the capabilities of a _borrowed_ type, any capabilities involving an another actor is denied, since the lifetime of the data must be the current scope.
-
-Also the lifetime of the type cannot be subtyped. It obviously cannot be an alias one since it is not infinite, and it cannot be an ephemeral type since the borrowed binding was not ended. The only exception is `tag` which is a black box.
-
-Hence the following subtyping:
-* `iso~ <: ref~`
-* `trn~ <: ref~`
-* `ref~ <: ref~`, `ref~ <: box~`
-* `val~ <: box~`
-* `box~ <: box~`, `box~ <: tag~`
-* `tag~ <: tag`
-
-`iso`, `trn` and `ref` are the three reference capabilities which are authorizing local write and read; so with a _borrowed_ type they can all be a `ref~`. Then a `ref~` being able to read and write, it can read without being denied to write, thus being subtyped as `box~`. Same principle for the two reference capabilities which are authorizing local read: `val` and `box` as _borrowed_ types can be a `box~`. And then everything can be subtyped as the `tag`.
-
 ### View Point Adaptation
 
-Any reference capability viewed via a _borrowed_ type will be also seen as a _borrowed_ type.
+TODO
+
+It will be probably about that anything view via a _local_ reference capability will also seen as _local_.
 
 ### Generics
 
 TODO
 
+### Recovery
+
+TODO
+
+`lrw` and `lro` are not sendable, but do they actually break safety if it is possible.
+
+### Function call
+
+TODO
+
+what does it mean to call a `ref` function on a `lrw` or a `box` on a `lro`, is automatic recovery possible ?
+
 # How We Teach This
 
-This new ref cap modifier should be documented as well as the other ones.
+This new references capabilities should be documented as well as the other ones.
 
 # Drawbacks
 
-This is a new ref cap modifier to know.
+These are new reference capabilities to know.
 
 # Alternatives
 
-## Borrow by default
-
-Currently in Pony creating an alias by default create a `!` alias. The design suggested above add a new kind of alias: `~` ones which will be explicit via a `borrow` keyword.
-
-When passing data as arguments, there are probably much more cases where the arguments are not leaked into caller object. And the default behavior could be chosen as the safer one for the caller, thus that the variable will be borrowed and will not leak. So it may be preferred to have by default borrowed alias, and have explicit data leaking.
-
-So the previous example would be simply written as:
-```
-fun foo() =>
-  let s: String iso = recover String.create() end
-  let n: USize = count(s)
-  s.append(n.string())
-
-fun count(s: String box): USize =>
-  [...]
-```
-
-```
-let s1: String iso = recover String.create() end
-let s2: String iso = recover String.create() end
-s1.append(s2)
-```
-
-But then for functions which argument are part of a side effect:
-```
-class Array[A]
-  var _ptr: Pointer[A]
-  [...]
-  fun ref update(i: USize, value: A!): A^ ? =>
-    """
-    Change the i-th element, raising an error if the index is out of bounds.
-    """
-    if i < _size then
-      _ptr._update(i, consume value)
-    else
-      error
-    end
-```
-And calling a side effect function will require an explicit alias creation, with a new syntax token; `alias` suggested here:
-```
-fun update_foo(i: USize, a: Array[String] iso) =>
-  let s: String val = "foo"
-  a.update(i, alias s)
-```
+Some were studied but were not working, see the history of this RFC to read them.
 
 # Unresolved questions
 
