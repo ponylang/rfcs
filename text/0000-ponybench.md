@@ -47,6 +47,15 @@ class iso _BenchmarkSub is Benchmark
 
 ```
 
+Each benchmark is run for a minimum of 1 second by default. If the second has not elapsed when the Benchmark function returns, the value of b.n() is increased in the sequence 1, 2, 5, 10, 20, 50, … and the function is run again. A simple average (total time to run the benchmark function over b.n()) is used to calculate the execution time in nanoseconds.
+
+Output:
+```
+addition      10000000	        28 ns/op
+subtraction   10000000	        28 ns/op
+```
+This shows that each operation was executed 10,000,000 times and took an average of 28 ns/op (note that the accuracy is poor at low execution times until compiler optimization can be properly restricted).
+
 The current proof of concept implentation can be found at [https://github.com/Theodus/ponybench](https://github.com/Theodus/ponybench)
 
 # How We Teach This
