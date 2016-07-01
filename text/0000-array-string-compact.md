@@ -38,7 +38,7 @@ The function will reallocate sufficient storage for the existing elements in the
 As said in the docstrings the function may not do anything, specifically for small arrays. This is because small allocations (realised by `pony_alloc_small`, i.e. <= 512 bytes) are always rounded to a power of two. Because of this, we want to know when compacting is impossible to avoid unnecessary reallocations. Since `Array` is generic, `Array`s of different types could store objects of different sizes, which requires us to compute stored object sizes. This is possible with `Pointer._offset` but it is unclear and can lead to bugs caused by overflow in pointer arithmetic. Therefore, we'll add the following function to `builtin.Pointer`:
 
 ```pony
-fun tag _elt_size(): USize
+fun tag _element_size(): USize
   """
   The size of a single element in an array of type A.
   """
