@@ -35,7 +35,14 @@ fun ref compact(): String ref^
 
 The function will reallocate sufficient storage for the existing elements in the collection and will copy them to this new storage. The old storage can then be garbage collected.
 
-As said in the docstrings the function may not do anything, specifically for small arrays. This is because small allocations (realised by `pony_alloc_small`, i.e. <= 512 bytes) are always rounded to a power of two. We can compute stored object sizes with `Pointer._offset` so we'll always know when compacting is impossible.
+As said in the docstrings the function may not do anything, specifically for small arrays. This is because small allocations (realised by `pony_alloc_small`, i.e. <= 512 bytes) are always rounded to a power of two. Because of this, we want to know when compacting is impossible to avoid unnecessary reallocations. Since `Array` is generic, `Array`s of different types could store objects of different sizes, which requires us to compute stored object sizes. This is possible with `Pointer._offset` but it is unclear and can lead to bugs caused by overflow in pointer arithmetic. Therefore, we'll add the following function to `builtin.Pointer`:
+
+```pony
+fun tag _elt_size(): USize
+  """
+  The size of a single element in an array of type A.
+  """
+```
 
 For performance reasons compacting should only be requested by the user and no function on `Array` and `String` should call `compact`.
 
