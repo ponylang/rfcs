@@ -9,6 +9,8 @@ The proposal aims at making Pony's type system aware that some data pointed by a
 
 # Motivation
 
+## Pure functions
+
 An issue with a iso or trn data, which have both write uniqueness, is that they don’t survive the call of a _pure_ function. A _pure_ function is a function which has no side effect, and thus shouldn't trouble the guarantees of a reference capability. But since Pony doesn’t know what happens to the data passed as arguments, to guarantee safety, Pony has to expects the worst, a data leak, even if it doesn’t actually happens.
 
 Here is an example of an actor which count spaces and append it to the string being processed.
@@ -54,6 +56,53 @@ actor CountSpaceAppender
 ```
 But now the `count` function cannot be reused to handle a simple `String val` as argument.
 And it starts to be painful if the data passed as argument is a field of a class, since it cannot be consumed. The field would have to be assigned of another value, either another `String` involving a memory allocation, or a `None` which make the typing of the field overwhelming (everywhere else in the code has to uselessly handle that the value might be `None`).
+
+Another work around is to use a `recover`:
+```
+be appendSpaceCount(s: String iso, callback: OtherActor) =>
+  let s'' = recover
+    let s': String ref = consume s
+    n = count(s)
+    s'.append(n.string())
+    consume s'
+  end
+  callback.send(consume s'')
+```
+But the recover only allow `iso` data, `trn` are not allowed.
+
+## Borrowed fields
+
+When the data involved is a field of class, it becomes even more painful. The work around presented above are using `consumme`. Since a field cannot be consumed, so the only way to make it work is to make the field `None`-able. So the code will look like this:
+```
+actor CountSpaceAppender
+  var s: (String iso | None) = recover String.create() end
+  be append(s': String iso) =>
+    try
+      (s as String iso).append(consume s')
+    else
+      Debug.out("WAT?")
+    end
+
+  be appendCount() =>
+    try
+      (let n: USize, s) = count((s = None) as String iso^)
+      (s as String iso).append(n.string())
+    else
+      Debug.out("WAT?")
+    end
+
+  fun count(s': String iso): (USize, String iso^) =>
+    var n: USize = 0
+    for c in s'.values() do
+      if c == ' ' then
+        n = n + 1
+      end
+    end
+    (n, consume s')
+```
+Making the field an union type raise the issue about type cast, which is mandatory to handle in case of error. This make the code quite painful to read and write.
+
+## Calling functions
 
 And there is the same issue with `trn` or `iso` data while calling `ref` functions on them. Some method needs to modify the state of their object, so they have to be `ref` functions, like `String.append()`. But if the argument is not sendable, like a `trn` one, this function won't be callable on an `iso` or a `trn`. Indeed, Pony doesn't know about the use of the arguments of a `ref` function, it has to expect the worst: the arguments will be leaking into the object. So to guarantee that the function doesn't break an `iso` or a `trn`, a `recover` will happen. It makes then impossible for a `trn` argument to be passed to a function of a `trn` object, even if the function doesn't do anything with the argument. To resume as an example, the following lines are a typing error even if it is safe to do so:
 ```
@@ -150,23 +199,25 @@ fun bar(s: String lrw, s2: String iso) =>
 
 So, like the `consume` which acts on the aliased binding to destroy it, the `borrow` must act on the alias binding too. A `borrow` must forbid the use of the original binding during the lifetime of the new alias. For instance if it is an argument of a function, then the original can be reused only after the function call.
 
-### View Point Adaptation
+## View Point Adaptation
 
 TODO
 
 It will be probably about that anything view via a _local_ reference capability will also seen as _local_.
 
-### Generics
+## Generics
 
 TODO
 
-### Recovery
+Local reference capability doesn't make much sense in a type parameter. It should then be forbidden for now.
+
+## Recovery
 
 TODO
 
-`lrw` and `lro` are not sendable, but do they actually break safety if it is possible.
+`lrw` and `lro` are not sendable, but do they actually break safety if it is possible ?
 
-### Function call
+## Function call
 
 TODO
 
@@ -174,11 +225,13 @@ what does it mean to call a `ref` function on a `lrw` or a `box` on a `lro`, is 
 
 # How We Teach This
 
-This new references capabilities should be documented as well as the other ones.
+This new references capabilities should be documented as well as the other ones. A dedicated page in the tutorial will be needed.
 
 # Drawbacks
 
-These are new reference capabilities to know.
+These are new reference capabilities to know for the Pony users.
+
+These will inevitably add more cases to handle into the type checker.
 
 # Alternatives
 
@@ -186,4 +239,4 @@ Some were studied but were not working, see the history of this RFC to read them
 
 # Unresolved questions
 
-The current proposal is only studying function call. Probably it can be generalized at every kind of scope nesting.
+The current proposal is only studying function call. Probably it can be generalized at every kind of scope nesting, like local variables in loops.
