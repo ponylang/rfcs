@@ -26,6 +26,8 @@ and how the "with" statement conceivably solves the problem. Since in
 some languages exception handling is used for flow control it might
 also be good to talk about this.
 
+The "Try-then blocks" section in the tutorial can be removed.
+
 
 # Drawbacks
 
