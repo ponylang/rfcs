@@ -142,8 +142,6 @@ They can only be aliased as themselves, so that once a binding is declared _loca
 * `lrw! <: lrw`
 * `lro! <: lro`
 
-Last but not least, the return type of a function cannot be of a such _local_ reference capability, which would be an explicit leak of data we don't want to leak. A consequence is that the default reference capability of a type cannot be a _local_ one.
-
 ## Subtyping
 
 When only considering reference capabilities, a `lrw` is not different from a `ref` and a `lro` is not different from a `box`, so the subtyping is rather simple:
@@ -222,6 +220,32 @@ TODO
 TODO
 
 what does it mean to call a `ref` function on a `lrw` or a `box` on a `lro`, is automatic recovery possible ?
+
+## Function's return type
+
+TODO
+
+Intuitively a return type which is _local_ type doesn't make sense, since the role of returned is to leak. But maybe it would help on the contrary to specify that the data returned by the function is not that free to use, it should not leak and the ownership of that data should still be hold by called object. It would then be possible to wrap `iso` data into object and make them accessible via getters.
+
+For instance, without local type this code won't compile:
+```
+class IsoWrapper
+  let _s: String iso = recover String.create() end
+  var _i: U32 = 0
+  fun countAndGet(): String lrw =>
+    _i = _i + 1
+    borrow _s
+```
+
+It seems a fragile design though. It's probably safer to just forbid it for now.
+
+## Default reference capability
+
+TODO
+
+It doesn't seem to make sense that a default reference capability for a type to be a _local_ one. On the other hand it is just a default, it is just a kind of shortcut for Pony coders.
+
+It's probably safer to just forbid it for now.
 
 # How We Teach This
 
