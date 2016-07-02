@@ -10,8 +10,8 @@ Drop "then" clause from "try/else" clause.
 
 # Motivation
 
-The behavior is orthogonal to error handling. It applies in general
-when leaving a code block.
+Running a block of code upon scope exit is orthogonal to error
+handling and has more to do with resource management.
 
 The "with" statement already provides the necessary functionality for
 obtaining and giving up a resource such as a lock or file handle. In
