@@ -13,22 +13,26 @@ This addition would provide a clean and safe way to deal with HTTP status codes.
 
 # Detailed design
 
-Each HTTP status code will be represented by a primitive. The primitive will have an apply() function that returns the U16 status code and a text() function that returns the corresponding status text.
+Each HTTP status code will be represented by a primitive which implements the Status trait. The trait will have an apply() function that returns the U16 status code and a text() function that returns the corresponding status text.
 
 ```pony
-primitive StatusContinue
+trait val Status
+  fun apply(): U16
+  fun text(): String
+
+primitive StatusContinue is Status
   fun apply(): U16 => 100
   fun text(): String => "Continue"
 
-primitive StatusSwitchingProtocols
+primitive StatusSwitchingProtocols is Status
   fun apply(): U16 => 101
   fun text(): String => "Switching Protocols"
 
-primitive StatusOK
+primitive StatusOK is Status
   fun apply(): U16 => 200
   fun text(): String => "OK"
 
-primitive StatusCreated
+primitive StatusCreated is Status
   fun apply(): U16 => 201
   fun text(): String => "Created"
 
