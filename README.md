@@ -26,8 +26,8 @@ What is a bugfix?
 
 Bugfixes do not have to go through the RFC process. The definition of "bugfix" is still evolving. Some things we consider to be bug fixes:
 
-    - Fixing performance issues that are found in existing implementations. 
-    - Principal of least surprise bugs. Sometimes, we design APIs that surprise the user and don't operate as they would expect. We consider addressing these to fall under the category of "bugfix".
+   - Fixing performance issues that are found in existing implementations. 
+   - Principal of least surprise bugs. Sometimes, we design APIs that surprise the user and don't operate as they would expect. We consider addressing these to fall under the category of "bugfix".
 
 As we move forward, we will add more rules to our list of "items that don't need an RFC". If there is doubt about whether a change/addition requires an RFC, the issue will be resolved by a quorum vote of active committers to the project.
 
