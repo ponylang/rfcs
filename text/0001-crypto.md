@@ -1,7 +1,7 @@
 - Feature Name: crypto
 - Start Date: 2016-05-22
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/1
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1009
 
 # Summary
 
