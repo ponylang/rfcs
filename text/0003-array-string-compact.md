@@ -1,7 +1,7 @@
 - Feature Name: array-string-compact
 - Start Date: 2016-06-10
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/12
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1012
 
 # Summary
 
