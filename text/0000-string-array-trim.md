@@ -5,7 +5,7 @@
 
 # Summary
 
-This change adds zero-copy `trim` and `trimmed` methods to the `Array` and `String` classes in the `builtin` package.
+This change adds zero-copy `trim` and `trim_in_place` methods to the `Array` and `String` classes in the `builtin` package.
 
 # Motivation
 
@@ -15,9 +15,9 @@ Copying and allocation of large buffers are the bane of performance-critical sec
 
 This design would support the following use cases:
 
-* mutating an existing mutable `Array` or `String` to discard all but the selected portion from it, using the `trim` method.
+* mutating an existing mutable `Array` or `String` to discard all but the selected portion from it, using the `trim_in_place` method.
 
-* sharing a selected portion of an immutable `Array` or `String`, using the `trimmed` method.
+* sharing a selected portion of an immutable `Array` or `String`, using the `trim` method.
 
 # Detailed design
 
@@ -26,7 +26,7 @@ I propose the following API changes to the `builtin` package.
 * The following method will be **added** to `Array`, to support zero-copy, zero-allocation trimming of a mutable array to a portion of itself.
 
 ```pony
-  fun ref trim(from: USize = 0, to: USize = -1): Array[A]^ =>
+  fun ref trim_in_place(from: USize = 0, to: USize = -1): Array[A]^ =>
     """
     Trim the array to a portion of itself, covering `from` until `to`.
     Unlike slice, the operation does not allocate a new array nor copy elements.
@@ -37,7 +37,7 @@ I propose the following API changes to the `builtin` package.
 * The following method will be **added** to `Array`, to support zero-copy, zero-allocation sharing of a portion of an immutable array (well, okay, it *does* allocate a new `Array` object, but *not* a new underlying pointer and buffer).
 
 ```pony
-  fun val trimmed(from: USize = 0, to: USize = -1): Array[this->A!] val^ =>
+  fun val trim(from: USize = 0, to: USize = -1): Array[this->A!] val^ =>
     """
     Return a shared portion of this array, covering `from` until `to`.
     Both the original and the new array are immutable, as they share memory.
@@ -45,7 +45,7 @@ I propose the following API changes to the `builtin` package.
     """
 ```
 
-* The following method will be **removed** from `Array`, as `trim` makes it obsolete.
+* The following method will be **removed** from `Array`, as `trim_in_place` makes it obsolete.
 
 ```pony
   fun ref truncate(len: USize): Array[A]^ =>
@@ -59,7 +59,7 @@ I propose the following API changes to the `builtin` package.
 * The following method will be **added** to `String`, to support zero-copy, zero-allocation trimming of a mutable array to a portion of itself.
 
 ```pony
-  fun ref trim(from: USize = 0, to: USize = -1): String ref^ =>
+  fun ref trim_in_place(from: USize = 0, to: USize = -1): String ref^ =>
     """
     Trim the string to a portion of itself, covering `from` until `to` bytes.
     The operation does not allocate a new string nor copy elements.
@@ -70,7 +70,7 @@ I propose the following API changes to the `builtin` package.
 * The following method will be **added** to `String`, to support zero-copy, zero-allocation sharing of a portion of an immutable string (well, okay, it *does* allocate a new `String` object, but *not* a new underlying pointer and buffer).
 
 ```pony
-  fun val trimmed(from: USize = 0, to: USize = -1): String val^ =>
+  fun val trim(from: USize = 0, to: USize = -1): String val^ =>
     """
     Return a shared portion of this string, covering `from` until `to` bytes.
     Both the original and the new string are immutable, as they share memory.
@@ -78,7 +78,7 @@ I propose the following API changes to the `builtin` package.
     """
 ```
 
-* The following method will be **added** to `String`, to support checking if the underlying string buffer is null-terminated. This wasn't necessary before, because even though strings are length-specified in Pony, `String` helpfully adds a null bytes but to all your strings implicitly for easier FFI compatibility with *some* C libraries that don't have length-specified functions and depend on null-terminators. However, this is necessary now, because `String`s created with the `trimmed` method share memory with another immutable `String`, and thus we can't set a null byte on the trimmed end of the buffer. This method will only really be useful to the minority of Pony programs/packages that need to call a null-terminator-dependent C function via FFI. Such a program should call this method, then use `clone` to produce a null-terminated copy of the string if necessary.
+* The following method will be **added** to `String`, to support checking if the underlying string buffer is null-terminated. This wasn't necessary before, because even though strings are length-specified in Pony, `String` helpfully adds a null bytes but to all your strings implicitly for easier FFI compatibility with *some* C libraries that don't have length-specified functions and depend on null-terminators. However, this is necessary now, because `String`s created with the `trim` method share memory with another immutable `String`, and thus we can't set a null byte on the trimmed end of the buffer. This method will only really be useful to the minority of Pony programs/packages that need to call a null-terminator-dependent C function via FFI. Such a program should call this method, then use `clone` to produce a null-terminated copy of the string if necessary.
 
 ```pony
   fun is_null_terminated(): Bool =>
@@ -94,9 +94,9 @@ I propose the following API changes to the `builtin` package.
 
 # How We Teach This
 
-* We should extend the Pony pattern about [limiting string allocations](https://github.com/ponylang/pony-patterns/blob/master/performance/limiting-string-allocations.md) to include a section about using `trim` and `trimmed`.
+* We should extend the Pony pattern about [limiting string allocations](https://github.com/ponylang/pony-patterns/blob/master/performance/limiting-string-allocations.md) to include a section about using `trim` and `trim_in_place`.
 
-* We should lead by example, using `trim` and `trimmed` wherever applicable in the standard library and official Pony examples.
+* We should lead by example, using `trim` and `trim_in_place` wherever applicable in the standard library and official Pony examples.
 
 # Drawbacks
 
