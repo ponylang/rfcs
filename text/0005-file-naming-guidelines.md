@@ -1,7 +1,7 @@
 - Feature Name: file_naming_guidelines
 - Start Date: 2016-06-08
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/11
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1024
 
 # Summary
 
