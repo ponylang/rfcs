@@ -1,7 +1,7 @@
 - Feature Name: string-array-trim
 - Start Date: 2016-05-26
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/2
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1023
 
 # Summary
 
