@@ -39,6 +39,14 @@ primitive StatusCreated is Status
 ...
 ```
 
+The signature of the response constructor for Payload would also be changed to the following:
+```pony
+new iso response(
+  status': Status = StatusOK,
+  handler': (ResponseHandler val | None val) = reference)
+: Payload iso^
+```
+
 # How We Teach This
 
 The primitives are self explanatory and will be available in the net/http package of the standard library.
