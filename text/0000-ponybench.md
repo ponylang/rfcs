@@ -13,48 +13,44 @@ This package adds to the tooling around pony. Good tools support the language ec
 
 # Detailed design
 
-The API of this package is similar to that of ponytest for ease of use. The following is an example of a comlete program with 2 trivial benchmarks:
+The PonyBench.apply behavior has the following signature:
+```pony
+be apply[A: Any #share](name: String, f: {(): A ?} val, ops: U64 = 0)
+```
+The amount of ops may be set manually, but by default it is handled automatically with the benchmark run for a minimum of 1 second by default. If the second has not elapsed when the Benchmark function returns, the amount of ops is increased in the sequence 1, 2, 5, 10, 20, 50, … and the function is run again. A simple average (total execution time over ops) is used to calculate the execution time in nanoseconds.
 
 ```pony
-
-actor Main is BenchmarkList
+actor Main
   new create(env: Env) =>
-    PonyBench(env, this)
+    let bench = PonyBench(env)
+    bench[USize]("fib 5", lambda(): USize => Fib(5) end)
+    bench[USize]("fib 10", lambda(): USize => Fib(10) end)
+    bench[USize]("fib 20", lambda(): USize => Fib(20) end)
+    bench[USize]("fib 40", lambda(): USize => Fib(40) end)
+    bench[String]("fail", lambda(): String ? => error end)
+    bench[USize]("add", lambda(): USize => 1 + 2 end, 1_000_000)
+    bench[USize]("sub", lambda(): USize => 2 - 1 end, 1_000_000)
 
-  fun tag benchmarks(bench: PonyBench) =>
-    bench(_BenchmarkAdd)
-    bench(_BenchmarkSub)
-
-class iso _BenchmarkAdd is Benchmark
-  fun name(): String => "addition"
-
-  fun apply(b: BenchmarkRunner) =>
-    let n1: USize = 2
-    let n2: USize = 2
-    for i in Range[USize](0, b.n()) do
-      b.discard(n1 + n2)
-    end
-
-class iso _BenchmarkSub is Benchmark
-  fun name(): String => "subtraction"
-
-  fun apply(b: BenchmarkRunner) =>
-    let n1: USize = 4
-    let n2: USize = 2
-    for i in Range[USize](0, b.n()) do
-      b.discard(n1 - n2)
+primitive Fib
+  fun apply(n: USize): USize =>
+    if n < 2 then
+      n
+    else
+      apply(n-1) + apply(n-2)
     end
 
 ```
-
-Each benchmark is run for a minimum of 1 second by default. If the second has not elapsed when the Benchmark function returns, the value of b.n() is increased in the sequence 1, 2, 5, 10, 20, 50, … and the function is run again. A simple average (total time to run the benchmark function over b.n()) is used to calculate the execution time in nanoseconds.
-
 Output:
 ```
-addition      10000000	        28 ns/op
-subtraction   10000000	        28 ns/op
+fib 5     50000000          33 ns/op
+fib 10     5000000         352 ns/op
+fib 20       30000       42951 ns/op
+fib 40           2   646773866 ns/op
+**** FAILED Benchmark: fail
+add        1000000           2 ns/op
+sub        1000000           2 ns/op
 ```
-This shows that each operation was executed 10,000,000 times and took an average of 28 ns/op (note that the accuracy is poor at low execution times until compiler optimization can be properly restricted).
+For example, this shows that the add function was executed 1,000,000 times and took an average of 2 ns/op).
 
 The current proof of concept implentation can be found at [https://github.com/Theodus/ponybench](https://github.com/Theodus/ponybench)
 
