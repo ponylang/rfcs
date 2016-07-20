@@ -1,7 +1,7 @@
 - Feature Name: http-status
 - Start Date: 2016-07-02
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/18
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1041
 
 # Summary
 
