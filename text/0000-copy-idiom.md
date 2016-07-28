@@ -36,7 +36,7 @@ On collections, `from` and `clone` should perform deep copies. We'll add a `Clon
 
 # How We Teach This
 
-Advocating for the use of this idiom in user libraries would be good for the consistency of the Pony ecosystem. We could talk about object copying in the tutorial and recommend the `from` and `clone` names in copyable classes.
+Advocating for the use of this idiom in user libraries would be good for the consistency of the Pony ecosystem. We could talk about object copying in the tutorial and recommend the `from` and `clone` names in copyable classes. It could be addressed in a new section in the Standard Library chapter named Idioms. This section would talk about general coding principles applicable across all the standard library and that users could apply to their own programs or libraries. Some discussion on what exactly would go in this section would be needed.
 
 # Drawbacks
 
