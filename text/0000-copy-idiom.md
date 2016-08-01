@@ -9,7 +9,7 @@ Extend the current idiom for object copying in the standard library with a `from
 
 # Motivation
 
-The current "standard" way of copying an object is with the `clone` function (usual signature: `fun clone(): Object iso^`). While this function is very useful in some situations, like copying an `iso` object without consuming said object, it has limitations. For example it isn't possible to construct an embedded field with a copy of another object. Adding copying constructors would solve that problem.
+The current "standard" way of copying an object is with the `clone` function (usual signature: `fun clone(): Object iso^`). While this function is very useful in some situations, like copying an `iso` object without consuming said object, it has limitations. For example it isn't possible to construct an embedded field with a copy of another object from the `clone` function because embedded fields have to be initialised from constructors. Adding copying constructors would solve that problem.
 
 # Detailed design
 
@@ -22,7 +22,7 @@ class Object
   fun clone(): Object iso^
 ```
 
-This interface should only be a basic template and per-class modifications should be allowed, such as changing the return capability of `clone`.
+This interface should only be a basic template and per-class modifications should be allowed, such as changing the reference capability of the return type of `clone`.
 
 The `from` constructor on a given type `A` should be allowed to take objects of another type `S` if it makes sense to construct objects of type `A` from objects of any subtype of `S`.
 
