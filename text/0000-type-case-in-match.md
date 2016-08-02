@@ -11,7 +11,9 @@ This RFC defines a syntax for `match` expressions that allows a developer to def
 
 There are cases where the primary desire of a `match` case is only to disambiguate its type. In some cases, a developer may wish to work with the disambiguated value, while in other cases the value itself may be irrelevant.
 
-The current syntax that matches on value can easily be mistaken for a type comparison. With a `| MyType =>` case, it's easy to forget that if `MyType` is a `class`, then that class is expected to have a no-param constructor and an `eq()` method. A dedicated syntax for matching on type should help in this regard.
+Currently, in order to match only on type, a variable must be declared in the case expression in order to indicate a type match, even if a variable isn't needed. This is more verbose and less clear than it could be.
+
+Additionally, the current syntax that matches on *value* can easily be mistaken for a type comparison. With a `| MyType =>` case, it's easy to forget that if `MyType` is a `class`, then it is expected to have a no-param constructor and an `eq()` method. A dedicated syntax for matching on type should help in this regard.
 
 So the type case syntax will allow a more clear and clean interface to what is ultimately the intent of the case. That improved syntax is the primary motivation of this RFC, and was raised as a concern in [issue #876](https://github.com/ponylang/ponyc/issues/876).
 
@@ -71,7 +73,7 @@ match "foo"
 end
 ```
 
-If these impossible-to-reach cases are addressed in the future, they would be addressed for both cases.
+If these impossible-to-reach cases are addressed in the future, they would be addressed for both syntax.
 
 There should be no surprises with respect to guard expressions, though it should be noted that the original field or variable would, as likely expected, be available to be used as the matched type in the guard, just as it's able in the branch.
 
@@ -94,7 +96,7 @@ The term "type case" is a possible term for this feature because it succinctly d
 
 This syntax would be taught in the current [Match Expressions](http://tutorial.ponylang.org/pattern-matching/match.html) page of the tutorial. Currently there is a section on *"Captures"*, which describes the practice of declaring a variable in the case expression, to which the value is assigned upon successful match. I believe that section should come after the one that describes this new behavior, as I think this syntax is a little simpler, and provides an easy pathway to describing the "captures" syntax.
 
-I think this syntax should favored for the general case where a field or variable currently exists, and the "captures" syntax should be favored for the case where there is no current reference, such as the result of a function call, assuming a variable reference is actually needed:
+I think this syntax should favored for the general case where a field or variable currently exists, or the value simply isn't used in the branch, and the "captures" syntax should be favored for the case where there is no current reference, such as the result of a function call, assuming a variable reference is actually needed:
 
 ``` pony
 let m = match _get_numeric_value()
@@ -111,9 +113,9 @@ Overall, I don't think this adds any significant complexity to the language or c
 
 # Drawbacks
 
-As always a new syntax adds one more thing to learn, and as such, any new feature must justify its existence. The greater the cognitive burden, the greater the burden of justification.
+As always, a new syntax adds one more thing to learn, and as such, any new feature must justify its existence. The greater the cognitive burden, the greater the burden of justification.
 
-This could be seen as being *"two ways to accomplish the same thing"*, which is a legitimate concern, especially since the "captures" syntax existed first. Had the "type case" syntax existed first, the "captures" syntax would be very easily justified by the clear need to combine type disambiguation with assignment of the result of any arbitrary expression to a variable.
+This could be seen as making *"two ways to accomplish the same thing"*.
 
 # Alternatives
 
@@ -121,14 +123,12 @@ Not implementing this syntax is an alternative.
 
 Creating a separate kind of expression that only matches on type is another alternative. This would be akin to Go's *type switch* statement, though I don't think that's as desirable as this.
 
-If this is not implemented, we will continue to use an ancillary variable to capture a match on type.
+If this is not implemented, we will continue to use an ancillary variable to match by type.
 
 # Unresolved questions
 
 Does this conflict in any way with *case functions*?
 
 Should the syntax be extended to matching on tuples, such as `| (as String, 3) => " three"`?
-
-This introduces `as` before the [As Operator](http://tutorial.ponylang.org/pattern-matching/as.html) section of the tutorial. Will that be an issue?
 
 Would this syntax potentially give us the ability to use an `iso` reference in a `match` without needing to consume it, assuming all the cases of the `match` were type cases?
