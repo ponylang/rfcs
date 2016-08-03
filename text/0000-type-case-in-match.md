@@ -88,6 +88,17 @@ else USize(0)
 end
 ```
 
+If the subject of the `match` was a `var` field or variable, any assignment to that variable in the guard or branch could only be done as the matched type, since at that position, the type is unambiguous.
+
+``` pony
+var x: (U64 | String) = 0
+
+match x | as U64 =>
+  x = x + 1 // Valid assignment as U64
+  x = "foo" // Fails to compile as an attempt to assign String to a U64
+end
+```
+
 The `as` keyword is currently used as an infix operator, and it is also used in a manner somewhat similar to this RFC as the type designator of an Array literal. In both cases, a type is expected to follow `as`, so this new use of `as` fits in comfortably.
 
 # How We Teach This
@@ -121,11 +132,15 @@ This could be seen as making *"two ways to accomplish the same thing"*.
 
 Not implementing this syntax is an alternative.
 
+Implementing this merely as the `as Type` syntax without providing access to the original variable as the matched type.
+
 Creating a separate kind of expression that only matches on type is another alternative. This would be akin to Go's *type switch* statement, though I don't think that's as desirable as this.
 
 If this is not implemented, we will continue to use an ancillary variable to match by type.
 
 # Unresolved questions
+
+Does this access to the original variable as the matched type conflict with Pony's "no shadowing" philosophy?
 
 Does this conflict in any way with *case functions*?
 
