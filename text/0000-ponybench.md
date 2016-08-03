@@ -52,6 +52,12 @@ sub        1000000           2 ns/op
 ```
 For example, this shows that the add function was executed 1,000,000 times and took an average of 2 ns/op).
 
+There will also be an async behavior as follows:
+```pony
+be async[A: Any #share](name: String, f: {(): Promise[A] ?} val, timeout: 1_000_000_000, ops: U64 = 0)
+```
+which will calculate the average time until the Promise is fulfilled.
+
 The current proof of concept implentation can be found at [https://github.com/Theodus/ponybench](https://github.com/Theodus/ponybench)
 
 # How We Teach This
