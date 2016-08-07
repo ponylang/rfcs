@@ -54,7 +54,7 @@ For example, this shows that the add function was executed 1,000,000 times and t
 
 There will also be an async behavior as follows:
 ```pony
-be async[A: Any #share](name: String, f: {(): Promise[A] ?} val, timeout: U64 = 1_000_000_000, ops: U64 = 0)
+be async[A: Any #share](name: String, f: {(): Promise[A] ?} val, ops: U64 = 0)
 ```
 which will calculate the average time until the Promise is fulfilled.
 
