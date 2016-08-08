@@ -56,7 +56,7 @@ There will also be an async behavior as follows:
 ```pony
 be async[A: Any #share](name: String, f: {(): Promise[A] ?} val, timeout: U64 = 0, ops: U64 = 0)
 ```
-which will calculate the average time until the Promise is fulfilled. If timeout is greater than 0, the benchmark will fail if the promise is not fulfilled within the time given.
+which will calculate the average time until the Promise is fulfilled. If timeout is greater than 0, the benchmark will fail if the promise is not fulfilled within the time given. This check for timeout is done before the benchmarks are counted towards an average run time.
 
 The current proof of concept implentation can be found at [https://github.com/Theodus/ponybench](https://github.com/Theodus/ponybench)
 
