@@ -5,7 +5,7 @@
 
 # Summary
 
-Add type parameter inference for generic functions based on the existing inference rules for local variables.
+Add type parameter inference for generic types and generic functions based on the existing inference rules for local variables.
 
 # Motivation
 
@@ -13,7 +13,7 @@ Programmers are lazy and typing type arguments is a lot of work. A smart compile
 
 # Detailed design
 
-The design proposed here uses the existing type inference rules. The usage of these rules in this new context will be illustrated with examples.
+The design proposed here uses the existing type inference rules. The usage of these rules in this new context will be illustrated with examples. The proposal covers generic functions with inference through function parameters and generic types with inference through constructor parameters.
 
 - Types are inferred from function arguments, only if the generic type appears in the function parameters.
   - `fun foo[A](a: A)`: `A` can be inferred.
