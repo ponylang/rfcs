@@ -1,7 +1,7 @@
 - Feature Name: copy-idiom
 - Start Date: 2016-07-21
 - RFC PR: https://github.com/ponylang/rfcs/pull/22
-- Pony Issue:
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1138
 
 # Summary
 
