@@ -1,7 +1,7 @@
 - Feature Name: ponybench
 - Start Date: 2016-06-04
 - RFC PR: https://github.com/ponylang/rfcs/pull/7
-- Pony Issue: 
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1137
 
 # Summary
 
