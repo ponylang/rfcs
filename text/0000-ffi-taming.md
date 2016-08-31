@@ -78,5 +78,7 @@ amount of literature to draw from:
 
 # Unresolved questions
 
-A review of all FFI calls in the standard library is in order.
+ - Make an exception for logging/tracing?
+   - This is somewhat traditional; e.g. section 6.2 of the DarpaBrowser paper says "The renderer can call a tracing service to output debugging messages."
+ - A review of all FFI calls in the standard library is in order to refine the detailed design.
 
