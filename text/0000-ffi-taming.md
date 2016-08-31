@@ -1,15 +1,37 @@
-- Feature Name: (fill me in with a unique ident, my_awesome_feature)
-- Start Date: (fill me in with today's date, YYYY-MM-DD)
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- Feature Name: ffi-taming
+- Start Date: 2016-08-30
+- RFC PR:
+- Pony Issue:
 
 # Summary
 
-One para explanation of the feature.
+Apply a uniform taming policy to FFI in the pony standard library
+and document it as a best practice for the community. In brief,
+the policy is to "dominate" all impure FFI calls with AmbientAuth.
 
 # Motivation
 
-Why are we doing this? What use cases does it support? What is the expected outcome?
+The result of such a policy is to remove ad-hoc trust from the FFI boundary,
+resulting in the same safety and robust composition as the rest of pony.
+
+The tutorial currently says:
+
+> What about global variables?
+>
+> They're bad! Because you can get them without either constructing them or being passed them.
+>
+> Global variables are a form of what is called ambient authority. Another form of ambient authority is unfettered access to the file system.
+>
+> Pony has no global variables and no global functions. That doesn't mean all ambient authority is magically gone - we still need to be careful about the file system, for example. Having no globals is necessary, but not sufficient, to eliminate ambient authority.
+
+But actually, we don't need to be careful about the filesystem, at least as
+exposed by the pony files package. It does not provide unfettered access to the filesystem;
+all access is "fettered" directly by AmbientAuth capabilities or indirectly
+by FilePath capabilities.
+
+While we can't magically get rid of all ambient authority, we can feasibly
+get rid of it from the standard library with careful application of object
+capability discipline and we can establish this as a best practice for the community.
 
 # Detailed design
 
