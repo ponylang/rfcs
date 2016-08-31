@@ -7,7 +7,7 @@
 
 Apply a uniform taming policy to FFI in the pony standard library
 and document it as a best practice for the community. In brief,
-the policy is to "dominate" all impure FFI calls with AmbientAuth.
+the policy is to "dominate" all impure FFI calls with `AmbientAuth`.
 
 # Motivation
 
@@ -25,9 +25,9 @@ The tutorial currently says:
 > Pony has no global variables and no global functions. That doesn't mean all ambient authority is magically gone - we still need to be careful about the file system, for example. Having no globals is necessary, but not sufficient, to eliminate ambient authority.
 
 But actually, we don't need to be careful about the filesystem, at least as
-exposed by the pony files package. It does not provide unfettered access to the filesystem;
-all access is "fettered" directly by AmbientAuth capabilities or indirectly
-by FilePath capabilities.
+exposed by the pony `files` package. It does not provide unfettered access to the filesystem;
+all access is "fettered" directly by `AmbientAuth` capabilities or indirectly
+by `FilePath` capabilities.
 
 While we can't magically get rid of all ambient authority, we can feasibly
 get rid of it from the standard library with careful application of object
@@ -35,24 +35,47 @@ capability discipline and we can establish this as a best practice for the commu
 
 # Detailed design
 
-This is the bulk of the RFC. Explain the design in enough detail for somebody familiar with the language to understand, and for somebody familiar with the compiler to implement. This should get into specifics and corner-cases, and include examples of how the feature is used.
+Some FFI calls are pure mathematical functions: given the same inputs, they
+return the same outputs, and they have no other observable affect on the system.
+
+For any other FFI call, such as one that accesses the filesystem or network
+or clock or process lists or thread-local storage, pony function that makes
+the FFI call must take an `AmbientAuth` argument, either directly or indirectly, as
+in the case of `FilePath`, `NetAuth` and the like.
+
+Much of the pony standard library is already organized this way, but there
+are exceptions such as `Time.now()`.
+
+Correctness is still very much an issue - a C function can "stomp memory addresses,
+write to anything, and generally be pretty badly behaved."
+But this is already adequately documented.
 
 # How We Teach This
 
-What names and terminology work best for these concepts and why? How is this idea best presented? As a continuation of existing Pony patterns, or as a wholly new one?
+The "What about global variables?" section of the tutorial should be revised
+to reflect this policy as well as the trust boundary section and documentation
+of the `--safe` flag.
 
-Would the acceptance of this proposal mean the Pony guides must be re-organized or altered? Does it change how Pony is taught to new users at any level?
+Just as the tutorial cites "Capability Myths Demolished" there is a certain
+amount of literature to draw from:
 
-How should this feature be introduced and taught to existing Pony users?
+ - [http://www.combex.com/papers/darpa-review/security-review.html A Security Analysis of the Combex DarpaBrowser Architecure] by David Wagner & Dean Tribble March 4, 2002
+   - especially section 5.2    Taming the Java Interface.
+ - [A Theory of Taming](http://erights.org/elib/legacy/taming.html)
+ - [Joe-E: A Security-Oriented Subset of Java](https://people.eecs.berkeley.edu/~daw/papers/joe-e-ndss10.pdf) Adrian Mettler, David Wagner, and Tyler Close. ISOC NDSS 2010.
 
 # Drawbacks
 
-Why should we *not* do this?
+  - API churn
+  - additional code review burden
+  - possible false sense of security if we don't get it right
 
 # Alternatives
 
-What other designs have been considered? What is the impact of not doing this?
+  - Leave the existing ad-hoc trust boundardy in place
+    - Drawback: each adopter of pony has to scan the source of the pony standard library (as well as every other library they adopt) to see if it's consistent with the policies of their application.
 
 # Unresolved questions
 
-What parts of the design are still TBD?
+A review of all FFI calls in the standard library is in order.
+
