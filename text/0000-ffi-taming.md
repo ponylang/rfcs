@@ -59,15 +59,16 @@ of the `--safe` flag.
 Just as the tutorial cites "Capability Myths Demolished" there is a certain
 amount of literature to draw from:
 
- - [http://www.combex.com/papers/darpa-review/security-review.html A Security Analysis of the Combex DarpaBrowser Architecure] by David Wagner & Dean Tribble March 4, 2002
+ - [Joe-E: A Security-Oriented Subset of Java](https://people.eecs.berkeley.edu/~daw/papers/joe-e-ndss10.pdf) Adrian Mettler, David Wagner, and Tyler Close. ISOC NDSS 2010.
+ - [A Security Analysis of the Combex DarpaBrowser Architecure](http://www.combex.com/papers/darpa-review/security-review.html) by David Wagner & Dean Tribble March 4, 2002
    - especially section 5.2    Taming the Java Interface.
  - [A Theory of Taming](http://erights.org/elib/legacy/taming.html)
- - [Joe-E: A Security-Oriented Subset of Java](https://people.eecs.berkeley.edu/~daw/papers/joe-e-ndss10.pdf) Adrian Mettler, David Wagner, and Tyler Close. ISOC NDSS 2010.
 
 # Drawbacks
 
   - API churn
-  - additional code review burden
+  - time cost to audit the standard library
+  - additional code review burden going forward
   - possible false sense of security if we don't get it right
 
 # Alternatives
