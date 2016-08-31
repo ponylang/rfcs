@@ -81,4 +81,6 @@ amount of literature to draw from:
  - Make an exception for logging/tracing?
    - This is somewhat traditional; e.g. section 6.2 of the DarpaBrowser paper says "The renderer can call a tracing service to output debugging messages."
  - A review of all FFI calls in the standard library is in order to refine the detailed design.
-
+   - `term` calls `@ioctl`; perhaps the relevant authority is already explicitly delegated?
+   - `signals` calls `pony_asio_event_create` ...
+     - `ponyint_asio_get_backend()` should perhaps be replaced by storing `asio_backend_t*` in the `AmbientAuth` or `Env`
