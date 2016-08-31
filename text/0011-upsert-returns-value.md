@@ -1,7 +1,7 @@
 - Feature Name: upsert-returns-value
 - Start Date: YYYY-08-19
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/27
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1185
 
 # Summary
 
