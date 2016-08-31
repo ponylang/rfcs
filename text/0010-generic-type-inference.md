@@ -1,7 +1,7 @@
 - Feature Name: generic-type-inference
 - Start Date: 2016-08-11
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/26
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1184
 
 # Summary
 
