@@ -27,12 +27,9 @@ The requirement only affects public methods (those that do not begin with an und
 
 # How We Teach This
 
-OOP needs to be talked about in the tutorial. That is, what is Pony's
-understanding of OOP and how it's different from Smalltalk and other
-duck-typed OOP languages.
+OOP needs to be talked about in the tutorial. That is, what is Pony's understanding of OOP and how it's different from Smalltalk and other duck-typed OOP languages.
 
-In Erlang, an actor is allowed to ignore incoming messages. This is
-not how Pony works.
+In Erlang, an actor is allowed to ignore incoming messages. This is not how Pony works.
 
 # Drawbacks
 
