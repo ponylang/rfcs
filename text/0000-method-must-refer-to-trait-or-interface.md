@@ -5,7 +5,7 @@
 
 # Summary
 
-A public method on an actor or class should match a declared interface or contribute to a trait.
+A public method on an actor or class must implement a declared interface or help complete a trait.
 
 # Motivation
 
