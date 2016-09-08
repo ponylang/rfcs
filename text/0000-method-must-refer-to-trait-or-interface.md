@@ -27,7 +27,7 @@ Note that the requirement only affects public methods (those that do not begin w
 
 OOP needs to be talked about in the tutorial. That is, what is Pony's understanding of OOP and how it's different from Smalltalk and other duck-typed OOP languages.
 
-In Erlang, an actor is allowed to ignore incoming messages. This is not how Pony works.
+In Erlang, an actor is allowed to ignore incoming messages. This is not how Pony works. In Pony, an actor messages are methods and are type-checked just like object methods.
 
 # Drawbacks
 
