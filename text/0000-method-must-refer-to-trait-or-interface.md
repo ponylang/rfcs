@@ -5,15 +5,13 @@
 
 # Summary
 
-A public method on an actor or class must implement a declared trait or help complete an interface.
+Public methods on an actor or class must implement a declared trait or help complete an interface.
 
 # Motivation
 
 Since Pony is a statically-typed language, it makes sense to understands its OOP approach as contract-based. This allows the compiler to help the programmer write correct programs.
 
-In Pony, contracts are defined through traits and interfaces. The compiler validates objects against these, but it doesn't check if objects implements more than what's in the contract.
-
-This means that the contract can be changed with the implementation left out of sync.
+In Pony, contracts are defined through traits and interfaces. The compiler validates objects against these, but it doesn't check if objects implement more than what's in the contract (this applies for both traits and interfaces.)
 
 Java optionally provides the ``@Override`` annotation to require that a method overrides a method defined in a superclass and the same annotation can be used (rather confusingly) to require that a method implements a method in a declared trait (but again, the annotation is optional.)
 
@@ -23,7 +21,7 @@ This proposal is for a requirement that all methods defined on a class or actor 
 
 A method is allowed if it implements a method from a declared trait, or if it helps complete a trait – in any other case, it's a compile-time error.
 
-The requirement only affects public methods (those that do not begin with an underscore).
+Note that the requirement only affects public methods (those that do not begin with an underscore).
 
 # How We Teach This
 
