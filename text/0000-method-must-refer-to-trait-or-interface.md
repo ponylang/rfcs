@@ -19,7 +19,7 @@ This proposal is for a requirement that all methods defined on a class or actor 
 
 # Detailed design
 
-A method is allowed if it implements a method from a declared trait, or if it helps complete a trait – in any other case, it's a compile-time error.
+The compiler will support a new flag ``-Wpedantic`` (enabled in Pony's own test suite and encouraged in general) that enables the proposed validation.
 
 Note that the requirement only affects public methods (those that do not begin with an underscore).
 
