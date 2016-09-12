@@ -5,7 +5,7 @@
 
 # Summary
 
-This RFC proposes the addition of an `export` keyword to specify that functions for a class should be generated even if they are not used directly in the Pony program that is being compiled. Additionally, wrapper functions for these functions that conform to the C ABI will be generated, along with a .h file with the appropriate function signatures so that the functions can be easily used from a C program. All of this will only be done if the program is compiled with the `--export` compiler flag.
+This RFC proposes the addition of an `export` keyword to specify that functions for a class should be generated even if they are not used directly in the Pony program that is being compiled. Additionally, wrapper functions for these functions that conform to the C ABI will be generated, along with a .h file with the appropriate function signatures so that the functions can be easily used from a C program. The .h file will only be generated if the program is compiled with the `--export` compiler flag.
 
 # Motivation
 
@@ -21,7 +21,7 @@ There are three major obstacles to working with Pony objects in C:
 2. The compiler uses the the LLVM fast calling convention when it generates functions.
 3. The programmer must create function declarations for the methods that will be used in the C program.
 
-The `export` keyword would be used in a program to tell the compiler to mark the given class and all of its non-generic methods as reachable, generate wrapper functions for these functions that can be called using the C ABI, and produce a .h file with declarations for all of the `export`ed functions. These steps would only be taken if the program was compiled with the `--export` flag.
+The `export` keyword would be used in a program to tell the compiler to mark the given class and all of its non-generic methods as reachable, generate wrapper functions for these functions that can be called using the C ABI, and produce a .h file with declarations for all of the `export`ed functions. The .h file would only be generated if the `--export` flag is used.
 
 This program illustrates how the `export` keyword would be used in a Pony program:
 
