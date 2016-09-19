@@ -16,6 +16,33 @@ a simple and versatile way to extract this data.
 
 # Detailed design
 
+## API
+
+``Reader`` exposes a
+
+```pony
+fun ref read_until(byte': U8, greedy: Bool=true): Array[U8] iso^ ?
+```
+
+method that returns the data from the current
+position to the first occurrence of the given ``byte'``. It raise an error if `byte'` can't be found.
+
+The ``greedy`` parameter tells if the separator byte is included in
+the result (and incidently if it's consumed).
+
+If it's ``true``, the default, the separator byte is read
+and returned at the end of the result ``Array[U8]``. The reader
+continues its operation from the position after the separator.
+
+If it's ``false``, the separator is not included in the result. It is not
+read. It's not part of the result and, thereafter, it's the first available byte 
+for the reader.
+
+This adds versatility for
+corner cases without impacting the main use case.
+
+## Implementation details
+
 The implementation relies on a private method
 
 ```pony
@@ -35,19 +62,6 @@ The only difference is that it  searches for the provide byte' rather than '\n'.
 
 It returns the distance from the current position in the buffer to the first
 occurrence of the provided byte, or raise an error if that byte is not found.
-
-``Reader`` then exposes a
-
-```pony
-fun ref read_until(byte': U8, greedy: Bool=true): Array[U8] iso^ ?
-```
-
-method that calls ``_distance_of`` and returns the data from the current
-position to the byte. It raise if `byte` can't be found.
-
-The ``greedy`` parameter tells if the separator byte is included in
-the result (and incidently if it's consumed). This adds versatility for
-corner cases without impacting the main use case.
 
 ## Usage example
 
