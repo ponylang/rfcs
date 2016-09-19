@@ -17,16 +17,33 @@ a simple and versatile way to extract this data.
 # Detailed design
 
 The implementation relies on a private method
-``fun ref _distance_of(byte': U8): USize ?`` which has the exact same
-implementation as ``fun ref _line_length(): USize ?``
-(https://github.com/ponylang/ponyc/blob/master/packages/buffered/reader.pony#L532)
-Vexcept that it searches for the provide byte' rather than '\n'. It returns the
-distance from the current position in the buffer to the first occurrence of the
-provided byte, or raise an error if that byte is not found.
 
-Reader then exposes a ``fun ref read_until(byte': U8, greedy: Bool=true): Array[U8] iso^ ?`` method
-that calls ``_distance_of`` and returns the data from the current position
-to the byte. It raise if `byte` can't be found.
+```pony
+fun ref _distance_of(byte': U8): USize ?
+```
+
+which has quite the exact same implementation as
+
+
+```pony
+fun ref _line_length(): USize ?
+```
+
+(https://github.com/ponylang/ponyc/blob/master/packages/buffered/reader.pony#L532)
+
+The only difference is that it  searches for the provide byte' rather than '\n'.
+
+It returns the distance from the current position in the buffer to the first
+occurrence of the provided byte, or raise an error if that byte is not found.
+
+``Reader`` then exposes a
+
+```pony
+fun ref read_until(byte': U8, greedy: Bool=true): Array[U8] iso^ ?
+```
+
+method that calls ``_distance_of`` and returns the data from the current
+position to the byte. It raise if `byte` can't be found.
 
 The ``greedy`` parameter tells if the separator byte is included in
 the result (and incidently if it's consumed). This adds versatility for
