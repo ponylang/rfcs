@@ -11,10 +11,10 @@ Add a method on ``buffered.Reader`` that reads the buffer until a given byte is 
 
 Some protocols in the wild define their messages using a separator byte. Some use null-terminated strings. With the current implementation of ``Reader``, there is no easy way to read this kind of input. This RFC purpose is to provide a simple and versatile way to extract this data.
 
-Example of protocols that would benefit of this feature:
+Example of protocols that would benefit from this feature:
 
 - Postgresql : https://www.postgresql.org/docs/current/static/protocol-message-formats.html
-  - specially for the messages that contain a null-terminated string in the middle of the data (`ErrorResponse`, `ParmeterStatus`...)
+  - some messages contain a null-terminated string in the middle (`ErrorResponse`, `ParmeterStatus`...)
 
 # Detailed design
 
@@ -55,7 +55,22 @@ It returns the distance from the current position in the buffer to the first occ
 ```pony
 String.from_array(reader.read_until(0)) // read a null-terminated string
 reader.read_until(':') // read a field in a colon-separated chunk of data
-reader.read_until(0, false) // read all the data before a small U32 i want to read. It's convoluted, I confess.
+```
+
+## Test case
+
+```pony
+    let b = Reader
+
+    b.append(recover [as U8: 's', 't', 'r', '1', 0] end)
+    b.append(recover [as U8: 'f', 'i', 'e', 'l', 'd', '1', ';', 'f', '2', ';', ';'] end)
+    h.assert_eq[String](String.from_array(b.read_until(0)), "str1")
+    h.assert_eq[String](String.from_array(b.read_until(';')), "field1")
+    h.assert_eq[String](String.from_array(b.read_until(';')), "f2")
+    // read an empty field
+    h.assert_eq[String](String.from_array(b.read_until(';')), "")
+    // the last byte is consumed by the reader
+    h.assert_eq[USize](b.size(), 0)
 ```
 
 # How We Teach This
