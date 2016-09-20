@@ -14,6 +14,7 @@ Some protocols in the wild define their messages using a separator byte. Some us
 Example of protocols that would benefit of this feature:
 
 - Postgresql : https://www.postgresql.org/docs/current/static/protocol-message-formats.html
+  - specially for the messages that contain a null-terminated string in the middle of the data (`ErrorResponse`, `ParmeterStatus`...)
 
 # Detailed design
 
@@ -22,18 +23,11 @@ Example of protocols that would benefit of this feature:
 ``Reader`` exposes a
 
 ```pony
-fun ref read_until(byte': U8, greedy: Bool=true): Array[U8] iso^ ?
+fun ref read_until(byte': U8): Array[U8] iso^ ?
 ```
 
-method that returns the data from the current position to the first occurrence of the given ``byte'``. It raise an error if `byte'` can't be found.
+method that returns the data from the current position to the first occurrence of the given ``byte'``. The terminating byte is read, but not append in the result. Raise an error if `byte'` can't be found.
 
-The ``greedy`` parameter tells if the separator byte is included in the result (and incidently if it's consumed).
-
-If it's ``true``, the default, the separator byte is read and returned at the end of the result ``Array[U8]``. The reader continues its operation from the position after the separator.
-
-If it's ``false``, the separator is not included in the result. It is not read. It's not part of the result and, thereafter, it's the first available byte for the reader.
-
-This adds versatility for corner cases without impacting the main use case.
 
 ## Implementation details
 
@@ -52,7 +46,7 @@ fun ref _line_length(): USize ?
 
 (https://github.com/ponylang/ponyc/blob/master/packages/buffered/reader.pony#L532)
 
-The only difference is that it  searches for the provide byte' rather than '\n'.
+The only difference is that it searches for the provided `byte'` rather than `'\n'`.
 
 It returns the distance from the current position in the buffer to the first occurrence of the provided byte, or raise an error if that byte is not found.
 
@@ -74,10 +68,19 @@ None
 
 # Alternatives
 
-The RFC started from this refused [pull-request](https://github.com/ponylang/ponyc/pull/1239) that addresses a narrower use-case. We deemed it too specific.
+- The RFC started from this refused [pull-request](https://github.com/ponylang/ponyc/pull/1239) that addresses a narrower use-case. We deemed it too specific.
+
+- In the first version of the RFC, `read_until` accepted a second argument:
+
+```pony
+fun ref read_until(byte': U8, greedy: Bool=true): Array[U8] iso^ ?
+```
+
+to let the user decide if the separator is included into the result or kept in the buffer for the next read operation. We found that this was inconsistent with `line()`'s behaviour for a very little gain.
 
 # Unresolved questions
 
 - Should we provide a more general method that search for as string rather than a single byte ?
   - What is the performance impact ? (we have to search across chunks of data)
-- The name of the method is maybe not satisfying, I think. Non-native english speaker here, tell us if you can think of a better name.
+  - Can we find an example of a protocol that use two-bytes separators other than CRLF (this special case is already handled by `line()`) ?
+- The name of the method is maybe not satisfying, I think. Non-native English speaker here, tell us if you can think of a better name.
