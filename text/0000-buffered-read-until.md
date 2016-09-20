@@ -85,7 +85,7 @@ None
 
 - The RFC started from this refused [pull-request](https://github.com/ponylang/ponyc/pull/1239) that addresses a narrower use-case. We deemed it too specific.
 
-- In the first version of the RFC, `read_until` accepted a second argument:
+- In a first version of the RFC, `read_until` accepted a second argument:
 
 ```pony
 fun ref read_until(byte': U8, greedy: Bool=true): Array[U8] iso^ ?
@@ -93,9 +93,8 @@ fun ref read_until(byte': U8, greedy: Bool=true): Array[U8] iso^ ?
 
 to let the user decide if the separator is included into the result or kept in the buffer for the next read operation. We found that this was inconsistent with `line()`'s behaviour for a very little gain.
 
+- In the discussion we asked whether we should be more general and add a way to split on more than one byte. We didn't find a protocol that requires a multiple-bytes separator other than CRLF. This special case is already handled by `line()`. We decided that the marginal gain does not worth the extra complexity of the API and implementation. This feature may be the object of a new RFC if the case raises.
+
 # Unresolved questions
 
-- Should we provide a more general method that search for as string rather than a single byte ?
-  - What is the performance impact ? (we have to search across chunks of data)
-  - Can we find an example of a protocol that use two-bytes separators other than CRLF (this special case is already handled by `line()`) ?
 - The name of the method is maybe not satisfying, I think. Non-native English speaker here, tell us if you can think of a better name.
