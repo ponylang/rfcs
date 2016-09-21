@@ -13,11 +13,12 @@ The goal of this RFC is to implement various data transformations such as map, f
 
 # Detailed design
 
-1. Move the functionality of the primitives in itertools to a single wrapper class `Iter[A]`, the constructor of which will have the following signature:
-```pony
-  class Iter[A]
+1. Move the functionality of the primitives in itertools to a single wrapper class:
+  
+  ```pony
+  class Iter[A] is Iterator[A]
     new create(iter: Iterator[A])
-```
+  ```
 2. Add `enum` and `fold` methods to the class
   ```pony
   fun enum[B: (Real[B] val & Number) = USize]: Iter[A]^
@@ -32,9 +33,9 @@ The goal of this RFC is to implement various data transformations such as map, f
     """
   ```
 
-2. Remove the map, filter, and fold methods of the List and persistent/List collections with the intention of removing other methods in the future when they are implemented in itertools (such as flat_map).
+3. Remove the map, filter, and fold methods of the List and persistent/List collections with the intention of removing other methods in the future when they are implemented in itertools (such as flat_map).
 
-3. Remove any iterators that include ordered indices, such as `ArrayKeys` (which may be replaced by `Range(0, Array.size())`) and `ArrayPairs` (which may be replaced by `Iter[A](Array.values()).enum()`)
+4. Remove any iterators that include ordered indices, such as `ArrayKeys` (which may be replaced by `Range(0, Array.size())`) and `ArrayPairs` (which may be replaced by `Iter[A](Array.values()).enum()`)
 
 # How We Teach This
 
