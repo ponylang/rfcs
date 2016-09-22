@@ -31,7 +31,7 @@ None.
 
 # Alternatives
 
-None.
+The name `cpointer()` is suggested instead of `bytes()`.
 
 # Unresolved questions
 
