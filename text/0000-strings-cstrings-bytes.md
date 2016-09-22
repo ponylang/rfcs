@@ -17,6 +17,10 @@ The existing code to add null-termination to the allocated memory is kept since 
 
 However, the current `null_terminated()` will be removed (it's now obsolete).
 
+Adjustments to `from_cstring()` will be made such that it will no longer have a length argument. Instead, a new constructor `from_bytes()` is added.
+
+Also, an array will no longer provide a `cstring()` method, but just `bytes()`.
+
 # How We Teach This
 
 The description of `cstring()` and in particular how it's used to interface with C needs to be updated.
