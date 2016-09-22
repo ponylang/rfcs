@@ -33,10 +33,6 @@ The goal of this RFC is to implement various data transformations such as map, f
     """
   ```
 
-3. Remove the map, filter, and fold methods of the List and persistent/List collections with the intention of removing other methods in the future when they are implemented in itertools (such as flat_map).
-
-4. Remove any iterators that include ordered indices, such as `ArrayKeys` (which may be replaced by `Range(0, Array.size())`) and `ArrayPairs` (which may be replaced by `Iter[A](Array.values()).enum()`)
-
 # How We Teach This
 
 The current documentation in the itertools package will serve as the template for documenting classes added to the package.
