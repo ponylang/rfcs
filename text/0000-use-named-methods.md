@@ -1,16 +1,13 @@
-- Feature Name: Use named methods when possible
+- Feature Name: Use named methods instead of apply/update
 - Start Date: 2016-05-30
 - RFC PR:
 - Pony Issue:
 
 # Summary
 
-This is a proposal to use named methods when possible, leaving the use
-of the "apply" syntax sugar to function-like objects and dropping the
-"update" sugar altogether. This directly affects a number of classes
-in the standard library which currently use "apply" and "update" for
-methods such as getting or setting an item.
+This is a proposal to use named methods throughout the standard library as opposed to using the "apply" and "update" methods that are generally chosen because they map to the callable and assignment sugar.
 
+Some objects have just a single "apply" method which supports an inline implementation as a lambda function (an object literal). This will still be possible, but it should no longer be a requirement that the single method be named "apply".
 
 # Motivation
 
@@ -23,41 +20,25 @@ the like may result in less precise object interfaces that map poorly
 to the underlying algorithms. The use of named methods throughout the
 codebase helps steer clear of this pitfall.
 
-In addition, the term "apply" in particular is typically not very
-meaningful in the context of an action such as getting an item from a
-collection. We can note that most objects are likely to have a default
-or primary action that is not well described with the term "apply".
-
+In addition, the terms "apply" and "update" are often not particularly meaningful. For example, a method to obtain an HTTP status code would be better named "code" (instead of "apply"), and the method to send a request from an HTTP client might be "request" (instead of "apply".)
 
 # Detailed design
 
 There are some 200 implementations in the standard library of an
-"apply" method and about a dozen "update" methods.
-
-If this RFC is admitted into the repository there needs to be a
-process of deciding new names. For example, unit tests currently have
-an "apply" method which could be renamed to "run", while the logger
-object could have its "apply" method renamed to "append".
-
+"apply" method and about a dozen "update" methods which would all need to be renamed. The process of coming up with suitable names is out of scope for the RFC process and should be discussed during implementation.
 
 # How We Teach This
 
-The documentation needs to be updated.
-
+This proposal represents a more simple library design and so there will be less to teach.
 
 # Drawbacks
 
-The "apply" and "update" sugar make some operations more compact.
-
+The "apply" and "update" sugar makes the code more compact.
 
 # Alternatives
 
-The bracket notation is a common syntax choice for item assignment and
-retrieval. It would be an option to introduce additional sugar to map
-special methods to this notation.
-
+No alternative is currently proposed.
 
 # Unresolved questions
 
-A complete list of suggested renames has not been developed at this
-time.
+It's currently unresolved whether the "update" sugar should still be supported (it's clear that "apply" has obvious uses such as having an object pass for a function).
