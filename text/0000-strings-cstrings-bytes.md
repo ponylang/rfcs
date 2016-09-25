@@ -23,11 +23,19 @@ Also, an array will no longer provide a `cstring()` method, but just `bytes()`.
 
 # How We Teach This
 
-The description of `cstring()` and in particular how it's used to interface with C needs to be updated.
+There is a general lack of C FFI documentation for Pony and the implementation of this RFC should contribute here.
+
+The docstring for `cstring()` today is "Returns a C compatible pointer to a null terminated string." which will actually be accurate if this RFC is implemented. But we should move the docstring contents from `null_terminated()` since it details the behavior when the underlying allocation is not already zero-terminated.
+
+But the `String` class itself should also have a section that explains the existence of these two ways to extract a pointer to the raw data and how they're used.
+
 
 # Drawbacks
 
-None.
+Existing code might need updating, especially code that relies on the `cstring()` method of arrays where we most certainly will deprecate that method and use `bytes()` (or an alternative, see below.)
+
+That said, code that relies on the old behavior of `String.cstring()` should still work the same since this RFC proposes to add a guarantee that the returned string is zero-terminated.
+
 
 # Alternatives
 
