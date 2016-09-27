@@ -51,9 +51,9 @@ When compiled with the `--export` flag, a .h file would be produced:
 // example.h
 
 extern void *Foo_Alloc();
-extern void *Foo_create(long);
-extern long Foo_bar();
-extern long Foo_baz();
+extern void *Foo_create(void *, long);
+extern long Foo_bar(void *);
+extern long Foo_baz(void *);
 ```
 
 The C library that contains the implementation of `my_fun` would then use the generated .h file (in this example, `example.h`):
