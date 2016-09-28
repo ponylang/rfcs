@@ -50,7 +50,7 @@ When compiled with the `--export` flag, a .h file would be produced:
 ```
 // example.h
 
-extern void *Foo_Alloc();
+extern void *Foo_Alloc(pony_ctx_t *);
 extern void *Foo_create(void *, long);
 extern long Foo_bar(void *);
 extern long Foo_baz(void *);
