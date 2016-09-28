@@ -1,7 +1,7 @@
-- Feature Name: Extend tertools
+- Feature Name: Extend itertools
 - Start Date: 2016-09-01
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/30
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1276
 
 # Summary
 
