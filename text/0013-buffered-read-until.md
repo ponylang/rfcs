@@ -1,7 +1,7 @@
 - Feature Name: buffered_reader_read_until
 - Start Date: 2016-09-19
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/34
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1277
 
 # Summary
 
