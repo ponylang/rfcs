@@ -232,7 +232,7 @@ At this time, I don't see any reason to add any enhanced notifier mute support a
 
 ## Allow notifier to participate in "muting"
 
-We could still allow the notifier to participate in "muting" by asking it if it is ready to receive more data. At each point where we currently check _muted, we could also call a new method `ready_to_receive` on the notifier that if it returned `false` would have the same impact as `_muted` being `true`. This has a decent amount of overhead per check and as such, I think shouldn't be pursued into such time as someone reports a need for it. This is what we are doing in our custom Sendence `net` code but its part of a larger customization. Given the changes in this RFC, I don't think it makes sense at this time but could becomes something worth considering as other changes happen in Pony.
+We could still allow the notifier to participate in "muting" by asking it if it is ready to receive more data. At each point where we currently check `_muted`, we could also call a new method `ready_to_receive` on the notifier that if it returned `false` would have the same impact as `_muted` being `true`. This has a decent amount of overhead per check and as such, I think shouldn't be pursued into such time as someone reports a need for it. This is what we are doing in our custom Sendence `net` code but its part of a larger customization. Given the changes in this RFC, I don't think it makes sense at this time but could becomes something worth considering as other changes happen in Pony.
 
 ## Future alternatives
 
