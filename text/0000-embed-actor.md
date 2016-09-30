@@ -52,9 +52,7 @@ None.
 
 # Alternatives
 
-Other designs considered:
-
-* Consider breaking backwards compatibility in favor of better consistency - apply the don't-call-`create` rule even in cases where `create` has no required parameters (and thus could easily be called). In short, this would break cases where the `create` method had side effects through FFI (or a library that uses FFI).
+None.
 
 # Unresolved questions
 
