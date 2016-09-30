@@ -88,7 +88,7 @@ The change in docstring for notifier is enough in my mind for this RFC to be acc
 
 # Drawbacks
 
-There's a small amount of overhead in checking the value returned from `received` which has to be incurred by all users whether they get value from this feature or not.
+For users on Non-Windows platforms, there's a small amount of overhead in checking the value returned from `received` which has to be incurred by all users whether they get value from this feature or not.
 
 # Alternatives
 
