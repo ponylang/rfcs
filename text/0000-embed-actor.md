@@ -48,7 +48,7 @@ That is to say, I propose we allow embedding actors in the same memory space as 
 
 # Drawbacks
 
-None.
+* This implementation would add some significant complication to the current compiler, and possibly also the runtime. This complication would be carried as additional maintenance burden. It could also be a source of bugs, just as we've seen and worked through some subtle bugs related to the introduction of embedded classes.
 
 # Alternatives
 
