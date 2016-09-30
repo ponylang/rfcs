@@ -21,7 +21,7 @@ The goal of this RFC is to implement various data transformations such as map, f
   ```
 2. Add `enum` and `fold` methods to the class
   ```pony
-  fun enum[B: (Real[B] val & Number) = USize]: Iter[A]^
+  fun enum[B: (Real[B] val & Number) = USize](): Iter[A]^
     """
     An iterator which yields the current iteration count as well as the next value
     from the iterator.
