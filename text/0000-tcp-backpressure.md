@@ -184,6 +184,8 @@ Additionally, I think we should so an example of usage somewhere. This could be 
 
 I'm not really sure what combo of the above we should do.
 
+I think it is also reasonable as part of the process for this RFC to decide a basic question: do we assume as part of "how to teach this" that the programmer is familiar with how TCP works and what TCP backpressure is. I say yes, we assume that. However, I think it makes sense at some point in the future to return to packages like `net` and write beginners guides for how to use them that don't make that assumption. That said, I think its out of scope for this RFC.
+
 # Drawbacks
 
 I can't think of a reason not to implement backpressure. We might choose to do it another way but I think a TCP implementation that doesn't support backpressure notification is an incomplete implementation.
