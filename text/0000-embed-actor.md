@@ -52,7 +52,11 @@ That is to say, I propose we allow embedding actors in the same memory space as 
 
 # Alternatives
 
-None.
+* Do nothing - continue to allow only classes to be composed inside other types. Perhaps encourage as a pattern in the standard library to create classes that do "most of" what an actor does then are wrapped in a thin layer of an actor type, so that the classes can be composed by users into more complex actors. This has the disadvantage of extra "type sprawl", and does not account very well for actors that use ASIO events.
+
+* Rework Pony such that both actors and classes can receive messages. It's unclear how this would work with the current paradigms of Pony, but it could be worth exploring.
+
+* Wait for the "async lambda" RFC and consider whether it solves all of the same problems as this proposal before proceeding. I suspect that they are each elegant solutions to a different class of problems, that may overlap in some places.
 
 # Unresolved questions
 
