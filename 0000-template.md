@@ -25,11 +25,16 @@ How should this feature be introduced and taught to existing Pony users?
 
 # Drawbacks
 
-Why should we *not* do this?
+Why should we *not* do this? Things you might want to note:
+
+* Breaks existing code
+* Introduces instability into the compiler and or runtime which will result in bugs we are going to spend time tracking down
+* Maintenance cost of added code
 
 # Alternatives
 
 What other designs have been considered? What is the impact of not doing this?
+None is not an acceptable answer. There is always to option of not implementing the RFC.
 
 # Unresolved questions
 
