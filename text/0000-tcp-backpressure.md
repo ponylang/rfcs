@@ -43,7 +43,7 @@ Within `TCPConnection` we have added the following private methods:
 
 For non Windows platforms:
 
-`_apply_backpressure` is called `write_final`
+`_apply_backpressure` is called in `write_final` as:
 
 ```pony
             // Send as much data as possible.
