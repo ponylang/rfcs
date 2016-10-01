@@ -23,6 +23,12 @@ Would the acceptance of this proposal mean the Pony guides must be re-organized 
 
 How should this feature be introduced and taught to existing Pony users?
 
+# How We Test This
+
+How do we assure that the initial implementation works? How do we assure going forward that the new functionality works after people make changes? Do we need unit tests? Something more sophisticated? What's the scope of testing? Does this change impact the testing of other parts of Pony? Is our standard CI coverage sufficient to test this change? Is manual intervention required?
+
+In general this section should be able to serve as acceptance criteria for any implementation of the RFC.
+
 # Drawbacks
 
 Why should we *not* do this? Things you might want to note:
