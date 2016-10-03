@@ -5,11 +5,11 @@
 
 # Summary
 
-With the introduction of zero-copy trimming methods, some Pony strings are not null-terminated while some are. This is a proposal to ensure that `cstring()` always returns a pointer to null-terminated data, while at the same time having a new method `bytes()` return a pointer to the already allocated data (zero-copy) with no guarantee of null-termination.
+With the introduction of zero-copy trimming methods, some Pony strings are not null-terminated while some are. This is a proposal to ensure that `cstring()` always returns a pointer to null-terminated data, while at the same time having a new method `cpointer()` return a pointer to the already allocated data (zero-copy) with no guarantee of null-termination.
 
 # Motivation
 
-The definition of a C-string is a null-terminated string. Hence, it's a reasonable guarantee for the `cstring()` method to give. Meanwhile, sometimes we're just interested in the raw string data (as a pointer) and for this use-case we'll introduce the `bytes()` method.
+The definition of a C-string is a null-terminated string. Hence, it's a reasonable guarantee for the `cstring()` method to give. Meanwhile, sometimes we're just interested in the raw string data (as a pointer) and for this use-case we'll introduce the `cpointer()` method.
 
 # Detailed design
 
@@ -17,9 +17,9 @@ The existing code to add null-termination to the allocated memory is kept since 
 
 However, the current `null_terminated()` will be removed (it's now obsolete).
 
-Adjustments to `from_cstring()` will be made such that it will no longer have a length argument. Instead, a new constructor `from_bytes()` is added.
+Adjustments to `from_cstring()` will be made such that it will no longer have a length argument. Instead, a new constructor `from_cpointer()` is added.
 
-Also, an array will no longer provide a `cstring()` method, but just `bytes()`.
+Also, an array will no longer provide a `cstring()` method, but just `cpointer()`.
 
 # How We Teach This
 
@@ -32,14 +32,14 @@ But the `String` class itself should also have a section that explains the exist
 
 # Drawbacks
 
-Existing code might need updating, especially code that relies on the `cstring()` method of arrays where we most certainly will deprecate that method and use `bytes()` (or an alternative, see below.)
+Existing code might need updating, especially code that relies on the `cstring()` method of arrays where we most certainly will deprecate that method and use `cpointer()` (or an alternative, see below.)
 
 That said, code that relies on the old behavior of `String.cstring()` should still work the same since this RFC proposes to add a guarantee that the returned string is zero-terminated.
 
 
 # Alternatives
 
-The name `cpointer()` is suggested instead of `bytes()`.
+The name `bytes()` was originally proposed instead of `cpointer()`, but it was argued that this name might suggest returning a byte sequence which is not the case.
 
 # Unresolved questions
 
