@@ -1,7 +1,7 @@
 - Feature Name: format
 - Start Date: 2016-07-27
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: 
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1285
 
 # Summary
 
