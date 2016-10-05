@@ -1,6 +1,6 @@
 - Feature Name: format
 - Start Date: 2016-07-27
-- RFC PR: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/23
 - Pony Issue: https://github.com/ponylang/ponyc/issues/1285
 
 # Summary
