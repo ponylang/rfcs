@@ -85,6 +85,10 @@ The compiler `--export` argument would be documented in the "Compiler Arguments"
 
 There is currently no discussion in the tutorial about reachability analysis; it might be useful to add a section about this, possibly as an appendix, in order to better explain what this feature does.
 
+# How We Test This
+
+There are already a few FFI tests. We could use the same technique to create FFI functions that take Pony objects whose classes have been exported as arguments and call methods on them from C. Header file generation would be done as an integration test, running the compiler against a program that exports a class and checking that the header file was generated and contains the appropriate C function declarations. From there we could also compile and link a full program to make sure that everything works correctly.
+
 # Drawbacks
 
 The C FFI is already somewhat dangerous because it lacks the type safety and reference capability guarantees that Pony provides; it might be reasonable to discourage developers from using it for anything other than constrained tasks that operate only on basic data types.
