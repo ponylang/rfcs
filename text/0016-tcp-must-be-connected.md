@@ -1,7 +1,7 @@
 - Feature Name: tcp must be connected
 - Start Date: 2016-09-25
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/36
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1310
 
 # Summary
 
