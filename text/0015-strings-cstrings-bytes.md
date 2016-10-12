@@ -1,7 +1,7 @@
 - Feature Name: C-string vs bytes
 - Start Date: 2016-09-22
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/35
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1309
 
 # Summary
 
