@@ -1,7 +1,7 @@
 - Feature Name: TCP backpressure
 - Start Date: 2016-09-29
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/37
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1311
 
 # Summary
 
