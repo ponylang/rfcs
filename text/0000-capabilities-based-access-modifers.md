@@ -5,7 +5,8 @@
 
 # Summary
 
-While capabilities is a language feature, Pony does not use this for the benefit of access modifiers.
+While capabilities is a language feature, Pony does not use this for the benefit 
+of access modifiers.
 
 # Motivation
 
@@ -13,6 +14,10 @@ Capabilities based access modifiers will support more fine grain protection incl
 
  - fine grain access modifiers
  - type state / phantom types
+ 
+ The access privileges will be captured by the type system hence many context aware 
+ access capabilities like you can only close a file which is open.
+ 
 
 # Detailed design
 
@@ -32,10 +37,12 @@ restrictions are:
 - pvt[A, B, C] - only an instance of A, B, C; generic type parameters A, B, C or package A, B, C
 - pvt[A #f, B #g] - only an in f and g of type A, B
 - pvt[(A :>) #f, (B <:) #g] - only an in f and g in a subtype of A and a supertype of B
+- pvt[A | A =:= B] - private to A when A is B
 
 # How We Teach This
 
-This is using capabilities as means to 
+This is using capabilities as means to express access privileges hence more in line 
+with with another language construct than something completely new.
 
 # How We Test This
 
@@ -53,7 +60,7 @@ You should be able to specify:
 
 # Alternatives
 
-Continue with current implementation.
+Continue with current implementation or drop access modifies altogether.
 
 # Unresolved questions
 
