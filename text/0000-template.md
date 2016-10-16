@@ -47,7 +47,7 @@ You should be able to specify:
 
 * Breaks existing code
 * Maintenance cost of added code
-* More complicated than what is implimented
+* More complicated than what is implemented
 
 # Alternatives
 
