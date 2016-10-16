@@ -76,11 +76,11 @@ fun ref take_while(f: {(A!): Bool ?} box): Iter[A]^ =>
 
 # How We Teach This
 
-Since these are only additional methods for an existing class, the only requirement is that the methods are properly documented.
+The added methods must be properly documented and the top level package documentation of itertools should be updated to include the Iter class.
 
 # How We Test This
 
-Every method added must be tested to ensure that it works as expected. This includes testing for cases that may not behave as intended such as iterators with no values or predicates that may throw errors.
+Every method added must have a unit test to ensure that it works as expected. This includes testing for cases that may not behave as intended such as iterators with no values or predicates that may throw errors.
 
 # Drawbacks
 
