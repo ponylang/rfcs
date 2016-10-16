@@ -30,7 +30,7 @@ restrictions are:
 - pvt[this.package.* :>] - only this package and types deriving from other types in this package
 - pvt[P.A] - only this type A in package P
 - pvt[A, B, C] - only an instance of A, B, C; generic type parameters A, B, C or package A, B, C
-- pvt[A #f, B #g] - only an in f and g of A, B
+- pvt[A #f, B #g] - only an in f and g of type A, B
 - pvt[(A :>) #f, (B <:) #g] - only an in f and g in a subtype of A and a supertype of B
 
 # How We Teach This
