@@ -18,13 +18,15 @@ The following methods will be added to the Iter class:
 fun ref all(f: {(A!): Bool ?} box): Bool =>
     """
     Return false if at least one value of the iterator fails to match the
-    predicate `f`, otherwise return true.
+    predicate `f`. This method short-circuits at the first value where the
+    predicate returns false, otherwise true is returned.
     """
 
 fun ref any(f: {(A!): Bool ?} box): Bool =>
     """
-    Return true if at least one value of the iterator matches the predicate `f`,
-    otherwise return false.
+    Return true if at least one value of the iterator matches the predicate `f`.
+    This method short-circuits at the first value where the predicate returns
+    true, otherwise false is returned.
     """
 
 fun ref collect[B: Seq[A!] = Array[A!]](coll: B): B^ =>
