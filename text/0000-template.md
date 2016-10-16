@@ -27,7 +27,7 @@ restrictions are:
 - pvt[this.type :>] / pvt[this.type <:] - any instance of the this type or a subtype
 - pvt[this.type <:] / pvt[this.type :>] - any instance of the this type or a supertype
 - pvt[this] - only this instance
-- pvt[this.package :>] - only this package and types deriving from other types in this package
+- pvt[this.package.* :>] - only this package and types deriving from other types in this package
 - pvt[A, B, C] - only an instance of A, B, C; generic type parameters A, B, C or package A, B, C
 - pvt[A #f, B #g] - only an in f and g of A, B
 - pvt[(A :>) #f, (B <:) #g] - only an in f and g in a subtype of A and a supertype of B
