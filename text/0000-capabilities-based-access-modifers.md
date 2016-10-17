@@ -39,6 +39,11 @@ restrictions are:
 - pvt[(A :>) #f, (B <:) #g] - only an in f and g in a subtype of A and a supertype of B
 - pvt[A | A =:= B] - private to A when A is B
 
+A more concrete example
+
+class Foo
+  var x: U32 pvt[this]
+
 # How We Teach This
 
 This is using capabilities as means to express access privileges hence more in line 
