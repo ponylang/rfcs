@@ -54,7 +54,7 @@ fun sqrt(x: F64): F64 ? =>
 
 # How We Teach This
 
-This is a basic concept, the documentation string should be sufficient.
+This is a basic concept, the documentation string should be sufficient. In addition, a Pony pattern with practical examples could be useful.
 
 # How We Test This
 
@@ -62,7 +62,7 @@ These intrinsics will directly map to LLVM's intrinsics. We would assume that th
 
 # Drawbacks
 
-None.
+The primitives would be added to `builtin` which means users wouldn't be able to use those names as their type names.
 
 # Alternatives
 
