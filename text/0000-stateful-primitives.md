@@ -27,6 +27,8 @@ This pattern is far from optimal since a new object is created each time one of 
 
 The core idea is really simple, it boils down to allowing fields on primitives. Since a primitive is always `val`, viewpoint adaptation will ensure that fields can never be mutable and that they can be used without concern in multiple actors. The only difference with class fields is that primitive fields will have to be initialised in the `_init` function rather than in the constructor.
 
+We don't want to allow actors in primitive fields because it would create patterns with globally accessible actors not created by the main actor. Since a primitive `_init` can't send messages, that restriction is already ensured.
+
 ## Isn't this ambient authority?
 
 No, for two reasons.
@@ -73,6 +75,7 @@ This will add a certain amount of code in the compiler, which will have to be ma
 
 - Use separate objects from primitive functions as described in Motivation. This can be really bad for performance.
 - Pass data in a class. This can break encapsulation if the data is supposed to be intrinsic to the algorithm.
+- Use the upcoming compile-time values. This can't work with FFI objects.
 
 # Unresolved questions
 
