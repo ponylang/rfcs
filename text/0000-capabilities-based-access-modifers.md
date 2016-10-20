@@ -28,21 +28,32 @@ fit the conceptual framework of the language better.
 All access should be public to stat with unless restricted. The potential type of 
 restrictions are:
 
-- pvt[this.type] - any instance of the same type
-- pvt[this.type :>] / pvt[this.type <:] - any instance of the this type or a subtype
-- pvt[this.type <:] / pvt[this.type :>] - any instance of the this type or a supertype
-- pvt[this] - only this instance
-- pvt[this.package.* :>] - only this package and types deriving from other types in this package
-- pvt[P.A] - only this type A in package P
-- pvt[A, B, C] - only an instance of A, B, C; generic type parameters A, B, C or package A, B, C
-- pvt[A #f, B #g] - only an in f and g of type A, B
-- pvt[(A :>) #f, (B <:) #g] - only an in f and g in a subtype of A and a supertype of B
-- pvt[A | A =:= B] - private to A when A is B
+- `pvt[this.type]` - any instance of the same type
+- `pvt[this.type :>]` / `pvt[this.type <:]` - any instance of the this type or a subtype
+- `pvt[this.type <:]` / `pvt[this.type :>]` - any instance of the this type or a supertype
+- `pvt[this]` - only this instance
+- `pvt[this.package.* :>]` - only this package and types deriving from other types in this package
+- `pvt[P.A]` - only this type A in package P
+- `pvt[A, B, C]` - only an instance of A, B, C; generic type parameters A, B, C or package A, B, C
+- `pvt[A #f, B #g]` - only an in f and g of type A, B
+- `pvt[(A :>) #f, (B <:) #g]` - only an in f and g in a subtype of A and a supertype of B
+- `pvt[A | A =:= B]` - private to A when A is B
 
-A more concrete example
+More concrete examples
 
+## Private to Instance
+
+```
 class Foo
   var x: U32 pvt[this]
+```
+
+## Private to Package
+
+```
+class Foo
+  var x: U32 pvt[this]
+```
 
 # How We Teach This
 
@@ -69,4 +80,4 @@ Continue with current implementation or drop access modifies altogether.
 
 # Unresolved questions
 
-None
+Typing in the presence of this scheme of access modifies will need to be resolved.
