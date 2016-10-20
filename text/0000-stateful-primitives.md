@@ -75,7 +75,7 @@ This will add a certain amount of code in the compiler, which will have to be ma
 
 - Use separate objects from primitive functions as described in Motivation. This can be really bad for performance.
 - Pass data in a class. This can break encapsulation if the data is supposed to be intrinsic to the algorithm.
-- Use the upcoming compile-time values. This can't work with FFI objects.
+- Use the upcoming compile-time values. A compile-time value can be used to create an arbitrarily complex immutable object. However, no FFI can be involved in it, so it isn't a usable alternative if the data wraps calls to a C library (for example, a huge number library).
 
 # Unresolved questions
 
