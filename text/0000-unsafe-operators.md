@@ -35,7 +35,7 @@ Bitwise `not`, `or` and `and` are always fully defined so there is no need for u
 
 # How We Teach This
 
-This shoud be mentioned in the future documentation for unsafe operations.
+This should be mentioned in the future documentation for unsafe operations. Unsafe operators could be described quickly in the basic arithmetic section of the tutorial as a mean for advanced users to get better performance. In addition, the new symbols will have to be added to the symbol appendix in the tutorial.
 
 # Drawbacks
 
