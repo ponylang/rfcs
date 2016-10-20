@@ -56,6 +56,8 @@ fun sqrt(x: F64): F64 ? =>
 
 This is a basic concept, the documentation string should be sufficient. In addition, a Pony pattern with practical examples could be useful.
 
+We'll also want to stress that these construct are mainly intended for performance critical code and that the cost of being wrong can be significant.
+
 # How We Test This
 
 These intrinsics will directly map to LLVM's intrinsics. We would assume that their implementation works.
