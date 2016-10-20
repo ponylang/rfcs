@@ -1,7 +1,7 @@
 - Feature Name: export
 - Start Date: 2016-09-06
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/33
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1342
 
 # Summary
 
