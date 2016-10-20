@@ -55,6 +55,13 @@ class Foo
   var x: U32 pvt[A]
 ```
 
+## Private To Instane Given Type A Type
+
+```
+interface File
+  fun close(): CloseFile pvt[this | this.type =:= OpenFile]
+```
+
 # How We Teach This
 
 This is using capabilities as means to express access privileges hence more in line 
@@ -80,4 +87,5 @@ Continue with current implementation or drop access modifies altogether.
 
 # Unresolved questions
 
-Typing in the presence of this scheme of access modifies will need to be resolved.
+Typing in the presence of this scheme of access modifies will need to be resolved. In addition 
+other areas of the language which might be effected needs to be identified.
