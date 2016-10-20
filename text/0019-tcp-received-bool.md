@@ -1,7 +1,7 @@
 - Feature Name: Allow TCPConnectionNotify to cause TCPConnection to yield while receiving
 - Start Date: 2016-09-30
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/39
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1343
 
 # Summary
 
