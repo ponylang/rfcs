@@ -48,11 +48,11 @@ class Foo
   var x: U32 pvt[this]
 ```
 
-## Private to Package
+## Private to Package A
 
 ```
 class Foo
-  var x: U32 pvt[this]
+  var x: U32 pvt[A]
 ```
 
 # How We Teach This
