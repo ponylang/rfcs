@@ -54,6 +54,13 @@ fun ref nth(n: USize): A ? =>
     Return the nth value of the iterator.
     """
 
+fun ref run(on_error: {()} box = lambda() => None end) =>
+    """
+    Iterate through the values of the iterator without a for loop. The
+    function `on_error` will be called if the iterator's `has_next` method
+    returns true but its `next` method trows an error. 
+    """
+
 fun ref skip(n: USize): Iter[A]^ =>
     """
     Skip the first n values of the iterator.
