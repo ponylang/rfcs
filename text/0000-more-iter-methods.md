@@ -68,7 +68,7 @@ fun ref skip(n: USize): Iter[A]^ =>
 
 fun ref skip_while(f: {(A!): Bool ?} box): Iter[A]^ =>
     """
-    Skip values of the iterator while the predicate `f` returns true.
+    Return an iterator that skip values while the predicate `f` returns true.
     """
 
 fun ref take(n: USize): Iter[A]^ =>
@@ -85,7 +85,7 @@ fun ref take_while(f: {(A!): Bool ?} box): Iter[A]^ =>
 
 # How We Teach This
 
-The added methods must be properly documented and the top level package documentation of itertools should be updated to include the Iter class.
+The added methods must be properly documented and the top level package documentation of itertools should be updated to include the Iter class. All methods that return iterators for "lazy" evaluation should be documented so that the iterator return type is noted primarily.
 
 # How We Test This
 
