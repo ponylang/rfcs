@@ -49,9 +49,9 @@ fun foo(x: A): B iftype A <: B => // A is constrained to B in this specialisatio
 
 If the subtyping relationship isn't verified, the default function is used. If there is no default function, the function is completely removed from the associated type. Since `A` must be a generic parameter, functions would only be conditionally removed from specific reifications of generic types. This wouldn't impair type checking.
 
-If multiple specialisations of the same function are supplied with different subtyping constraints, the specialisation with the matching relationship is selected. If multiple specialisations match, causing ambiguity, a compilation error is issued.
+If multiple specialisations of the same function are supplied with different subtyping constraints, the specialisation with the matching relationship is selected. If multiple specialisations match, and the constraint of one of them isn't a subtype of the constraint of the other, the specialisation is considered ambiguous and a compilation error is issued. If there is a subtyping relationship between the matching specialisations, the subtype is selected.
 
-The type of every specialisation of a function must be a subtype of the type of the default function. If there is no default function, there is no subtyping requirement. This is safe because for any given reification of the function, only one specialisation can match.
+The type of every specialisation of a function must be a subtype of the type of the default function. If the constraint of a specialisation is a subtype of the constraint of another specialisation, the function type of the subtyped specialisation must also be a subtype of the function type of the supertyped specialisation. This is safe because for any given reification of the function, the most specific subtype is selected if there is a subtyping relationship between constraints.
 
 ### Relationship with case functions
 
