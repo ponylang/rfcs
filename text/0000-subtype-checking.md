@@ -40,16 +40,16 @@ The single keyword `iftype` is proposed for consistency with the `ifdef` keyword
 
 ## Specialised generic functions
 
-These function signatures are syntactically similar to case functions
+These function signatures are syntactically similar to case functions. A function without an `iftype` guard is called a default function and a function with an `iftype` guard is called a specialisation.
 
 ```pony
-fun foo(x: A): B => // Default implementation. Optional.
+fun foo(x: A): B => // Default function. Optional.
 fun foo(x: A): B iftype A <: B => // A is constrained to B in this specialisation.
 ```
 
-If the subtyping relationship isn't verified, the default implementation is used. If there is no default implementation, the function is completely removed from the associated type. Since `A` must be a generic parameter, functions would only be conditionally removed from specific reifications of generic types. This wouldn't impair type checking.
+If the subtyping relationship isn't verified, the default function is used. If there is no default function, the function is completely removed from the associated type. Since `A` must be a generic parameter, functions would only be conditionally removed from specific reifications of generic types. This wouldn't impair type checking.
 
-If multiple specialisations of the same function are supplied with different subtyping constraints, the implementation with the matching relationship is selected. If multiple implementations match, causing ambiguity, a compilation error is issued.
+If multiple specialisations of the same function are supplied with different subtyping constraints, the specialisation with the matching relationship is selected. If multiple specialisations match, causing ambiguity, a compilation error is issued.
 
 The type of every specialisation of a function must be a subtype of the type of the default function. If there is no default function, there is no subtyping requirement. This is safe because for any given reification of the function, only one specialisation can match.
 
