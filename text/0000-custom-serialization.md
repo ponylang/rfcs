@@ -27,7 +27,7 @@ The intent of this system is to allow the programmer to specify a way to use Pon
 All of the following methods must be implemented for custom serialization:
 * `fun _serialise_space(): USize` -- returns the number of bytes to reserve for custom serialization
 * `fun _serialise(bytes: Pointer[U8] tag)` -- takes in a pointer to the location in the serialization buffer that has been reserved for this object's extra data, writes a serialized representation of its data to the buffer
-* `fun _deserialise(bytes: Pointer[U8] tag)` -- takes in a pointer to the location in the deserialization buffer that represents the object's extra data, reads the data out, and modifies the object using that data
+* `fun ref _deserialise(bytes: Pointer[U8] tag)` -- takes in a pointer to the location in the deserialization buffer that represents the object's extra data, reads the data out, and modifies the object using that data
 
 ## Behavior Changes
 
