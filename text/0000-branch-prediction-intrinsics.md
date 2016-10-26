@@ -5,29 +5,34 @@
 
 # Summary
 
-Add compiler intrinsics allowing the user to make the optimiser aware of the likelihood of a given condition.
+Add variations of control structures to enable the user to make the optimiser aware of the likelihood of a given condition.
 
 # Motivation
 
-Users often know more than the optimiser about the high level properties of their code. Having these intrinsics would allow users to give hints to the optimiser for better code generation.
+Users often know more than the optimiser about the high level properties of their code. Having these constructs would allow users to give hints to the optimiser for better code generation.
 
 # Detailed design
 
-Add the following to the `builtin` package.
+Add `likely` and `unlikely` suffixes to the `if`, `elseif`, `while` and `until` control structures. These variations are also added to `match` statements, with the following syntax.
 
 ```pony
-primitive Likely
-  fun apply(value: Bool): Bool =>
-    compile_intrinsic
+match x
+| likely None => // ...
+| unlikely let x': A => // ...
+end
 
-primitive Unlikely
-  fun apply(value: Bool): Bool =>
-    compile_intrinsic
-```
+When a `likely` conditional branch is evaluated, the optimiser is allowed to assume that the associated value is probably true and to generate code with fast execution paths where the branch is taken. `unlikely` works the same way but assumes that the branch is probably not taken. There are two constructs to avoid weird reversed conditions in some cases.
 
-`Likely.apply` and `Unlikely.apply` return `value` unchanged.
+The base construct and the variations are considered equivalent from the grammar standpoint so it is possible to write this kind of construct:
 
-When `Likely.apply(value)` is evaluated, the optimiser is allowed to assume that `value` is probably true and to generate code with fast execution paths where `value` is indeed true. `Unlikely.apply` works the same way but assumes that `value` is probably false. There are two intrinsics to avoid weird reversed conditions in some cases.
+```pony
+iflikely a then
+  // ...
+elseif b then
+ // ...
+elseifunlikely c then
+ // ...
+end
 
 Examples:
 
@@ -35,7 +40,7 @@ As data on high-level properties.
 
 ```pony
 fun process(id: USize) =>
-  if Likely(id == _common_id) then
+  iflikely id == _common_id then
     // process common IDs
   else
     // process other IDs
@@ -46,7 +51,7 @@ As an optimisation when function contracts are violated.
 
 ```pony
 fun sqrt(x: F64): F64 ? =>
-  if Unlikely(x < 0) then
+  ifunlikely x < 0 then
     error
   end
   // compute square root
@@ -60,16 +65,19 @@ We'll also want to stress that these construct are mainly intended for performan
 
 # How We Test This
 
-These intrinsics will directly map to LLVM's intrinsics. We would assume that their implementation works.
+These constructs will directly map to LLVM's intrinsics and metadatas. We would assume that their implementation works.
 
 # Drawbacks
 
-The primitives would be added to `builtin` which means users wouldn't be able to use those names as their type names.
+- `likely` and `unlikely` would become reserved keywords.
+- `elseifunlikely` is a quite convoluted keyword.
 
 # Alternatives
 
-Not implementing these intrinsics would leave users without any way to influence branch prediction. The only possible impact of a user getting it wrong would be decreased performance and it wouldn't raise correctness issues.
+Use compiler intrinsic functions instead of keywords. This has been strongly considered in a previous draft of the RFC but was dropped because of implementation concerns with the Pony compiler intrinsics and the LLVM constructs for branch prediction.
+
+Not implementing these constructs would leave users without any way to influence branch prediction. The only possible impact of a user getting it wrong would be decreased performance and it wouldn't raise correctness issues.
 
 # Unresolved questions
 
-None.
+The actual syntax, particularly for `match`, is up for discussion.
