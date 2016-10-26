@@ -20,6 +20,7 @@ match x
 | likely None => // ...
 | unlikely let x': A => // ...
 end
+```
 
 When a `likely` conditional branch is evaluated, the optimiser is allowed to assume that the associated value is probably true and to generate code with fast execution paths where the branch is taken. `unlikely` works the same way but assumes that the branch is probably not taken. There are two constructs to avoid weird reversed conditions in some cases.
 
@@ -33,6 +34,7 @@ elseif b then
 elseifunlikely c then
  // ...
 end
+```
 
 Examples:
 
