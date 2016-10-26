@@ -1,7 +1,7 @@
 - Feature Name: more-iter-methods
 - Start Date: 2016-10-16
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/43
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1370
 
 # Summary
 
