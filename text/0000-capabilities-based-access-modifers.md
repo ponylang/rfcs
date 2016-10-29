@@ -22,10 +22,10 @@ Capabilities based access modifiers will support more fine grain protection incl
 # Detailed design
 
 Though current access modifier scheme in Pony is very simple it is best that it 
-leverages capabilities and typing which is strong suit in Pony. This would better 
+beverages capabilities and typing which is strong suit in Pony. This would better 
 fit the conceptual framework of the language better.
 
-All access should be public to stat with unless restricted. The potential type of 
+All access should be public to start with unless restricted. The potential type of 
 restrictions are:
 
 - `pvt[this.type]` - any instance of the same type
@@ -55,7 +55,14 @@ class Foo
   var x: U32 pvt[A]
 ```
 
-## Private To Instane Given Type A Type
+## Private to Class
+
+```
+class Foo
+  var x: U32 pvt[class]
+```
+
+## Private To Instance Given Type A Type (evidence)
 
 ```
 interface File
@@ -64,16 +71,23 @@ interface File
 
 # How We Teach This
 
-This is using capabilities as means to express access privileges hence more in line 
-with with another language construct than something completely new.
+This can be taught more in-line with the capabilities and there is some similarity. Also a chapter or 
+section after capabilities might might be the best way to teach this. Some of the potential test cases:
+
+- restrict access to instance methods and behaviours within the class or actor
+- restrict access to instance or subtype methods and behaviours within the class or actor
+- restrict access to class or actor type
+- restrict access to class or actor subtype
+- restrict access to package
+- restrict access to package for classes or actors of a given instance
+- restrict access to package for classes or actors of a given type
+- restrict access to based on evidence provided
+
 
 # How We Test This
 
-You should be able to specify:
-
-- Type state / phantom type 
-- Friend functions (class / actor / package specific access)
-- Different protection levels
+You should be able to specify different protection levels than what is possible now. So testing 
+should be based on the combination for protection the possible protection levels discussed above.
 
 # Drawbacks
 
