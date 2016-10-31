@@ -21,7 +21,7 @@ The core idea is to add a new "is subtype" binary operator, working on types at 
 
 `A` can also be a tuple of generic types to allow checking multiple types at the same time, e.g. `(A1, A2) <: (B1, B2)`. In that case, `A1` becomes constrained to `B1` and `A2` becomes constrained to `B2`.
 
-If it can be proven that `A <: B` is always true (`A` is already constrained to `B`) or always false (`B` isn't a subtype of the existing constraint of `A`), a compilation error could be issued.
+If it can be proven that `A <: B` is always true (`A` is already constrained to `B`) or always false (`B` isn't a subtype of the existing constraint of `A`), a compilation is issued. Since type checking occurs before reification, constraints are static and the programmer can always fix the problem.
 
 ## The `iftype` conditional
 
@@ -81,6 +81,4 @@ Use pattern matching on interfaces, as described in Motivation. This is bad for 
 
 # Unresolved questions
 
-The actual syntax for `<:`, `iftype` and specialised function signatures is up for discussion.
-
-Should `A <: B` always true (or always false) result in a compilation error?
+None.
