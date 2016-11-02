@@ -1,7 +1,7 @@
 - Feature Name: custom_serialization
 - Start Date: 2016-10-07
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/41
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1388
 
 # Summary
 
