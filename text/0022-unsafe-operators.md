@@ -1,7 +1,7 @@
 - Feature Name:unsafe-operators 
 - Start Date: 2016-10-20
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/49
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1389
 
 # Summary
 
