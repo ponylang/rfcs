@@ -1,7 +1,7 @@
 - Feature Name: Require programmer to implement network failure handling
 - Start Date: 2016-10-20
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/50
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1390
 
 # Summary
 
