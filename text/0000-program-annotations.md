@@ -19,7 +19,7 @@ The proposed syntax for annotations is
 \annotation1, annotation2, ...\
 ```
 
-An individual annotation can be any valid identifier.
+An individual annotation can be any valid identifier (i.e. anything that can be used as a variable or type name). Annotations and variables/types using the same identifier aren't linked in any way. The annotation list is agnostic to whitespace and can span multiple lines.
 
 At the source code level, annotations are attached to their right-hand side construct and cover as much as possible. The annotated construct must be valid on its own. Any construct in the language can be annotated, it is the responsibility of the compiler and third-party tools to use sane locations.
 
