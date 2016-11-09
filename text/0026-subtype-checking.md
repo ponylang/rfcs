@@ -1,7 +1,7 @@
 - Feature Name: subtype-checking
 - Start Date: 2016-10-23
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/62
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1410
 
 # Summary
 
