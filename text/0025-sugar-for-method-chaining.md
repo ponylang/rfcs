@@ -1,7 +1,7 @@
 - Feature Name: Sugar for method chaining
 - Start Date: 2016-05-30
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/4
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1409
 
 # Summary
 
