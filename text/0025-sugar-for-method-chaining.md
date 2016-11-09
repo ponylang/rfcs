@@ -30,7 +30,8 @@ The following semantics apply:
 * If the receiver type can alias as itself, the chained type doesn't change;
 * If the receiver type is a non-ephemeral unique type (iso, trn or #send), the call was necessarily recovered so it is safe to chain the same type;
 * If the receiver type is an ephemeral unique type:
-  * If the call was recovered, if the method capability is the non-ephemeral type, or if the non-ephemeral type is a subtype of the method capability (i.e. tag method for iso object or box method for trn object), the chained type is the ephemeral type.
+  * If the call was recovered or if the non-ephemeral type is a subtype of the method capability (i.e. tag method for iso object or box method for trn object), the chained type is the ephemeral type.
+  * If the method capability is the non-ephemeral type, the chained type is the aliased type.
   * Else, the chained type has the same capability as the method capability.
 
 # How We Teach This
