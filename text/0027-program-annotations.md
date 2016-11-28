@@ -1,7 +1,7 @@
 - Feature Name: program-annotations
 - Start Date: 2016-10-31
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/64
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1442
 
 # Summary
 
