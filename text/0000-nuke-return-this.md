@@ -127,8 +127,6 @@ Only public methods are included here. Private methods will be updated based on 
   - `seek`: will return `None`
   - `flush`: will return `None`
   - `sync`: will return `None`
-- `options.Options`
-  - `add`: will return `None`
 - `time.Date`
   - `normal`: will return `None`
 - `net.http.Payload`
