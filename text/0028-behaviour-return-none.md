@@ -1,7 +1,7 @@
 - Feature Name: behaviour-return-none
 - Start Date: 2016-11-16
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/69
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1455
 
 # Summary
 
