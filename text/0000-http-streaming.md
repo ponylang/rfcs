@@ -91,26 +91,29 @@ HTTP streaming and Chunked Transfer Encoding are parts of the HTTP standard.
 Existing documentation for the HTTP package is sparse, coming entirely from the source code doc strings. So the doucmentation will update automatically. Adding more will be an improvement, especially in describing *how* to use the package, rather than just a list of types and functions.  The example might be improved to use the new features.
 
 # How We Test This
-```
-How do we assure that the initial implementation works? How do we
-assure going forward that the new functionality works after people
-make changes? Do we need unit tests? Something more sophisticated?
-What's the scope of testing? Does this change impact the testing
-of other parts of Pony? Is our standard CI coverage sufficient to
-test this change? Is manual intervention required?
 
-In general this section should be able to serve as acceptance
-criteria for any implementation of the RFC.
-```
+The existing `packages/net/http/_test.pony` does not currently test `http` operations at all.  It is an extensive test of the URL generation and parsing code however, which would not be changed by this project.
+
+I am not sure whether the automated Pony test system could deal with two interacting programs, but:
+
+* The program at `examples/httpget/httpget.pony` uses the *pull* model to fetch data from some server specified in the command line.  This would require a small change to use the *push* model instead.
+
+* The program at `examples/httpserver/httpserver.pony` also uses the old interface and would have to be slightly modified.
+
+But both of these programs deal with very small packages of information, which is not enough to test that the TCP backpressure mechanism is being used properly.
+
 # Drawbacks
 
 1. Changes to existing clients in the way Responses are delivered, even for "simple" cases.
 
 # Alternatives
 
-What is the impact of not doing this?
-None is not an acceptable answer. There is always to option of not implementing the RFC.
+If these changes are not done, it would remain impossible to write a serious WebDav or media server using the `net/http` package.  (For example, something like NextCloud, currently written in PHP, or LogitechMediaServer, written in Perl.)  While the current code might work in a limited test with one user and an MP3 file, it would be quite slow and quickly run out of memory under a realistic load.
 
 # Unresolved questions
 
-What parts of the design are still TBD?
+1. Is it possible to maintain the existing *pull* interface as a layer on top of the new *push* interface?
+
+2. How to deal with pipelining.
+
+3. What is a good *flush buffer* threshold?  Should it be tunable?
