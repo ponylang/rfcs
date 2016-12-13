@@ -15,7 +15,7 @@ The current design of the http client and server packages assumes that all respo
 
 * Buffering all of this data before sending even the first byte back to the client delays transmission needlessly, in addition to consuming a lot of memory.
 
-The HTTP protocol specification provides several ways around this problem.  One is simply to send the body data in smaller pieces, allowing TCP buffering semantics to deliver the long bytestream to the client.  No changes to the headers are required.  The other, for use when the `RequestHandler` really does not know the total length of the data in advance, is Chunked Transfer Encoding, where the response body is sent in smaller pieces, each with its own length header.  No `Content-Lengt`h header is used at all in this case.
+The HTTP protocol specification provides several ways around this problem.  One is simply to send the body data in smaller pieces, allowing TCP buffering semantics to deliver the long bytestream to the client.  No changes to the headers are required.  The other, for use when the `RequestHandler` really does not know the total length of the data in advance, is Chunked Transfer Encoding, where the response body is sent in smaller pieces, each with its own length header.  No `Content-Length` header is used at all in this case.
 
 This RFC proposes implementing both of these mechanisms in the Pony stdlib `net/http` package.
 
@@ -30,8 +30,8 @@ The primary philosophy to be applied in both the client and the server is to get
     * `USize` => Size is known.  Generater a "Content-Length: nnn" header immediately.  This is possible when the response comes from a file where the file system allows for size queries.
 
 2. Implement Chunked Transfer Mode for responses.
-    * Header "Transfer-Mode: chunked" will be added to the headers as soon as Payload.set_size(None) is called.
-    * Data added to a response body by Payload.add_chunk will be immediatly transmitted to the client with a Chunked Transfer length header.
+    * Header "Transfer-Encoding: chunked" will be added to the headers as soon as Payload.set_size(None) is called.
+    * Data added to a response body by Payload.add_chunk will be immediately transmitted to the client with a Chunked Transfer length header.
 
 3. Stream large responses even when size is known.  If `Payload.set_size` is called with a large value, data added to a response body is accumulated only up to an established "buffer size" and then transmitted to the client.  These bufferfuls do not need to have lengths prefixed, as they would have already been accounted for by the Content-Length header.
 
