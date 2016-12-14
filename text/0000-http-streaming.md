@@ -23,24 +23,41 @@ This RFC proposes implementing both of these mechanisms in the Pony stdlib `net/
 
 # Detailed design
 
+## Backpressure
+
+Backpressure is used in media streaming, for example. Mp3 data is 'consumed' in the client at a rate of about 17KB/second. Video data goes considerably faster. Back on the server, a file is being read as fast as the file system can go. The network can transfer the data at somewhere in between those speeds. To prevent RAM being consumed all along the path to buffer up stuff which has been read from the file but not yet 'played' on the client, there has to be a way for the client to signal "stop sending until I catch up". So the HTTP client code has to have a way to do that, which causes the TCPConnection actor to stop reading from the socket. The underlying network code then stops sending ACK packets and eventually the server end of TCP stops sending. The "throttled" event then happens on the server side, which has to be communicated to the HTTP session actor so it will stop reading from the disk file.
+
+Then when the client catches up, it has to reverse this whole process, eventually causing the server to start reading from the file again.
+
+Without this mechanism, RAM consumption in both client and server will balloon out of control. This is particularly bad on the server which might be handling hundreds of these connections simultaneously. The approach is "leave the data on disk until you know you can get rid of it".
+
+## Transfer Modes
+
 The primary philosophy to be applied in both the client and the server is to get rid of data as soon as possible, passing it on to whatever the next stage in processing is.
 
-Streaming can go in either direction, whether for uploading files in a WebDav application, or downloading files in WebDav or media streaming.  Luckily, the existing Pony code already has this general purpose abtraction in the `Payload` class.  The current implementation of `Payloas` works like this:
+Streaming can go in either direction, whether for uploading files in a WebDav application, or downloading files in WebDav or media streaming.  Luckily, the existing Pony code already has this general purpose abtraction in the `Payload` class.  The current implementation of `Payload` works like this:
 
-1. Create an empty `Payload`
+1. Create an empty `Payload` and set headers
 2. Put data into it with one or more `add_chunk` calls
 3. Send the completed `Payload` over the `TCPConnection`.
 4. Pull data out with a single call to `get_body`
 
-This is fundamentally incompatible with streaming operations.  The redesign will make http exchanges on `GET` and `POST` operations much more like all the other Pony file and network operations which use a *push* style:
+This is fundamentally incompatible with streaming operations.  The redesign will make large http exchanges on `GET` and `POST` operations much more like all the other Pony file and network operations which use a *push* style.  To manage this we introduce three *Transfer Modes*:
 
-1. Initialize an exchange, setting headers
+1. **OneshotTransfer**.  This is the current mode, useful for small messages.  If the new `Payload.set_length` function is not called, this is the mode that will be used.
+
+2. **StreamTransfer**.  This is a new mode used for large payload bodies where the exact length is known in advance, such as for most WebDav and media transfers.  It is selected by calling `Payload.set_length` with a large integer bytecount.  On the TCP link this is indistinguishable from Oneshot mode other than the value of the `Content-Length` header is large.
+
+3. **ChunkedTransfer**.  This is a new mode for cases where the payload length can not be known in advance, but is likely to be large.   It is selected by calling `Payload.set_length` with a parameter of `None`.  On the TCP link this mode can be detected because there is no `Content-Length` header at all, being replaced by the `Transfer-Encoding: chunked` header.  In addition, the message body is separated into chunks, each with its own bytecount.
+
+The general procedure using the new interface is:
+
+1. Create an empty `Payload`, and set headers
+2. Call `Payload.set_length`
 2. Feed data into the `Payload` with `add_chunk`
-3. The other end receives `Notifier.apply` calls as chunks arrive.
+3. The other end receives `apply` notification as chunks arrive.
 4. The sender calls `Payload.close()`
-5. The receiver gets `Notifier.closed()`
-
-Any desired packaging into convenient bundles, when the data is known to be small (for example, simple JSON strings) has to operate *above* ths streaming level.
+5. The receiver gets `closed` notification
 
 ## Changes to Payload handling
 
@@ -56,7 +73,10 @@ References below to "the `Handler`" refer to both `RequestHandler` and `Response
 
 4. All headers are transmitted the first time any body data needs to be sent, in either chunked or "large body" streaming modes.  (New internal flag `var _headers_sent: Bool = false`)
 
-5. Observe TCP backpressure, meaning that the channel is unable to accept more data, in the form of 'throttled' notifications.  This needs to be communicated back to the `Handler` so it can suspend reading from the data source.
+5. Be able to both create and respond to TCP backpressure, meaning that the channel is unable to accept more data, in the form of 'throttled' notifications.  This needs to be communicated back to the `Handler` so it can suspend reading from its data source.  For consistency, the function names in TCPConnection could be copied for this mechanism.
+    * `throttle()` to pause delivery of `apply()` calls
+    * `unthrottle()` to resume delivery of `apply()` calls
+
 
 Yet to be determined:
 
@@ -86,9 +106,13 @@ Questions:
 
 # How We Teach This
 
-HTTP streaming and Chunked Transfer Encoding are parts of the HTTP standard.
+HTTP streaming and Chunked Transfer Encoding are parts of the HTTP standard so we do not to describe that.
 
-Existing documentation for the HTTP package is sparse, coming entirely from the source code doc strings. So the doucmentation will update automatically. Adding more will be an improvement, especially in describing *how* to use the package, rather than just a list of types and functions.  The example might be improved to use the new features.
+Most of the stdlib packages have no external documentation beyond the automatically generated web pages that get extracted from the doc-strings. But in the source code there is sometimes quite extensive information in comments. For example, net/TCPConnection has a long discussion of how backpressure works. Some files even have little examples in them. That would be easy enough.
+
+Updating the examples/httpserver and client code could go a long way.
+
+HTTP servers can get pretty complicated. I don't know that we want to get into all the ways that a whole Server can be written, with dispatching of URL fragments, etc. yet. I have used the cowboy http package in Erlang, and it had an extensive pattern matching/dispatch function.
 
 # How We Test This
 
@@ -100,7 +124,11 @@ I am not sure whether the automated Pony test system could deal with two interac
 
 * The program at `examples/httpserver/httpserver.pony` also uses the old interface and would have to be slightly modified.
 
-But both of these programs deal with very small packages of information, which is not enough to test that the TCP backpressure mechanism is being used properly.
+## Backpressure
+
+The existing `examples` programs deal with very small packages of information, which is not enough to test that the TCP backpressure mechanism is being used properly.
+
+For testing, an arbitrary amount of synthetic data could be generated, simulating reading from a file. This way the test would not require the presence of any external files, and the amount of data transfered could be changed to test out different buffering thresholds and the backpressure mechanisms. Backpressure can be tested by having the receiving end stall for a few seconds with a timer so that all the TCP buffers fill up and the backpressure notifications happen. When the timer expires and the receiver starts reading again, the reverse should happen.
 
 # Drawbacks
 
