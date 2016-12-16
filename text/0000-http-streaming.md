@@ -17,7 +17,7 @@ The current design of the http client and server packages assumes that all paylo
 
 * This problem has to be solved before the Pony http package can be used to build WebDav or media server applications.
 
-The HTTP protocol specification provides several ways around this problem that the current implementation is not taking advantage of.  One is simply to send the body data a small amount at a time, allowing TCP buffering semantics to deliver the long bytestream to the other end.  No changes to the headers are required.  The other method, for use when the source `Handler` really does not know the total length of the data in advance, is Chunked Transfer Encoding, where the response body is sent in smaller pieces, each with its own length header.  No `Content-Length` header is used at all in this case.
+The HTTP protocol specification provides several ways around this problem.  One is simply to send the body data a small amount at a time, allowing TCP buffering semantics to deliver the long bytestream to the other end.  No changes to the headers are required.  The other method, for use when the source really does not know the total length of the data in advance, is Chunked Transfer Encoding, where the response body is sent in smaller pieces, each with its own length header.  No `Content-Length` header is used at all in this case.
 
 This RFC proposes implementing both of these mechanisms in the Pony stdlib `net/http` package.
 
@@ -55,6 +55,8 @@ This is fundamentally incompatible with streaming operations.  The redesign will
 
 3. **ChunkedTransfer**.  This is a new mode for cases where the payload length can not be known in advance, but is likely to be large.   It is selected by calling `Payload.set_length` with a parameter of `None`.  On the TCP link this mode can be detected because there is no `Content-Length` header at all, being replaced by the `Transfer-Encoding: chunked` header.  In addition, the message body is separated into chunks, each with its own bytecount.  As with `StreamTransfer` mode, transmission can be spread out over time with the difference that it is the original data source that determines the chunk size.
 
+Fortunately, the `PayloadBuilder` class already knows how to parse the `ChunkedTransfer` format.
+
 The general procedure using the new interface is:
 
 1. Create an empty `Payload` and set headers
@@ -64,27 +66,37 @@ The general procedure using the new interface is:
 4. The sender calls `Payload.close()`
 5. The receiver gets `closed()` notification
 
-## Changes to Payload handling
+## Changes to Payload Builder
 
-References below to "the `Handler`" refer to both `RequestHandler` and `ResponseHandler` interfaces.
+`PayloadBuilder` contains the parser that converts an incoming stream of bytes into a `Payload` object.
+
+The current `PayloadBuilder` class attempts to parse and store an entire incoming payload, with no checking as to whether the size is reasonable.  The redesign changes this so that a decision is made when all of the headers have been parsed, based on the Transfer mode that will be used:
+
+1. If the mode is determined to be `OneshotTransfer` (`Content-Length` was specified and is less than 20,000), it proceeds as before, placing all received body data into the `Payload` object.
+
+2. Otherwise parsing stops.  The payload has to be dispatched to its final destination before the body can be received.
+
+## Changes to Payload creation
+
+The `Payload` class is responsible for generating its own HTTP encoding.  Support will be added for generating both streamed and chunked transmission.
 
 1. Add a new function `Payload.set_size()` to explicitly specify the body size in advance.  Possible parameter values are:
     * `None` => Size is unknown so use Chunked Transfer Mode.  Generate a "Transfer-Encoding: chunked" header immediately.
-    * `USize` => Size is known.  Generate a "Content-Length: nnn" header immediately.  This is possible when the response comes from a file and the file system allows for size queries.
+    * `USize` => Size is known.  Generate a "Content-Length: nnn" header immediately.  This is possible when the response comes from a file and the file system allows for size queries.  If the size is 20_000 bytes or greater, `StreamTransfer` is slected as the transfor mode;  otherwise `OneshotTransfer` is selected.
 
 2. Currently, exactly when a `Payload` gets sent to the other end is determined by code outside of `Payload` itself.  To support streaming this has to be inverted so that calls to `Payload.add_chunk` can drive transmission directly.  This will require changes to `_ServerConnection` and `_ClientConnection`.
 
-2. Implement Chunked Transfer Mode.  If chunked mode has been indicated by the `Payload.set_size()` call, data added by `Payload.add_chunk` will be immediately transmitted with in the incremental format specified for chunked transfer encoding consisting of a length in hex, CRLF, the data, and another CRLF.
+2. Generate Chunked Transfer Encoding.  If chunked mode has been indicated by the `Payload.set_size()` call, data added by `Payload.add_chunk` will be immediately transmitted with in the incremental format specified for chunked transfer encoding consisting of a length in hex, CRLF, the data, and another CRLF.
 
-3. Stream large responses even when size is known.  If `Payload.set_size` is called with a "large" value (over 100KB?), data from `Payload.add_chunk' is accumulated only up to an established "buffer size" and then transmitted.  These bufferfuls do not need to have lengths prefixed, as that would have already been accounted for by the Content-Length header.
+3. Stream large responses even when size is known.  If `Payload.set_size` is called with a "large" value (over 20KB?), data from `Payload.add_chunk' is accumulated only up to an established "buffer size" and then transmitted.  These bufferfuls do not need to have lengths prefixed, as that would have already been accounted for by the Content-Length header.
 
 4. Add a `Payload.close()` function to indicate when all of the body has been supplied.
 
 4. All headers are transmitted the first time any body data needs to be sent, in either `ChunkedTransfer` or `StreamTransfer` modes.
 
 5. Be able to both create and respond to TCP backpressure, meaning that the channel is unable to accept more data, in the form of 'throttled' notifications.  This needs to be communicated back to the `Handler` so it can suspend reading from its data source.  For consistency, the function names in TCPConnection could be copied for this mechanism.
-    * `throttle()` to pause delivery of `apply()` calls
-    * `unthrottle()` to resume delivery of `apply()` calls
+    * `mute()` to pause delivery of `apply()` calls
+    * `unmute()` to resume delivery of `apply()` calls
 
 Yet to be determined:
 
@@ -102,6 +114,7 @@ Information flow into the Server is as follows:
 
 ```
   Server -> RequestBuilder -> ServerConnection -> RequestHandler
+            PayloadBuilder
 ```
 With streaming content, dispatch to the Handler has to happen *before* all of the body has been received.  This is messy because a `Payload` is an `iso` object and can only belong to one actor at a time, yet the `RequestBuilder` is running within the `TCPConnection` actor while the `RequestHandler` is running under the `ServerConnection` actor.  Each incoming bufferful of body data, a `ByteSeq val`, will have to be handed off to `ServerConnection`, to be passed on to the Handler.
 
