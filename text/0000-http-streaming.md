@@ -162,8 +162,81 @@ HTTP streaming and Chunked Transfer Encoding are parts of the HTTP standard so w
 
 Most of the stdlib packages have no external documentation beyond the automatically generated web pages that get extracted from the doc-strings. But in the source code there is sometimes quite extensive information in comments. For example, net/TCPConnection has a long discussion of how backpressure works. Some files even have little examples in them.  The largest new overall documentation for the package will come from a new package doc string.
 
+## Examples
 The `examples/httpserver` and `examples/httpget` code wlll be updated to use the new API.
 
+Here is a skeletal version of the `httpget` example using the new API for a simple query.
+
+```pony
+actor Main
+  let _env: Env
+  new create(env: Env) =>
+    _env = env
+    try
+      let client = Client(env.root as AmbientAuth)
+      try
+        let url = URL.build("http://host:80/path")
+        let handler = recover val HttpNotify.create( _env ) end
+        let req = Payload.request("GET", url, handler)
+        client(consume req)
+      else
+        try env.out.print("Malformed URL") end
+      end
+    else
+      env.out.print("unable to use network")
+    end
+
+class HttpNotify is ResponseReceiveHandler
+  """
+  Handle the arrival of responses from the HTTP server.
+  """
+  let _env: Env
+
+  new create( env': Env ) =>
+    _env = env'
+
+  fun val apply( request: Payload val, response: Payload val) =>
+    """
+    Start receiving a response.  We get the headers and maybe some body
+    data.
+    """
+    if response.status == 0 then
+      _env.out.print("Failed: " + request.method + " " + request.url.string())
+      return
+    end
+
+    _env.out.print("Response to " + request.method + " " + request.url.string())
+    _env.out.print(
+        response.proto + " " +
+        response.status.string() + " " +
+        response.method)
+
+    for (k, v) in response.headers().pairs() do
+      _env.out.print(k + ": " + v)
+      end
+
+    _env.out.print("")
+
+    // There may be some body data as well.
+    for piece in response.body().values() do
+      _env.out.write(piece)
+      end
+
+  fun val chunk( data: Array[ByteSeq] val ) =>
+    """
+    Receive additional arbitary-length response body data.
+    """
+    for piece in data.values() do
+        _env.out.write(piece)
+    end
+
+  fun val closed() =>
+    _env.out.print("-- end of body --")
+    
+  fun val cancelled() =>
+    _env.out.print("-- response cancelled --")
+    
+```
 # How We Test This
 
 The existing `packages/net/http/_test.pony` does not currently test `http` operations at all.  It is an extensive test of the URL generation and parsing code however, which would not be changed by this project.
