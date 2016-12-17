@@ -62,19 +62,19 @@ The general procedure using the new interface is:
 1. Create an empty `Payload` and set headers
 2. Call `Payload.set_length`
 2. Feed data into the `Payload` with `add_chunk`
-3. The other end receives one or more `apply` notifications as chunks arrive.
+3. The other end receives one 'apply' and one or more `chunk` notifications as chunks arrive.
 4. The sender calls `Payload.close()`
 5. The receiver gets `closed()` notification
 
 ## Changes to Payload Builder
 
-`PayloadBuilder` contains the parser that converts an incoming stream of bytes into a `Payload` object.
+`PayloadBuilder` contains the parser that converts an incoming stream of bytes into a `Payload` object.  This is used by both client and server.
 
 The current `PayloadBuilder` class attempts to parse and store an entire incoming payload, with no checking as to whether the size is reasonable.  The redesign changes this so that a decision is made when all of the headers have been parsed, based on the Transfer mode that will be used:
 
 1. If the mode is determined to be `OneshotTransfer` (`Content-Length` was specified and is less than 20,000), it proceeds as before, placing all received body data into the `Payload` object.
 
-2. Otherwise parsing stops.  The payload has to be dispatched to its final destination before the body can be received.
+2. Otherwise parsing stops just after the blank line at the end of the headers.  The payload has to be dispatched to its final destination before the body can be received so that the body data can be properly dealt with as it arrives.
 
 ## Changes to Payload creation
 
@@ -124,7 +124,7 @@ With streaming content, dispatch to the Handler has to happen *before* all of th
 
 2. Inhibit pipelining of requests while a streaming response is in progress.  Since processing of a streaming response can take a relatively long time, acting on additional requests in the meantime does nothing but use up memory. And if the server is being used to stream media, it is possible that these additional requests will themselves generate large responses.   Instead just let the requests queue up until a maximum queue length is reached (a small number) at which point back-pressure the inbound TCP stream.  There are three ways to possibly accomplish this:
 
-    1. Remove pipelined dispatch functionality entirely.  Consider that in the very common case of fetching data from single files in the file system, or from an already-open database, the file system can be an order of magnitude *faster* than the network connection back to the client, so any opportunity for speedup is limited.  Plus there is the increased overhead of more file handles open at once, and RAM usage.  Many browsers do not make use of this mode anyway.
+    1. Remove pipelined dispatch functionality entirely.  Consider that in the very common case of fetching data from single files in the file system, or from an already-open database, the file system can be an order of magnitude *faster* than the network connection back to the client, so any opportunity for speedup is limited.  Plus there is the increased overhead of more file handles open at once, and RAM usage.  Many browsers do not make use of this mode anyway and just use multiple connections.
 
     2. Add a parameter to `Server.create` to disable pipelining on all sessions, similar to the existing parameter on `Client.create`.  Presumably the HTTP server main program knows if it is going to be serving large files or not.
 
@@ -137,7 +137,7 @@ Questions:
 1. Since it is the `RequestHandler` that determines whether a response will trigger streaming behavior, what if other requests have already been dispatched _after_ the dispatch of this one, but before the `RequestHandler` has had a chance to call `Payload.set_size()` to possibly block subsequent dispatches?  `_ClientCOnnection
 
 ## Changes to the Client
-
+### Requests
 Information flow out of the client is as follows:
 
 1. `Client` is a single actor that manages all connections to servers.  On being presented with a request object, a `ClientConnection` object is created for the specified server host and the request `Payload` is handed off to it.
@@ -147,14 +147,17 @@ Information flow out of the client is as follows:
   Client -> ClientConnection -> Payload._write -> TCP
 ```
 This has to change to allow multiple writes to the payload body *after* it has been dispatched by `ClientConnection`.
-Information flow *into* the client is as follows:
+
+1. `_ClientConnection` currently calls `request._write` exactly once. Instead, the `Payload` itself has to be able to control the sending of data to the server.
+
+### Responses
+Information flow back *into* the client is as follows:
 ```
-  TCP -> ClientConnection -> Client
+  TCP ->         ClientConnection -> Client
+  PayloadBuilder                     PayloadReceiveHandler
 ```
 
-1. `PayloadReceiveHandler.apply()` can be called more than once.  Add `PayloadReceiveHandler.closed()` to be called when all data has been received.
-
-2. `_ClientConnection` currently calls `request._write` exactly once. Instead, the `Payload` itself has to be able to control the sending of data to the server.
+1. `PayloadReceiveHandler.chunk()` can be called more than once.  Add `PayloadReceiveHandler.closed()` to be called when all data has been received.
 
 # How We Teach This
 
@@ -247,7 +250,7 @@ I am not sure whether the automated Pony test system could deal with two interac
 
 * The program at `examples/httpserver/httpserver.pony` also uses the old interface and would have to be slightly modified.
 
-## Backpressure
+## Testing Backpressure
 
 The existing `examples` programs deal with very small packages of information, which is not enough to test that the TCP backpressure mechanism is being used properly.
 
@@ -265,6 +268,6 @@ If these changes are not done, it would remain impossible to write a serious Web
 
 1. Is it possible to maintain the existing *pull* interface as a layer on top of the new *push* interface?
 
-2. How to deal with pipelining.
+2. How to deal with pipelining.  Streaming operations require an end-to-end pathway between the ultimate source and sink of data flow, which is impossible if any other requests or responses are active within a session.
 
 3. What is a good *flush buffer* threshold?  Should it be tunable?
