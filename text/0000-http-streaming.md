@@ -63,8 +63,8 @@ The general procedure using the new interface is:
 2. Call `Payload.set_length`
 2. Feed data into the `Payload` with `add_chunk`
 3. The other end receives one 'apply' and one or more `chunk` notifications as chunks arrive.
-4. The sender calls `Payload.close()`
-5. The receiver gets `closed()` notification
+4. The sender calls `Payload.finish()`
+5. The receiver gets `finished()` notification
 
 ## Changes to Payload Builder
 
@@ -90,19 +90,40 @@ The `Payload` class is responsible for generating its own HTTP encoding.  Suppor
 
 3. Stream large responses even when size is known.  If `Payload.set_size` is called with a "large" value (over 20KB?), data from `Payload.add_chunk' is accumulated only up to an established "buffer size" and then transmitted.  These bufferfuls do not need to have lengths prefixed, as that would have already been accounted for by the Content-Length header.
 
-4. Add a `Payload.close()` function to indicate when all of the body has been supplied.
+4. Add a `Payload.finish()` function to indicate when all of the body has been supplied.  In `ChunkedTramsfer` mode this will cause the generation of the zero-length chunk that marks the end of the body.
 
 4. All headers are transmitted the first time any body data needs to be sent, in either `ChunkedTransfer` or `StreamTransfer` modes.
 
 5. Be able to both create and respond to TCP backpressure, meaning that the channel is unable to accept more data, in the form of 'throttled' notifications.  This needs to be communicated back to the `Handler` so it can suspend reading from its data source.  For consistency, the function names in TCPConnection could be copied for this mechanism.
-    * `mute()` to pause delivery of `apply()` calls
-    * `unmute()` to resume delivery of `apply()` calls
+    * `throttle()` to pause delivery of `apply()` calls
+    * `unthrottle()` to resume delivery of `apply()` calls
 
 Yet to be determined:
 
 1. Transmissions of `Payload` response data to the client can only happen if the response is the "active" one within the `_ServerConnection` actor, according to the FIFO rule of delivering responses to requests.  How can this be guaranteed?  See below under *Inhibit pipelining*.
 
-2. Should `Payload.close()` be required also for `OneshotTransfer` mode, for consistency?  This would trigger transmission of the entire `Payload`.
+2. Should `Payload.finish()` be required also for `OneshotTransfer` mode, for consistency?  This would trigger transmission of the entire `Payload`.
+
+## Dynamic creation of Payload Handlers
+
+Both of the existing `_ClientConnection` and `_ServerConnection` actors will be generalized to a common `HttpSession` interface.  An HTTP Session is the external API to the communication link between client and server.  A session can only transfer one message at a time in each direction.  The client and server each have their own ways of implementing this interface, but to application code (either in the client or in the server 'back end') this interface provides a common view of how information is passed *into* the `net/http` package.
+
+Each active `HttpSession` requires a `PayloadReceiveHandler` at both ends.
+
+### The PayloadReceiveHandler
+
+This is the notification interface through which HTTP messages are delivered *to* application code.  On the server, this will be HTTP Requests (GET, HEAD, DELETE, POST, etc) sent from a client and passing to the application 'back end'.  On the client, this will be the HTTP Responses coming back from the server.  The protocol is largely symmetrical and the same interface definition is used, though what processing happens behind the interface will of course vary.
+
+Calls to these interface methods are made in the context of the `HttpSession` actor so most of them should be
+passing data on to a processing actor.
+
+### The Handler Factory
+
+The TCP connections that underlie HTTP sessions get created within
+the `net/http` package at times that the application code can not
+predict.  Yet, the application code has to provide `PayloadReceiveHandler` instances for these connections as necessary. To accomplish this, the application code will need to provide a `class` that implements the `HandlerFactory` interface.
+
+The `HandlerFactory.apply` method will be called when a new `HttpSession` is created, giving the application a chance to create an instance of its own `PayloadReceiveHandler` associated with that session.  This happens on both client and server ends.
 
 ## Changes to the Server
 
@@ -113,8 +134,9 @@ Information flow into the Server is as follows:
 3. The `ServerConnection` actor deals with *completely formed* requests that have been parsed by the `RequestBuilder`.  This is where pipelining happens, and where requests get dispatched to the caller-provided Handler.
 
 ```
-  Server -> RequestBuilder -> ServerConnection -> RequestHandler
-            PayloadBuilder
+actor:  Server -> TCPConnection  -> ServerConnection  +> Processing
+class:            ReqBuilder        RequestHandler ---+
+data:             Payload iso       Payload iso          Payload val
 ```
 With streaming content, dispatch to the Handler has to happen *before* all of the body has been received.  This is messy because a `Payload` is an `iso` object and can only belong to one actor at a time, yet the `RequestBuilder` is running within the `TCPConnection` actor while the `RequestHandler` is running under the `ServerConnection` actor.  Each incoming bufferful of body data, a `ByteSeq val`, will have to be handed off to `ServerConnection`, to be passed on to the Handler.
 
@@ -177,11 +199,11 @@ actor Main
     _env = env
     try
       let client = Client(env.root as AmbientAuth)
+      let factory = recover val NotifyFactory.create( _env ) end
       try
         let url = URL.build("http://host:80/path")
-        let handler = recover val HttpNotify.create( _env ) end
-        let req = Payload.request("GET", url, handler)
-        client(consume req)
+        let req = Payload.request("GET", url)
+        client(consume req, factory)
       else
         try env.out.print("Malformed URL") end
       end
@@ -189,26 +211,29 @@ actor Main
       env.out.print("unable to use network")
     end
 
-class HttpNotify is ResponseReceiveHandler
+class NotifyFactory is HandlerFactory
+  let _env: Env
+  new iso create( env: Env ) =>
+    _env = env
+  fun apply( session: HttpSession tag ): PayloadReceiveHandler iso^ =>
+    HttpNotify.create( _env, session )
+
+class HttpNotify is PayloadReceiveHandler
   """
   Handle the arrival of responses from the HTTP server.
   """
   let _env: Env
+  let _session: HttpSession tag
 
-  new create( env': Env ) =>
+  new create( env': Env, session: HttpSession tag ) =>
     _env = env'
+    _session = session
 
-  fun val apply( request: Payload val, response: Payload val) =>
+  fun val apply( response: Payload val) =>
     """
     Start receiving a response.  We get the headers and maybe some body
     data.
     """
-    if response.status == 0 then
-      _env.out.print("Failed: " + request.method + " " + request.url.string())
-      return
-    end
-
-    _env.out.print("Response to " + request.method + " " + request.url.string())
     _env.out.print(
         response.proto + " " +
         response.status.string() + " " +
@@ -220,11 +245,6 @@ class HttpNotify is ResponseReceiveHandler
 
     _env.out.print("")
 
-    // There may be some body data as well.
-    for piece in response.body().values() do
-      _env.out.write(piece)
-      end
-
   fun val chunk( data: Array[ByteSeq] val ) =>
     """
     Receive additional arbitary-length response body data.
@@ -233,7 +253,7 @@ class HttpNotify is ResponseReceiveHandler
         _env.out.write(piece)
     end
 
-  fun val closed() =>
+  fun val finished() =>
     _env.out.print("-- end of body --")
     
   fun val cancelled() =>
