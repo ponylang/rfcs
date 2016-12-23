@@ -100,8 +100,6 @@ The `Payload` class is responsible for generating its own HTTP encoding.  Suppor
 
 Yet to be determined:
 
-1. Transmissions of `Payload` response data to the client can only happen if the response is the "active" one within the `_ServerConnection` actor, according to the FIFO rule of delivering responses to requests.  How can this be guaranteed?  See below under *Inhibit pipelining*.
-
 2. Should `Payload.finish()` be required also for `OneshotTransfer` mode, for consistency?  This would trigger transmission of the entire `Payload`.
 
 ## Dynamic creation of Payload Handlers
@@ -119,9 +117,7 @@ passing data on to a processing actor.
 
 ### The Handler Factory
 
-The TCP connections that underlie HTTP sessions get created within
-the `net/http` package at times that the application code can not
-predict.  Yet, the application code has to provide `PayloadReceiveHandler` instances for these connections as necessary. To accomplish this, the application code will need to provide a `class` that implements the `HandlerFactory` interface.
+The TCP connections that underlie HTTP sessions get created within the `net/http` package at times that the application code can not predict.  Yet, the application code has to provide `PayloadReceiveHandler` instances for these connections as necessary. To accomplish this, the application code will need to provide a `class` that implements the `HandlerFactory` interface.
 
 The `HandlerFactory.apply` method will be called when a new `HttpSession` is created, giving the application a chance to create an instance of its own `PayloadReceiveHandler` associated with that session.  This happens on both client and server ends.
 
@@ -130,40 +126,33 @@ The `HandlerFactory.apply` method will be called when a new `HttpSession` is cre
 Information flow into the Server is as follows:
 
 1. `Server` listens for incoming TCP connections.
+
 2. `RequestBuilder` is the notification class for new connections.  It creates a `ServerConnection` actor and receives all the raw data from TCP.  It uses the `PayloadBuilder` parser to assemble complete `Payload` objects which are passed off to the `ServerConnection`.
+
 3. The `ServerConnection` actor deals with *completely formed* requests that have been parsed by the `RequestBuilder`.  This is where pipelining happens, and where requests get dispatched to the caller-provided Handler.
 
 ```
-actor:  Server -> TCPConnection  -> ServerConnection  +> Processing
+actor:  Server -> TCPConnection  -> ServerConnection  +> Back end
 class:            ReqBuilder        RequestHandler ---+
 data:             Payload iso       Payload iso          Payload val
 ```
-With streaming content, dispatch to the Handler has to happen *before* all of the body has been received.  This is messy because a `Payload` is an `iso` object and can only belong to one actor at a time, yet the `RequestBuilder` is running within the `TCPConnection` actor while the `RequestHandler` is running under the `ServerConnection` actor.  Each incoming bufferful of body data, a `ByteSeq val`, will have to be handed off to `ServerConnection`, to be passed on to the Handler.
+With streaming content, dispatch to the back end Handler has to happen *before* all of the body has been received.  This has to be carefully choreographed because a `Payload` is an `iso` object and can only belong to one actor at a time, yet the `RequestBuilder` is running within the `TCPConnection` actor while the `RequestHandler` is running under the `ServerConnection` actor.  Each incoming bufferful of body data, a `ByteSeq val`, will have to be handed off to `ServerConnection`, to be passed on to the Handler.
 
-1. The existing two Handler interfaces will be renamed.  It turns out that the issues in sending a request and a response are the same, as are the issues in receiving them.  Therefore the interfaces will be `PayloadSendHandler` and `PayloadReceiveHandler`.  This makes the code easier to read as well.
+1. The existing two Handler interfaces will be renamed.  It turns out that the issues in sending a request and a response are the same, as are the issues in receiving them.  Therefore the notification interface will be `PayloadReceiveHandler` on both ends, and the sending interface will be `HttpSession`.  This makes the code easier to read as well.
 
-1. `PayloadReceiveHandler.apply()` will be the way the Handler is informed of a new request `Payload`.  All of the headers will be present but the body portion of the `Payload` may be empty or only partially filled.  Subsequent calls to a new function `PayloadReceiveHandler.chunk` will provide additional body data.  This stream will be terminated by a call to the new function `PayloadReceiveHandler.closed`.
+1. `PayloadReceiveHandler.apply()` will be the way the back end is informed of a new request `Payload`.  All of the headers will be present so that the request can be dispatched to the correct back end.  Subsequent calls to a new function `PayloadReceiveHandler.chunk` will provide the body data, if any.  This stream will be terminated by a call to the new function `PayloadReceiveHandler.finished`.
 
-2. Inhibit pipelining of requests while a streaming response is in progress.  Since processing of a streaming response can take a relatively long time, acting on additional requests in the meantime does nothing but use up memory. And if the server is being used to stream media, it is possible that these additional requests will themselves generate large responses.   Instead just let the requests queue up until a maximum queue length is reached (a small number) at which point back-pressure the inbound TCP stream.  There are three ways to possibly accomplish this:
+2. Current implementation actually dispatches multiple requests at once to the application back end when pipelined requests are sent.  This is incorrect, and is incompatible with streaming operation.  Pipelining of requests is to optimize the transmission of requests over slow links (such as over satellites), not to cause simultaneous execution on the server within one session.  This will be changed so that multiple received requests are queued and passed to the back end one at a time.  If a client wants true parallel execution of requests, it should use multiple sessions (which many browsers actually do already).
 
-    1. Remove pipelined dispatch functionality entirely.  Consider that in the very common case of fetching data from single files in the file system, or from an already-open database, the file system can be an order of magnitude *faster* than the network connection back to the client, so any opportunity for speedup is limited.  Plus there is the increased overhead of more file handles open at once, and RAM usage.  Many browsers do not make use of this mode anyway and just use multiple connections.
-
-    2. Add a parameter to `Server.create` to disable pipelining on all sessions, similar to the existing parameter on `Client.create`.  Presumably the HTTP server main program knows if it is going to be serving large files or not.
-
-    3. Automatically inhibit pipelining during processing of any request where either of the following happen (but see _Questions_ below):
-        * `Payload.set_size(None)` is called
-        * `Payload.set_size` is called with a "large" value (over 100KB?  Tunable?)
-
-Questions:
-
-1. Since it is the `RequestHandler` that determines whether a response will trigger streaming behavior, what if other requests have already been dispatched _after_ the dispatch of this one, but before the `RequestHandler` has had a chance to call `Payload.set_size()` to possibly block subsequent dispatches?  `_ClientCOnnection
+Since processing of a streaming response can take a relatively long time, acting on additional requests in the meantime does nothing but use up memory since responses would have to be queued. And if the server is being used to stream media, it is possible that these additional requests will themselves generate large responses.   Instead we will just let the requests queue up until a maximum queue length is reached (a small number) at which point back-pressure the inbound TCP stream.
 
 ## Changes to the Client
 ### Requests
 Information flow out of the client is as follows:
 
 1. `Client` is a single actor that manages all connections to servers.  On being presented with a request object, a `ClientConnection` object is created for the specified server host and the request `Payload` is handed off to it.
-2. The `ClientConnection` actor maintains a queue of pending requests.  This is where pipelining happens, if it has been enabled by the `Client`.  Requests are sent over the TCP link by calling the request's own `_write` function exactly once.
+
+2. The `ClientConnection` actor maintains a queue of pending requests.  This is where pipelining happens, if it has been enabled by the `Client`.  Only "safe" requests (GET, HEAD, OPTIONS) should be pipelined.
 
 ```
   Client -> ClientConnection -> Payload._write -> TCP
@@ -287,7 +276,5 @@ If these changes are not done, it would remain impossible to write a serious Web
 # Unresolved questions
 
 1. Is it possible to maintain the existing *pull* interface as a layer on top of the new *push* interface?
-
-2. How to deal with pipelining.  Streaming operations require an end-to-end pathway between the ultimate source and sink of data flow, which is impossible if any other requests or responses are active within a session.
 
 3. What is a good *flush buffer* threshold?  Should it be tunable?
