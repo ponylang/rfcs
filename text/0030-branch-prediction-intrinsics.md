@@ -1,7 +1,7 @@
 - Feature Name: branch-prediction-intrinsics
 - Start Date: 2016-10-17
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/44
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1500
 
 # Summary
 
