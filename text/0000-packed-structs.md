@@ -24,11 +24,11 @@ The code generation for these structures will use LLVM's packed structures, whic
 
 # How We Teach This
 
-A paragraph will be added to the explanation of structures in the tutorial. In particular we will stress that, as normal Pony structures should only be used with normal C structures, packed Pony structures should only be used with packed C structures.
+Plain structures aren't currently explained in the tutorial. We should add an explanation in the "Calling C from Pony" and describe packed structures in the same place. In particular we will stress that, as normal Pony structures should only be used with normal C structures, packed Pony structures should only be used with packed C structures.
 
 # How We Test This
 
-The implementation will directly map onto LLVM's facilities. We'll assume that their implementation works.
+The implementation will directly map onto LLVM's facilities. We'll add some tests checking that the correct LLVM types are generated, to make sure nobody accidentaly breaks the implementation in the frontend.
 
 # Alternatives
 
