@@ -1,7 +1,7 @@
 - Feature Name: remove-delegate
 - Start Date: 2016-12-26
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/73
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1514
 
 # Summary
 
