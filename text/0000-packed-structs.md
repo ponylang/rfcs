@@ -28,7 +28,7 @@ Plain structures aren't currently explained in the tutorial. We should add an ex
 
 # How We Test This
 
-The implementation will directly map onto LLVM's facilities. We'll add some tests checking that the correct LLVM types are generated, to make sure nobody accidentaly breaks the implementation in the frontend.
+The implementation will directly map onto LLVM's facilities and packed types. We'll add some tests checking that the LLVM type generated for a packed structure is indeed packed, to make sure nobody accidentaly breaks the implementation in the frontend.
 
 # Alternatives
 
