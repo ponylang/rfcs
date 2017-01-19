@@ -1,7 +1,7 @@
 - Feature Name: packed-structs
 - Start Date: 2016-12-25
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/72
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1523
 
 # Summary
 
