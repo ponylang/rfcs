@@ -39,6 +39,7 @@ essential for production software.
 * `SocketConnRefused` - no-one listening on the remote address
 * `SocketNetUnreach` - no routing to remote host
 * `SocketTimeout` - timeout while attempting connection
+* `SocketError` - other socket error not listed above
 
 2. Add private `_errno` field of `SocketErrNo` type into
    `TCPConnection`, `UDPSocket` and `TCPListener`.  On failure, set
