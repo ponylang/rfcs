@@ -42,9 +42,9 @@ essential for production software.
 * `SocketError` - other socket error not listed above
 
 2. Add private `_errno` field of `SocketErrNo` type into
-   `TCPConnection`, `UDPSocket` and `TCPListener`.  On failure, set
-   `_errno` using corresponding OS errno code fetched using `SO_ERROR`
-   socket option
+   `TCPConnection`, `UDPSocket` and `TCPListener`.  On connection
+   outcome, either success or failure, `_errno` must be set using
+   corresponding OS errno code fetched using `SO_ERROR` socket option
 
 3. Create publically available method `errno` which returns `_errno`,
    for example:
