@@ -34,7 +34,7 @@ essential for production software.
 
    Where:
 
-* `SocketOK' - success
+* `SocketOK` - success
 * `SocketInUse` - local address is already in use
 * `SocketConnRefused` - no-one listening on the remote address
 * `SocketNetUnreach` - no routing to remote host
