@@ -77,6 +77,8 @@ Once exhaustive pattern matching is implemented, `elsematch` should cause a comp
 
 This new mechanism doesn't change anything to the actual exception handling. Exceptions still stop at the first handler encountered.
 
+Also, the `then` clause of a `try` expression won't be able to raise exceptions anymore. This is to prevent existing exceptions from being silently discarded when doing cleanup.
+
 ## Implementation and performance concerns
 
 This change can be implemented with very little overhead. The cost roughly is an additional argument to a runtime function call, an additional write to memory (when raising) and an additional read from memory (when beginning handling). These operations are negligible compared to the overall cost of raising an exception.
