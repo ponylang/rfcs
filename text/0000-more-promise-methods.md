@@ -44,7 +44,7 @@ fun tag timeout(expiration: U64)
 
 # How We Teach This
 
-Each method added will contain documentation as shown above.
+Each method added will contain documentation as shown above and the package level documentation will be expanded to include examples for the new methods. The Pony Patterns book will also include examples for handling asynchronous events with promises.
 
 # How We Test This
 
