@@ -15,17 +15,17 @@ The Promise actor is a useful tool for representing a value before it is availab
 
 ```pony
 
-new many(ps: Array[Promise[A]] val): Promise[Array[A] val]
-	"""
-	Create a promise that is fulfilled when all promises in the given array are
-	fulfilled. If any promise in the array is rejected then the new promise is
-	also rejected.
-	"""
-
 fun tag join[B: Any #share = A](p: Promise[B]): Promise[(A, B)]
 	"""
 	Join two promises into one promise that returns the result of both when they
 	are fulfilled. If either of the promises is rejected then the new promise is
+	also rejected.
+	"""
+
+fun tag many(ps: Array[Promise[A]] val): Promise[Array[A] val]
+	"""
+	Create a promise that is fulfilled when all promises in the given array are
+	fulfilled. If any promise in the array is rejected then the new promise is
 	also rejected.
 	"""
 
