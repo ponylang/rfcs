@@ -22,11 +22,11 @@ fun tag add[B: Any #share = A](p: Promise[B]): Promise[(A, B)]
 	also rejected.
 	"""
 
-fun tag join(ps: Array[Promise[A]] val): Promise[Array[A] val]
+fun tag join(ps: Iterator[Promise[A]]): Promise[Array[A] val]
 	"""
-	Create a promise that is fulfilled when all promises in the given array are
-	fulfilled. If any promise in the array is rejected then the new promise is
-	also rejected.
+	Create a promise that is fulfilled when the receiver and all promises in
+	the given iterator are fulfilled. If the receiver or any promise in the
+	sequence is rejected then the new promise is also rejected.
 	"""
 
 fun tag select(p: Promise[A]): Promise[(A, Promise[A])]
@@ -39,7 +39,15 @@ fun tag timeout(expiration: U64)
 	"""
 	Reject the promise after the given expiration in nanoseconds.
 	"""
-
+```
+There will also be a `Promises[A]` primitive containing the following methods:
+```pony
+fun join(ps: ReadSeq[Promise[A]]): Promise[Array[A] val]
+	"""
+	Create a promise that is fulfilled when all promises in the given sequence
+	are fulfilled. If any promise in the sequence is rejected then the new
+	promise is also rejected.
+	"""
 ```
 
 # How We Teach This
