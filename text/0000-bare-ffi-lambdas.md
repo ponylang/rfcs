@@ -79,19 +79,62 @@ class KCDB
 
 However, "bare" lambda objects will not match an `interface` or lambda type designed for a "non-bare" lambda object, or vice versa - their "bareness" sets them apart, as the caller needs to be able to distinguish between "bare" and "non-bare" when invoking because the latter requires the receiver as an extra argument and the former does not.
 
+The actual value of a "bare" lambda object is a C-style function pointer, rather than a full-fledged Pony object. Like Pony `struct`s, a "bare" lambda cannot be used in a type union or as a type argument.
+
+Another style of arriving at "bare" lambda objects is through partial application of a "bare" method - one that uses the `@` signifier as a prefix for the method name. The following snippet demonstrates an synonymous implementation of the earlier example "bare" lambda, but this time implemented as a "bare" method on a `primitive`:
+
+```
+type KCScanParallelFn is {(String, String)}
+
+primitive _Visitor
+  fun @scan_parallel(kbuf: Pointer[U8], ksiz: USize, vbuf: Pointer[U8],
+    vsiz: USize, sp: Pointer[USize], visitor: KCScanParallelFn)
+    : Pointer[U8] tag
+  =>
+    key   = String.from_cpointer(kbuf, ksiz)
+    value = String.from_cpointer(vbuf, vsiz)
+
+    visitor(key, value)
+
+    Pointer[U8] // return NULL pointer - this is a read-only callback
+
+class KCDB
+  fun scan_parallel(fn: KCScanParallelFn): Bool =>
+    """
+    Scan each database record in parallel with a read-only operation.
+    """
+    let callback: KCVisitFull[KCScanParallelFn] =
+      @{(kbuf: Pointer[U8], ksiz: USize, vbuf: Pointer[U8], vsiz: USize,
+        sp: Pointer[USize], visitor: KCScanParallelFn): Pointer[U8] tag
+      =>
+        key   = String.from_cpointer(kbuf, ksiz)
+        value = String.from_cpointer(vbuf, vsiz)
+
+        visitor(key, value)
+
+        Pointer[U8] // return NULL pointer - this is a read-only callback
+      }
+
+    0 != @kcdbscanpara[I32](this, _Visitor~scan_parallel(), visitor, 1)
+```
+
+Because "bare" methods have no receiver, they may not access any fields, and may not reference the `this` identifier in their body.
+
+The partial application of a "bare" method yields an object that is functionally identical to a "bare" lambda, and corresponds to a C function pointer in FFI invocations.
+
 ## Implementation
 
 Each "bare" lambda literal will be sugared to an anonymous primitive containing a single `apply` method, just as with other lambdas that do not have any captures.
 
-However, the apply method will be tagged with some manner of special flag that is known to the type system and code generator, distinguishing it as "bare". The actual internal mechanism used for this special flag would be at the disgression of the implementor, but one logical implementation choice might be to use `TK_AT` in the receiver capability, since a "bare" lambda literal has no receiver, and cannot specify a receiver capability.
+However, the apply method will be tagged with some manner of special flag that is known to the type system and code generator, distinguishing it as "bare". Specificaly, `TK_AT` will be the receiver capability, just as it is when using the "bare" method syntax, where `@` takes the place of the receiver cap keyword.
 
 When determining subtyping relationships, the compiler must consider a "bare" lambda literal to only be a subtype of "bare" lambda types, using the aforementioned special flag.
 
-When code-generating the call site, the compiler must take into account the "bare" or "non-bare" status of the called function, to determine whether the receiver argument should be omitted or passed in the first slot as normal.
+When code-generating the call site of a Pony call to a "bare" lambda object, the compiler must take into account the "bare" or "non-bare" status of the called function, to determine whether the receiver argument should be omitted or passed in the first slot as normal, and whether to use the receiver itself as a C-style function pointer.
 
 When code-generating the function implementation, the compiler must take into account the "bare" or "non-bare" status of the called function, to determine whether the receiver parameter should be omitted or received in the first slot as normal.
 
-When code-generating an FFI call site that includes the "bare" lambda object as an argument, special logic must be used to use the function pointer as the value.
+When code-generating partial-application, the compiler must take into account the "bare" or "non-bare" status of the called method, to determine whether it's value should be a C-style function pointer, or a normal Pony callable object.
 
 The compiler must enforce the restrictions mentioned in the *Usage* section above, including helpful compiler error messages for all restricted cases.
 
@@ -119,7 +162,9 @@ The aforementioned example in the `examples` subdirectory of the `ponyc` repo ca
 
 * Leave the system as it currently is, and do not support creating C callback functions. When users ask about interoperating with C libraries that use callbacks, continue to suggest compiling a shim of C code alongside the pony program/package.
 
-* Another option for this RFC could be to allow specifying member functions as "bare", and getting function pointers from referencing those. This idea was not explored very deeply, because creating "bare" lambda literals seemed to be the main use case we needed to support. It's possible that both could be implemented together in the future, if this were found to be useful.
+* Don't include "bare" methods, and only allow "bare" lambda objects. This was the original scope of the RFC, but it was expanded after some discussion in a sync call.
+
+* Allow accessing "bare" method values as if they were field reads, instead of requiring partial application syntax. This was also discussed in the sync call, but I've chosen to leave it out here as I believe it requires too much extra "benefits" and special casing for a language feature that will only seldom be used (only with a fraction of FFI libraries is it necessary).
 
 # Unresolved questions
 
