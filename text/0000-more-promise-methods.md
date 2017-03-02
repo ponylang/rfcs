@@ -42,10 +42,10 @@ fun tag timeout(expiration: U64)
 ```
 There will also be a `Promises[A]` primitive containing the following methods:
 ```pony
-fun join(ps: ReadSeq[Promise[A]]): Promise[Array[A] val]
+fun join(ps: Iterator[Promise[A]]): Promise[Array[A] val]
 	"""
-	Create a promise that is fulfilled when all promises in the given sequence
-	are fulfilled. If any promise in the sequence is rejected then the new
+	Create a promise that is fulfilled when all promises in the given iterator
+	are fulfilled. If any promise in the iterator is rejected then the new
 	promise is also rejected.
 	"""
 ```
