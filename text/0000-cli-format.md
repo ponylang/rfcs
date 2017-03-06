@@ -21,11 +21,12 @@ Command lines are broken up into a series of tokens before they are delivered to
 
 - http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
 
-Flags are usually enough for simple programs, but more often it is desirable to have consistent grammar and library support for parsing sub-commands and positional arguments in addition to the flags. It's nice not to have to rewrite that logic in every program, and not to force users to learn different command line syntax for every program they use.
+Flags are usually enough for simple programs, but more often it is desirable to have a richer grammar with library support for parsing sub-commands and positional arguments in addition to the flags. It's nice not to rewrite that logic everytime, and not to force users to learn different command line syntax for every program they use.
 
-In the Golang world, the Flags in the standard library are fairly weak and not Posix compliant, so a couple of packages have become very popular extensions. The most interesting one is Kingpin, which presents a nice interface to the programmer and a consistent grammar to the program user:
+In the Golang world, the Flags in the standard library are fairly weak and not Posix compliant, so a couple of packages have become very popular extensions. The most interesting ones are Kingpin and mow.cli, which present nice interfaces to the programmer and consistent grammars to the program user:
 
  - https://github.com/alecthomas/kingpin
+ - https://github.com/jawher/mow.cli
 
 The command line is treated as a command with optional flags and positional arguments. The command is composed of the root command which represents the program, plus zero or more subcommands. Each leaf command may specify required and optional arguments. And, each command may specify required or optional flags which add to those inherited from its parent.
 
@@ -55,7 +56,7 @@ A token consisting of a single hyphen only, `-`, is not a flag.
 A token that starts with one (but not two) hyphens `-` is a set of one or more short flags, each of which is a single alpha character. Like: `-o`.
 
 ##### Rule 3
-Multiple short flags may be grouped together in a single token, if those flags do not take arguments. So `-abc` is equivalent to `-a -b -c`.
+Multiple short flags may be folded together in a single token, if those flags don't take arguments. So `-abc` is equivalent to `-a -b -c`.
 
 ##### Rule 4
 A token that starts with 2 hyphens `--` is a single long flag, which must contain only alphanumeric characters, underscores and hyphens. Like: `--data_rate`.
