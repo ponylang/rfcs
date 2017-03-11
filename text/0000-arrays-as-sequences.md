@@ -23,7 +23,7 @@ The only subtle part is that in `expr_seq`, we must check if the `TK_SEQ` is a c
 
 # How We Teach This
 
-Initially by changing example to use `;` instead of `,` as a separator, and by having examples where elements are on separate lines, and so need no separator at all.
+Initially by changing tutorial examples to use `;` instead of `,` as a separator, and by adding tutorial examples where elements are on separate lines, and so need no separator at all.
 
 More conceptually, by emphasising that an array is a sequence, and that a sequence is fundamentally different from a tuple.
 
