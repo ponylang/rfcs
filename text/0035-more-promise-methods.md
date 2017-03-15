@@ -1,7 +1,7 @@
 - Feature Name: more-promise-methods
 - Start Date: 2017-02-25
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/81
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1691
 
 # Summary
 
