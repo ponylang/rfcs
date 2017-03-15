@@ -1,7 +1,7 @@
 - Feature Name: improved-persistent-map-api
 - Start Date: 2017-03-09
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/83
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1692
 
 # Summary
 
