@@ -5,7 +5,7 @@
 
 # Summary
 
-Provide a standard command line argument syntax for Pony tools and other programs, and a corresponding package to be provided in the standard library.
+Provide a standard command line argument syntax for Pony tools and other programs, and a corresponding package named `cli` to be provided in the standard library.
 
 
 # Motivation
@@ -19,7 +19,7 @@ Having a standard syntax for command line arguments and options will make Pony c
 
 Command lines are broken up into a series of tokens before they are delivered to a program as an array of strings. There are a number of ways to treat those tokens, but most Unix-like environments have settled on a syntax that combines commands, arguments and options. The GNU C library doc is a good reference for how the options should be handled:
 
-- http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+ - http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
 
 Options are usually enough for simple programs, but more often it is desirable to have a richer grammar with library support for parsing sub-commands and positional arguments in addition to the options. It's nice not to have to rewrite that logic every time, and not to force users to learn a different command line syntax for every program they use.
 
@@ -94,7 +94,7 @@ Option may be specified as being required. Such options not being present is an 
 
 ## Library
 
-The types in the CLI package are broken down into three groups:
+The types in the `cli` package are broken down into three groups:
 
   - The spec classes and primitives which are used to declare a CLI grammar.
   - The parser class which is used to parse a command line against a spec.
@@ -138,7 +138,7 @@ A complete unit test suite should be written to validate the implementation of t
 
 # Drawbacks
 
-This complete CLI library may be overkill for small tools.
+None known.
 
 
 # Alternatives
