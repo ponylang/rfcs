@@ -1,7 +1,7 @@
 - Feature Name: cli-syntax
 - Start Date: 2016-10-24
-- RFC PR:
-- Pony Issue: https://github.com/ponylang/ponyc/issues/471
+- RFC PR: https://github.com/ponylang/rfcs/pull/80
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1737
 
 # Summary
 
