@@ -1,7 +1,7 @@
 - Feature Name: Arrays As Sequences
 - Start Date: 2017-03-11
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/84
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1736
 
 # Summary
 
