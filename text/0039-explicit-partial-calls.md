@@ -1,7 +1,7 @@
 - Feature Name: explicit-partial-calls
 - Start Date: 2017-03-07
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/82
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1771
 
 # Summary
 
