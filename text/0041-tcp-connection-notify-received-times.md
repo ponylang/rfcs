@@ -1,7 +1,7 @@
 - Feature Name: TCPConnectionNotify Received Times
 - Start Date: 2017-03-19
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/85
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1773
 
 # Summary
 
