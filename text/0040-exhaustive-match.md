@@ -1,7 +1,7 @@
 - Feature Name: exhaustive-match
 - Start Date: 2017-03-23
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/86
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1772
 
 # Summary
 
