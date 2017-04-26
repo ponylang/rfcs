@@ -16,7 +16,12 @@ The goal of this RFC is to provide persistent data structures for use cases that
 The Set class will be implemented using the persistent Map and will have the following API:
 
 ```pony
-class val Set[A: Any #share]
+
+type Set[A: (Hashable val & Equatable[A])] is HashSet[A, HashEq[A]]
+
+type SetIs[A: Any #share] is HashSet[A, HashIs[A]]
+
+class val HashSet[A: Any #share, H: HashFunction[A] val] is Comparable[HashSet[A, H] box]
     """
     A set, built on top of persistent Map. This is implemented as map of an alias of a type to itself.
     """
