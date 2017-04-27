@@ -41,67 +41,67 @@ class val HashSet[A: Any #share, H: HashFunction[A] val] is Comparable[HashSet[A
         Check whether the set contains the value.
         """
 
-    fun val add(value: val->A): Set[A]
+    fun val add(value: val->A): HashSet[A, H]
         """
         Return a set with the value added.
         """
 
-    fun val sub(value: val->A): Set[A]
+    fun val sub(value: val->A): HashSet[A, H]
         """
         Return a set with the value removed.
         """
 
-    fun val op_or(that: Set[A]): Set[A]
+    fun val op_or(that: (HashSet[A, H] | Iterator[A])): HashSet[A, H]
         """
         Return a set with the elements of both this and that.
         """
 
-    fun val op_and(that: Set[A]): Set[A]
+    fun val op_and(that: (HashSet[A, H] | Iterator[A])): HashSet[A, H]
         """
         Return a set with the elements that are in both this and that.
         """
 
-    fun val op_xor(that: Set[A]): Set[A]
+    fun val op_xor(that: (HashSet[A, H] | Iterator[A])): HashSet[A, H]
         """
         Return a set with elements that are in either this or that, but not both.
         """
 
-    fun val without(that: Set[A]): Set[A]
+    fun val without(that: (HashSet[A, H] | Iterator[A])): HashSet[A, H]
         """
         Return a set with the elements of this that are not in that.
         """
 
-    fun val eq(that: Set[A]): Bool
+    fun val eq(that: HashSet[A, H]): Bool
         """
         Return true if this and that contain the same elements.
         """
 
-    fun val ne(that: Set[A]): Bool
+    fun val ne(that: HashSet[A, H]): Bool
         """
         Return false if this and that contain the same elements.
         """
 
-    fun val lt(that: Set[A]): Bool
+    fun val lt(that: HashSet[A, H]): Bool
         """
         Return true if every element in this is also in that, and this has fewer elements than that.
         """
 
-    fun val le(that: Set[A]): Bool
+    fun val le(that: HashSet[A, H]): Bool
         """
         Return true if every element in this is also in that.
         """
 
-    fun val gt(that: Set[A]): Bool
+    fun val gt(that: HashSet[A, H]): Bool
         """
         Return true if every element in that is also in this, and this has more elements than that.
         """
 
-    fun val ge(that: Set[A]): Bool
+    fun val ge(that: HashSet[A, H]): Bool
         """
         Return true if every element in that is also in this.
         """
 
-    fun val values(): Iterator[A]
+    fun val values(): Iterator[A]^
         """
         Return an iterator over the values in the set.
         """
@@ -214,12 +214,12 @@ The documentation included should be sufficient as the APIs resemble those of ex
 
 # How We Test This
 
-- Each data structure will have unit tests for its methods to ensure that they work as expected.
+Each data structure will have unit tests for its methods to ensure that they work as expected.
 
 # Drawbacks
 
-- These added classes will increase the maintenance cost of the standard library.
+These added classes will increase the maintenance cost of the standard library.
 
 # Unresolved questions
 
-- Should set methods with `that: Set[A]` accept an `Iterator[A]` or should we include union, intersect, etc. from the mutable set API?
+None
