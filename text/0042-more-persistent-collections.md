@@ -1,7 +1,7 @@
 - Feature Name: more-persistent-collections
 - Start Date: 2017-03-30
-- RFC PR: 
-- Pony Issue: 
+- RFC PR: https://github.com/ponylang/rfcs/pull/88
+- Pony Issue: https://github.com/ponylang/ponyc/issues/1884
 
 # Summary
 
