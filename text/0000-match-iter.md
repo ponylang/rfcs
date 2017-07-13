@@ -13,13 +13,13 @@ Not all regular expressions can know the full extent or the total number of grou
 
 # Detailed design
 
-The implementation of this would be an addition to the standard library. We want to be able to jump from a validated regular expresion (e.g. the result of an `apply` on a `Regex`) to an iterator. One way to to this would be to add a `values()` method to `Match` that returns `Iterator[Match]`. 
+The implementation of this would be an addition to the standard library. We want to be able to jump from a validated regular expresion (e.g. the result of an `apply` on a `Regex`) to an iterator. One way to to this would be to add a `matches()` method to `Regex` that returns `Iterator[Match]`. 
 
-By implementing this iterator in the standard library, developers will have access to this functionality in a standardized, reliable fashion. Here is an example of how this might be used where a single (first) `Match` is converted into an iterator via the idiomatic `values()` method:
+By implementing this iterator in the standard library, developers will have access to this functionality in a standardized, reliable fashion. Here is an example of how this might be used:
 
 ```pony
-let r = Regex("([+-]?\\s*\\d+[dD]\\d+|[+-]?\\s*\\d+)")
-for m in r("3d6+10+1d20").values() do
+let regex = Regex("([+-]?\\s*\\d+[dD]\\d+|[+-]?\\s*\\d+)")
+for m in regex.matches("3d6+10+1d20") do
    // process each of the three matches
 end
 ```
