@@ -1,7 +1,7 @@
 - Feature Name: gencap-write
 - Start Date: 2017-07-05
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/93
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2060
 
 # Summary
 
