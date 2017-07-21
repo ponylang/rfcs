@@ -48,7 +48,7 @@ The following array-oriented method will also be added to the `Random` trait.
 To support `Random.shuffle`, the following method will be added to the `Array` class (because otherwise it is not possible to swap two elements in place without aliasing them):
 
 ```pony
-  fun ref swap(i: USize, j: USize) ? =>
+  fun ref swap_elements(i: USize, j: USize) ? =>
     """
     Swap the element at index i with the element at index j.
     If either i or j are out of bounds, an error is raised.
