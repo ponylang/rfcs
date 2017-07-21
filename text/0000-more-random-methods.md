@@ -13,7 +13,7 @@ The purpose of these additional methods is to increase the functionality of the 
 
 # Detailed design
 
-The following methods will be added to the `Random` trait, similar to the existing `u8`, `u16`, `u32`, `u54`, and `u128` methods:
+The following methods will be added to the `Random` trait, similar to the existing `u8`, `u16`, `u32`, `u64`, and `u128` methods:
 
 ```pony
   fun ref ulong(): ULong =>
