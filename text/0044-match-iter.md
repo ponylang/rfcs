@@ -1,7 +1,7 @@
 - Feature Name: match-iter
 - Start Date: 2017-07-13
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/95
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2093
 
 # Summary
 
