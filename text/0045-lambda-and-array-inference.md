@@ -1,7 +1,7 @@
 - Feature Name: lamdba-and-array-inference
 - Start Date: 2017-07-16
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/95
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2094
 
 # Summary
 
