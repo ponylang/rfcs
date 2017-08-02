@@ -25,6 +25,41 @@ The following methods will be added to the `Random` trait, similar to the existi
     """
     A random integer in [0, USize.max_value()]
     """
+
+  fun ref i8(): I8 =>
+    """
+    A random integer in [-2^8, 2^8)
+    """
+
+  fun ref i16(): I16 =>
+    """
+    A random integer in [-2^16, 2^16)
+    """
+
+  fun ref i32(): I32 =>
+    """
+    A random integer in [-2^32, 2^32)
+    """
+
+  fun ref i64(): I64 =>
+    """
+    A random integer in [-2^64, 2^64)
+    """
+
+  fun ref i128(): I128 =>
+    """
+    A random integer in [-2^128, 2^128)
+    """
+
+  fun ref ilong(): ILong =>
+    """
+    A random integer in [ILong.min_value(), ILong.max_value()]
+    """
+
+  fun ref isize(): ISize =>
+    """
+    A random integer in [ISize.min_value(), ISize.max_value()]
+    """
 ```
 
 Additionally, the existing `int` method of the `Random` trait will be updated to allow specifying the integer type as a type parameter, instead of only supporting the `U64` type:
