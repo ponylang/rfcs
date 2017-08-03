@@ -1,7 +1,7 @@
 - Feature Name: more-random-methods
 - Start Date: 2016-07-20
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/97
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2127
 
 # Summary
 
