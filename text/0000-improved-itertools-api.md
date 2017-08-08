@@ -9,7 +9,7 @@ The goal of this RFC is to improve the usability and reduce the maintenance cost
 
 # Motivation
 
-The motivation for this RFC comes from concerns that I have gathered from my own experiences and from the concerns and recommendations of members of the Pony community.
+The motivation for this RFC comes from concerns that I have gathered from my own experiences and from the concerns and recommendations of members of the Pony community. The primary concern that I have heard is inconvenience caused by `fold` being partial. Also, adapting iterators with any state is impossible since the arguments to methods such as `map` and `filter` are lambdas, which means that their `apply` methods have a capability of box. This lack of stateful adaptations also has the side effect of making the `Iter` class prone to code duplication to handle common tasks like stashing values in order to maintain the semantics of filtering. With the addition of methods like `flat_map` and `filter_map`, the problem of code duplication becomes a more noticeable issue for future additions to the API.
 
 # Detailed design
 
@@ -117,4 +117,5 @@ We may choose not to include the iterator adapters if the change in return type 
 
 # Unresolved questions
 
-Should the `acc` argument to `fold` and `fold_partial` be the first argument?
+- Should the `acc` argument to `fold` and `fold_partial` be the first argument? How may this affect partial application?
+- Should we keep the classes such as `MapFn` and `Take`? Users may be confused by some methods of the `Iter` class having external implementations while most do not.
