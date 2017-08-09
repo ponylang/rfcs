@@ -1,7 +1,7 @@
 - Feature Name: serialise-signature
 - Start Date: 2017-03-26
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/87
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2147
 
 # Summary
 
