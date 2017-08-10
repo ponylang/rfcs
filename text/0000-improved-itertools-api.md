@@ -13,25 +13,19 @@ The motivation for this RFC comes from concerns that I have gathered from my own
 
 # Detailed design
 
-The fold method will be modified so that its argument may not be partial.
+The fold method will be modified so that its argument may not be partial. The arguments have also been reordered to improve the ergonomics of partial application.
 
 ```pony
-fun ref fold[B](f: {(B, A!): B^} box, acc: B): B^
+fun ref fold[B](acc: B, f: {(B, A!): B^} box): B^
 ```
 
 A partial version of the method will be provided as well.
 
 ```pony
-fun ref fold_partial[B](f: {(B, A!): B^ ?} box, acc: B): B^ ?
+fun ref fold_partial[B](acc: B, f: {(B, A!): B^ ?} box): B^ ?
   """
   A partial version of `fold`.
   """
-```
-
-Many of the existing methods will be re-implemented using these three methods in order to reduce the probability of logical errors related to coordination between the `has_next` and `next` methods to stash the next value of the iterator. Because of this, the return types of some methods will change from `Iter[A]` to `Iter[A!]`. A notable example is the `enum` method, where the return type was previously `Iter[(B, A)]^`:
-
-```pony
-fun ref enum[B: (Real[B] val & Number) = USize](): Iter[(B, A!)]^
 ```
 
 The following methods will be added to the Iter class:
@@ -94,13 +88,10 @@ Every method added to the `Iter` class will have a unit test to ensure that it w
 
 # Drawbacks
 
-This will break existing code that uses the current `fold` method. Also, the minor change in return type will break any code that attempts to access a val field from the return value of an `Iter` of some iso type. It should be noted that this will have no effect on any `Iter` of some iso^ type since `A^! -> A`.
+This will break existing code that uses the current `fold` method.
 
 # Alternatives
 
-We may choose not to include the iterator adapters if the change in return type is not worth reducing the maintenance cost of the itertools package.
-
 # Unresolved questions
 
-- Should the `acc` argument to `fold` and `fold_partial` be the first argument? How may this affect partial application?
 - Should we keep the classes such as `MapFn` and `Take`? Users may be confused by some methods of the `Iter` class having external implementations while most do not.
