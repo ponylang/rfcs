@@ -28,9 +28,20 @@ fun ref fold_partial[B](acc: B, f: {(B, A!): B^ ?} box): B^ ?
   """
 ```
 
-The following methods will be added to the Iter class:
+The following methods and constructors will be added to the Iter class:
 
 ```pony
+new repeat_value(value: A)
+  """
+  Create an iterator that returns the given value forever.
+
+  ## Example
+
+  Iter[U32].repeat_value(7)
+
+  `7 7 7 7 7 7 7 7 7 ...`
+  """
+
 fun ref map_stateful[B](f: {(A!): B ?} ref): Iter[B]^
   """
   Allows stateful transformaion of each element from the iterator, similar
@@ -78,6 +89,8 @@ fun ref flat_map[B](f: {(A!): Iterator[B] ?} box): Iter[B]^
   """
 ```
 
+The `Chain`, `Cycle`, `Filter`, `MapFn`, `Repeat`, `Take`, and `Zip2`, `Zip3`, `Zip4`, and `Zip5` classes will be removed from itertools in favor of their equivalent `Iter` methods.
+
 # How We Teach This
 
 The added methods will include documentation as shown above.
@@ -93,5 +106,3 @@ This will break existing code that uses the current `fold` method.
 # Alternatives
 
 # Unresolved questions
-
-- Should we keep the classes such as `MapFn` and `Take`? Users may be confused by some methods of the `Iter` class having external implementations while most do not.
