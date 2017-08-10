@@ -37,7 +37,7 @@ fun ref map_stateful[B](f: {(A!): B ?} ref): Iter[B]^
   to `map`.
   """
 
-fun ref filter_stateful(f: {(A!): Bool ?} ref): Iter[A!]^
+fun ref filter_stateful(f: {(A!): Bool ?} ref): Iter[A]^
   """
   Allows filtering of elements based on a stateful adapter, similar to
   `filter`.
