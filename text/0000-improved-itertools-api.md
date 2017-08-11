@@ -28,6 +28,11 @@ fun ref fold_partial[B](acc: B, f: {(B, A!): B^ ?} box): B^ ?
   """
 ```
 
+The `run` method signature will also have its lambda argument changed to the following:
+```
+fun ref run(on_error: {ref()} = {() => None } ref)
+```
+
 The following methods and constructors will be added to the Iter class:
 
 ```pony
@@ -101,7 +106,7 @@ Every method added to the `Iter` class will have a unit test to ensure that it w
 
 # Drawbacks
 
-This will break existing code that uses the current `fold` method.
+This will break existing code that uses the current `fold` and `run` methods.
 
 # Alternatives
 
