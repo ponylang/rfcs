@@ -70,7 +70,7 @@ The tutorial should have a section about documenting pony code, which consists o
 
 - how to document pony code, syntactically (where to place docstrings, docstrings being parsed as markdown, ...)
 - what good documentation should cover (maybe)
-- How to generate documentation from you pony code.
+- How to generate documentation in html from you pony code.
 
 This section should mention that docstrings can also be attached to fields and show examples of how to do it.
 
@@ -82,7 +82,29 @@ On the other hand it should be ensured that the stdlib documentation is renderin
 
 # Drawbacks
 
+- Increased AST size due to additional docstrings
+- More code in docgen pass to handle field documentation
+- Longer documentation pages per class / actor - this could hurt both clarity and brevity
+
 # Alternatives
+
+Besides not having field docstrings at all there are the following alternatives:
+
+- Syntactically the docstring could also go right above the field definition, but this is ambiguous in case an empty method is defined right above. Should the docstring belong to the method above or the field below?
+- Also a docstring between field definition and (optional) assignment would be possible, but this is rather incenvenient to read as it splits the field code into two parts that are harder to grasp that way. Example:
+
+```pony
+let field: String """docstring""" = "value"
+
+let another_field: U8
+"""
+docstring
+"""
+= 0
+```
+
+- Provide a docstring syntax for documenting fields and put this into the class/actor docstring. This would require a little kind of language for parsing the field documentation from a docstring and would make the docgen code a lot more complicated. Also, when reading code it is much more convenient to have the docstring right next to the actual code that is being documented. This would not be the case with this alternative.
+
 
 # Unresolved questions
 
