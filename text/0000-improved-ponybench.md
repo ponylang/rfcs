@@ -87,6 +87,77 @@ Implementation Details:
 
 The implementation of this is at https://github.com/Theodus/pony-benchmark/blob/master/_runner.pony
 
+Example:
+```pony
+actor Main is BenchmarkList
+  new create(env: Env) =>
+    PonyBench(env, this)
+
+  fun tag benchmarks(bench: PonyBench) =>
+    bench(_Nothing)
+    bench(_Fib(5))
+    bench(_Fib(10))
+    bench(_Fib(20))
+    bench(_Timer(10_000))
+
+class iso _Nothing is MicroBenchmark
+  fun name(): String => "Nothing"
+
+  fun apply() =>
+    DoNotOptimise[None](None)
+    DoNotOptimise.observe()
+
+class iso _Fib is MicroBenchmark
+  let _n: U64
+
+  new iso create(n: U64) =>
+    _n = n
+
+  fun name(): String =>
+    "_Fib(" + _n.string() + ")"
+
+  fun apply() =>
+    DoNotOptimise[U64](_fib(_n))
+    DoNotOptimise.observe()
+
+  fun _fib(n: U64): U64 =>
+    if n < 2 then 1
+    else _fib(n - 1) + _fib(n - 2)
+    end
+
+class iso _Timer is AsyncMicroBenchmark
+  let _ts: Timers = Timers
+  let _ns: U64
+
+  new iso create(ns: U64) =>
+    _ns = ns
+
+  fun name(): String =>
+    "_Timer(" + _ns.string() + ")"
+
+  fun apply(c: AsyncBenchContinue) =>
+    _ts(Timer(
+      object iso is TimerNotify
+        fun apply(timer: Timer, count: U64 = 0): Bool =>
+          c.complete()
+          false
+      end,
+      _ns))
+```
+
+```
+$ ponyc --runtimebc -V0 -b=example && ./example --ponynoyield
+Benchmark results will have their mean and median adjusted for overhead.
+You may disable this with --noadjust.
+
+Benchmark                                   mean            median   deviation  iterations
+Nothing                                     0 ns              0 ns      ±0.11%     3000000
+_Fib(5)                                    12 ns             12 ns      ±0.19%     3000000
+_Fib(10)                                  167 ns            167 ns      ±0.02%     1000000
+_Fib(20)                                21409 ns          21413 ns      ±0.06%       10000
+_Timer(10000)                            5431 ns           5452 ns      ±0.92%       30000
+```
+
 # How We Teach This
 
 A "tools" section of the tutorial should be added as an extension of the documentation. This may include examples of how ponybench may be used to produce and visualize the data collected with examples such as these (though they should be produced with an open-source tool, not MATLAB):
