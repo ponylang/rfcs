@@ -1,7 +1,7 @@
-- Feature Name: class_and_actor_field_docstrings
+- Feature Name: class-and-actor-field-docstrings
 - Start Date: 2017-12-22
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/115
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2502
 
 # Summary
 
