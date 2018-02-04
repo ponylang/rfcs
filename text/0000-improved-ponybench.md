@@ -151,11 +151,11 @@ Benchmark results will have their mean and median adjusted for overhead.
 You may disable this with --noadjust.
 
 Benchmark                                   mean            median   deviation  iterations
-Nothing                                     0 ns              0 ns      ±0.11%     3000000
-_Fib(5)                                    12 ns             12 ns      ±0.19%     3000000
-_Fib(10)                                  167 ns            167 ns      ±0.02%     1000000
-_Fib(20)                                21409 ns          21413 ns      ±0.06%       10000
-_Timer(10000)                            5431 ns           5452 ns      ±0.92%       30000
+Nothing                                     1 ns              1 ns      ±0.87%     3000000
+_Fib(5)                                    12 ns             12 ns      ±1.02%     2000000
+_Fib(10)                                  185 ns            184 ns      ±1.03%     1000000
+_Fib(20)                                23943 ns          23898 ns      ±1.11%       10000
+_Timer(10000)                           10360 ns          10238 ns      ±3.25%       10000
 ```
 
 # How We Teach This
