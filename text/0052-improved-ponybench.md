@@ -1,7 +1,7 @@
 - Feature Name: improved-ponybench
 - Start Date: 2018-01-15
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/119
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2541
 
 # Summary
 

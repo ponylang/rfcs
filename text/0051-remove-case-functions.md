@@ -1,7 +1,7 @@
 - Feature Name: remove-case-functions
 - Start Date: 2018-01-13
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/118
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2540
 
 # Summary
 
@@ -9,7 +9,7 @@ Remove the existing case functions implementation from Pony.
 
 # Motivation
 
-Case functions are an awesome idea. The current implementation is problematic. Its synatic sugar over match statements and fraught with edge cases where the edge case is often the common case. 
+Case functions are an awesome idea. The current implementation is problematic. Its synatic sugar over match statements and fraught with edge cases where the edge case is often the common case.
 
 The current implementation is mostly unusable. Additionally, it has from time to time been the source of bugs elsewhere in the Pony codebase (usually related to match).
 
@@ -37,7 +37,7 @@ Current CI tests should continue to pass.
 
 # Drawbacks
 
-- This is a breaking change and might force folks to rewrite some of their code. 
+- This is a breaking change and might force folks to rewrite some of their code.
 - Corresponding match statements might be pretty ugly
 
 
