@@ -12,7 +12,7 @@ Adding compile-time expressions to pony, these are pony expressions which are ev
 Compile-time expressions allow the developer to evaluate parts of their program at compile-time, this reduces some of what is to be evaluated at run-time. Consider an expression that always evaluates to the same result, using compile-time expressions allows the compiler to replace this expression with the result whilst retaining the original semantics of the expression in the source.
 
 An example of an expression that we may want the compiler to evaluate follows:
-```
+```pony
   let myverrylongstring = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi rutrum sodales metus, quis elementum ex dignissim non. Maecenas non consectetur metus, sed accumsan orci. Nam vel orci at leo rhoncus blandit. Donec malesuada varius nisl."
 ```
 
@@ -25,7 +25,7 @@ The examples considers a very long string that nobody would really want to write
 ```
 
 Whilst more readable, the compiler will now generate 4 string literals when only 1 was desired. If we now use compile-time expressions:
-```
+```pony
   let myverrylongstring = #("Lorem ipsum dolor sit amet, consectetur adipiscing elit." +
                           "Morbi rutrum sodales metus, quis elementum ex dignissim non." +
                           "Maecenas non consectetur metus, sed accumsan orci." +
@@ -42,7 +42,7 @@ There are probably many more use cases that I have not considered and I would be
 # Detailed design
 
 A compile-time expression in pony is an opt-in feature, an expression that is to be evaluated at compile-time is denoted by a `#`. An example of this is:
-```
+```pony
 actor Main
   new create(env: Env) =>
     let x: U32 = # (1 + 2)
@@ -50,7 +50,7 @@ actor Main
 Here `x` will be evaulated at compile-time. The compiler does not attempt to evaluate expressions that are not prefixed with the `#`. `#` will become part of the pony syntax (a keyword) and not an operator.
 
 The `#` keyword has the strongest precedence, consider the following:
-```
+```pony
 actor Main
   fun apply(): U32 => 2
   new create(env: Env) =>
@@ -78,7 +78,7 @@ This is pony so we must make some consideration for reference capabilities. Here
 
 In this case, the compile-time expression has the same capability as the expression prefixed by `#`. Consider the following:
 
-```
+```pony
 class C1
   var x: U32
   new create(x': U32) => x = x'
@@ -104,7 +104,7 @@ I have made a brief exploration into this approach and would like more discussio
 
 The result of all compile-time expressions will be `val`. Making compile-time expressions result in a `val` value means that the we can use the value later on in the program. Consider the following:
 
-```
+```pony
 class C1
   var x: U32 = 2
 
@@ -128,7 +128,7 @@ I personally prefer (2.), this most closesly matches how string literals are imp
 ##Language Semantics
 
 There is some discussion to be had about whether we can introduce new semantics to the language using compile-time expressions. An example of new semantics considers how a compiler handles the `error` expression; take the following snippet:
-```
+```pony
 actor Main
   fun check(x: U32): U32 ? => if x < 10 then error else x end
 
