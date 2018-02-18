@@ -60,11 +60,13 @@ In this case only the `1` is evaluated at compile-time, the `+ apply()` will be 
 
 There is no special subset of the language that will be created for compile-time expressions. This does not mean that all expressions will (or can) be permitted to be evaluated at compile-time. I think a large subset of the pony language should be permitted to be evaluated at compile-time; however this is a fairly large task so I think this will have to be an ongoing task, hopefully getting to the point were adding a new language feature involves adding support for runtime and compile-time. This means that most of this RFC will be covered by saying, compile-time expressions will behave as the runtime equivalent.
 
+There is no `const` or `constexpr` keyword on variables and functions to denote which variables and functions the developer expects to be able to use at compile-time. The compiler attempts to evaluate any expressions denoted with a `#`, if the compiler cannot do so then an error is reported.
+
 To this end, support for this feature will involve building a kind of interepreter for pony. There will notable restrictions to compile-time expressions, `actor`s and `behaviour`s can not be compile-time expressions. These restrictions are made as it does not make sense to have parallel execution of actors at compile-time.
 
 Compile-time expressions are pure functional expressions, they cannot have side-effects. This is because these cannot be reflected in the runtime in the same way, consider printing to `env.out` at compile-time.
 
-One effect of allowing most pony features is that this involves function calling a iteration, one must be careful to ensure that we do not cause infinite loops of execution in the compiler.
+One effect of allowing most pony features to be used at compile-time is that this involves function calling and iteration, one must be careful to ensure that we do not cause infinite loops of execution in the compiler.
 
 ## Capabilties
 
@@ -179,7 +181,7 @@ Most of the functionailty described through this RFC can be achieved by doing al
 
 An important choice to discuss is whether the compiler should check prior to evaluation whether it can indeed evaluate an expression before it attempts to evaluate an expression. This would involve marking functions and variables in some way, for example `constexpr` or `const`. Using these keywords would mean that the compiler would check whether the function could be evaluated as a standalone entity.
 
-A design choice to consider is making this an opt-in feature, instead allowing the compiler to figure out and evaluate what it can do at compile-time. This is quite compilicated, for example some expressions may have to make many function calls are execute for a very long time before we know whether it can be evaluated at compile-time. Attempting to determine whether something can be evaluated at compile-time becomes similar to trying to evaluate the expression. Ofcourse this could be a natural progression from being an opt-in feature, which I think is how this feature should at least start.
+Futhermore, a design choice to consider is making this an opt-in feature, instead allowing the compiler to figure out and evaluate what it can do at compile-time. This is quite compilicated, for example some expressions may have to make many function calls are execute for a very long time before we know whether it can be evaluated at compile-time. Attempting to determine whether something can be evaluated at compile-time becomes similar to trying to evaluate the expression. Ofcourse this could be a natural progression from being an opt-in feature, which I think is how this feature should at least start.
 
 How the expressions are to be evaulated has multiple solutions; I suggest (and have implemented) an AST collapsing pass that takes an AST tree an collapses it to a single node. Adding the evaluation of a new pass allows the passs to make use of all the information and knowledge already in the compiler, such as parsing and symbol tables etc.
 
