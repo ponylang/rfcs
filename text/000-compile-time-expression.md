@@ -147,7 +147,7 @@ The results of a compile-time expression must match up to the result of the expr
 
 ###Evaluating Compile-Time Expressions
 
-A point of detail that must be considered is how compile-time expressions are to be evaluated. I suggest a new pass that runs after the `expr` pass.
+A point of detail that must be considered is how compile-time expressions are to be evaluated. I suggest a new pass that runs after the `expr` pass. The suggested pass, that I will refer to as the `evaluation` pass, will collapse the AST of the compile-time expressions into a result node. The `evaluation` pass runs after the `expr` pass as then the pass only needs to consider type-safe desugared programs.
 
 # How We Teach This
 
@@ -157,8 +157,11 @@ The following new terms to consider are:
 
 This would make changes to the existing pony language, it would only extend the language.
 
-The feature can be taught by explaining that the runtime and compile-time semantics of expressions match, so placing a `#` in front of an expression means the expression is evaluated at compile-time. The most important thing to teach would be the limitiations (this includes what is currently supported by the pony compiler). Namely:
-- No compile-time actors and behaviours
+The feature can be taught by explaining that the runtime and compile-time semantics of expressions match, so placing a `#` in front of an expression means the expression is evaluated at compile-time.
+
+It is also useful to teach that there is no checking before hand whether an expression can be evaluated at compile-time. For example there is no `constexpr` as in C++ nor `const` as in Rust that is placed in front of a function. The compiler doesn't know whether it can evaluate an expression until it tries to perform the evaluation.
+
+The most important thing to teach would be the limitiations (this includes what is currently supported by the pony compiler); namely; no compile-time actors and behaviours.
 
 # Drawbacks
 
@@ -174,7 +177,9 @@ Recall that I suggested that compile-time evaluation is done as an AST rewriting
 
 Most of the functionailty described through this RFC can be achieved by doing all of the computation at runtime. I can't really think of what an alternative to a compile-time expression would be, other than hoping constant propagation during optimisation does some of this work. I am interested to hear or discuss what an alternative would be to compile-time expressions.
 
-One alternative to a design choice is making this an opt-in feature, instead allowing the compiler to figure out and evaluate what it can do at compile-time. This is quite compilicated, for example some expressions may have to make many function calls are execute for a very long time before we know whether it can be evaluated at compile-time. Attempting to determine whether something can be evaluated at compile-time becomes similar to trying to evaluate the expression. Ofcourse this could be a natural progression from being an opt-in feature, which I think is how this feature should at least start.
+An important choice to discuss is whether the compiler should check prior to evaluation whether it can indeed evaluate an expression before it attempts to evaluate an expression. This would involve marking functions and variables in some way, for example `constexpr` or `const`. Using these keywords would mean that the compiler would check whether the function could be evaluated as a standalone entity.
+
+A design choice to consider is making this an opt-in feature, instead allowing the compiler to figure out and evaluate what it can do at compile-time. This is quite compilicated, for example some expressions may have to make many function calls are execute for a very long time before we know whether it can be evaluated at compile-time. Attempting to determine whether something can be evaluated at compile-time becomes similar to trying to evaluate the expression. Ofcourse this could be a natural progression from being an opt-in feature, which I think is how this feature should at least start.
 
 How the expressions are to be evaulated has multiple solutions; I suggest (and have implemented) an AST collapsing pass that takes an AST tree an collapses it to a single node. Adding the evaluation of a new pass allows the passs to make use of all the information and knowledge already in the compiler, such as parsing and symbol tables etc.
 
