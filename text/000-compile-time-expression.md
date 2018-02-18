@@ -66,25 +66,63 @@ Compile-time expressions are pure functional expressions, they cannot have side-
 
 One effect of allowing most pony features is that this involves function calling a iteration, one must be careful to ensure that we do not cause infinite loops of execution in the compiler.
 
-This is pony so we must make some consideration for reference capabilities. The result of all compile-time expressions will be `val`. Making compile-time expressions result in a `val` value means that the we can use the value later on in the program. Consider the following:
+## Capabilties
+
+This is pony so we must make some consideration for reference capabilities. Here I describe two alternatives:
+1. Compile-time expressions have the same capability as the expression.
+2. Compile-time expressions are always val.
+
+### 1. Compile-time expressions have the same capability as the expression
+
+In this case, the compile-time expression has the same capability as the expression prefixed by `#`. Consider the following:
 
 ```
-class Wombat
-  var x: U32 = 2
+class C1
+  var x: U32
+  new create(x': U32) => x = x'
 
-  fun ref apply() => x = x + 1
+class C2
+  var f: C1
+  new create(x: U32) => f = C1(x * 2)
 
 actor Main
   new create(env: Env) =>
-    let w: Wombat val = # Wombat
-    let x: U32 = # (w.x)
+    let c: C2 = # C2(6 + 4)
+    c.f.x = 72
+```
+
+In this case `c` is of type `C1 ref`. Using this approach, objects are allocated (on the heap of the current actor) and then the fields are initialised with values computed at compile-time (with nested values also being allocated and initilased).
+
+Assigning capabilities like this allows collaboration between the compiler and the runtime to construct and mutate values. However, the value of `c` can now change between one compile-time expression and the next and so we cannot 
+use the value in later expressions. We can make concessions for capabilities that deny writes (for example `val`), such expressions can be bound to a name and re-used later; values with such capabilities can also be allocated as constant globals as there can be no data-race using them.
+
+I have made a brief exploration into this approach and would like more discussion around its pros and cons.
+
+### 2. Compile-time expressions are always val
+
+The result of all compile-time expressions will be `val`. Making compile-time expressions result in a `val` value means that the we can use the value later on in the program. Consider the following:
+
+```
+class C1
+  var x: U32 = 2
+
+actor Main
+  new create(env: Env) =>
+    let c: C1 = # C1
+    c.x = 72
 ```
 
 In the above we can consider `w.x` to be a compile-time expression as `w` is compile-time constructed object and because it is `val` the value of `w.x` could not have changed since the object was constructed.
 
 This means any expression to be evaluated at compile-time must be recoverable to `val`.
 
-An aside; making the result `val` also allows the compiler to generate compile-time values as constant values, one could imagine this permits more optimisations to be performed on the value.
+Making all compile-time expressions allows the compiler to generate compile-time values as global constant values, one could imagine this permits more optimisations to be performed on the value.
+
+Note: we can achieve (1.) by providing a `clone()` method on objects that we want to be constructed at compile-time and then `clone()` the global instance to get a local mutable copy.
+
+I personally prefer (2.), this most closesly matches how string literals are implemented.
+
+##Language Semantics
 
 There is some discussion to be had about whether we can introduce new semantics to the language using compile-time expressions. An example of new semantics considers how a compiler handles the 'error' expression; take the following snippet:
 ```
@@ -102,11 +140,14 @@ If you are interested in exploring this feature please look at my current implem
 
 # How We Teach This
 
-What names and terminology work best for these concepts and why? How is this idea best presented? As a continuation of existing Pony patterns, or as a wholly new one?
+The following new terms to consider are:
+- "compile-time expression": an expression that will be evaluated at compile-time.
+- "bind a value": this is a term have been using to describe when a compile-time value is assigned to a `let` varaible so that it can be used in later compile-time expressions.
 
-Would the acceptance of this proposal mean the Pony guides must be re-organized or altered? Does it change how Pony is taught to new users at any level?
+This would make changes to the existing pony language, it would only extend the language.
 
-How should this feature be introduced and taught to existing Pony users?
+The feature can be taught by explaining that the runtime and compile-time semantics of expressions match, so placing a `#` in front of an expression means the expression is evaluated at compile-time. The most important thing to teach would be the limitiations (this includes what is currently supported by the pony compiler). Namely:
+- No compile-time actors and behaviours
 
 # Drawbacks
 
