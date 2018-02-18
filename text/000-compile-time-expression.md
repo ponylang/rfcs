@@ -193,4 +193,4 @@ One could imagine alternative implementations such as building an interepreter a
 
 I've tried to mention questions as and when they are relevant in this RFC so please find them in the above. There is plenty of scope for discussion on most points.
 
-If you are interested in exploring this feature please look at my current implementation of compile-time expressions [here|https://github.com/lukecheeseman/ponyc]
+If you are interested in exploring this feature please look at my current implementation of compile-time expressions [here](https://github.com/lukecheeseman/ponyc).
