@@ -143,11 +143,17 @@ There may be more scope for considering how we can use compile-time expressions 
 
 ###Target Specific Behaviour
 
+The results of a compile-time expression must match up to the result of the expressions, were the expression evaluated on the target machine. Evaluating expressions for the target introduces some complexity as they will be evaluated on the host machine. To ensure evaluation is correct, it must be arranged that whatever is responisble for evaluating expressions is aware of data types used for the target machine, for example the size of `USize`.
+
+###Evaluating Compile-Time Expressions
+
+A point of detail that must be considered is how compile-time expressions are to be evaluated. I suggest a new pass that runs after the `expr` pass.
+
 # How We Teach This
 
 The following new terms to consider are:
 - "compile-time expression": an expression that will be evaluated at compile-time.
-- "bind a value": this is a term have been using to describe when a compile-time value is assigned to a `let` varaible so that it can be used in later compile-time expressions.
+- "bind a value": this is a term I have been using to describe when a compile-time value is assigned to a `let` variable so that it can be used in later compile-time expressions. From example in `let x: U32 = # 4`, `4` has been bound to `x`.
 
 This would make changes to the existing pony language, it would only extend the language.
 
@@ -158,9 +164,11 @@ The feature can be taught by explaining that the runtime and compile-time semant
 
 Any expression that is evaluated at compile-time adds to the compilation time and will not (likely) be more efficient than executing at runtime. Conversely, this means there is less to execute at runtime and therefore saves time on every run of the program. This is a trade off that the developer will have to make as they see fit.
 
-This also adds a significant amount of complexity and code to the compiler
+Evaluating compile-time expressions adds a significant amount of complexity and code to the compiler
 
-Why should we *not* do this?
+We also need to ensure that compile-time semantics and run-time semantics agree (this is to avoid confusing bugs where different results are obtained).
+
+Recall that I suggested that compile-time evaluation is done as an AST rewriting step. Making reference to target specific information, this means that we have to construct information about the target machine earlier than code generation.
 
 # Alternatives
 
@@ -168,7 +176,9 @@ Most of the functionailty described through this RFC can be achieved by doing al
 
 One alternative to a design choice is making this an opt-in feature, instead allowing the compiler to figure out and evaluate what it can do at compile-time. This is quite compilicated, for example some expressions may have to make many function calls are execute for a very long time before we know whether it can be evaluated at compile-time. Attempting to determine whether something can be evaluated at compile-time becomes similar to trying to evaluate the expression. Ofcourse this could be a natural progression from being an opt-in feature, which I think is how this feature should at least start.
 
-How the expressions are to be evaulated has multiple solutions. I suggest (and have implemented) an AST collapsing pass that takes an AST tree an collapses it to a single node. One could imagine alternative implementations such as building an interepreter and calling out to this, or constructing machine code on the fly and executing it to get a result. The latter approaches seem fairly convulated and onerous to implement compared to AST rewriting.
+How the expressions are to be evaulated has multiple solutions; I suggest (and have implemented) an AST collapsing pass that takes an AST tree an collapses it to a single node. Adding the evaluation of a new pass allows the passs to make use of all the information and knowledge already in the compiler, such as parsing and symbol tables etc.
+
+One could imagine alternative implementations such as building an interepreter and calling out to this, or constructing machine code on the fly and executing it to get a result. The latter approaches seem fairly convoluted and onerous to implement compared to AST rewriting.
 
 # Unresolved questions
 
