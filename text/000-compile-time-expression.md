@@ -117,7 +117,7 @@ actor Main
 
 In the above we can consider `c.x` to be a compile-time expression as `c` is compile-time constructed object and because it is `val` the value of `c.x` could not have changed since the object was constructed.
 
-This means any expression to be evaluated at compile-time must be recoverable to `val`.
+This means any expression to be evaluated at compile-time must be recoverable to `val`. As the final value needs to be recoverable to `val`, mutating compile-time values within an expression is permitted. For example `let c = # (let c' = C1; c'.x =4; c)` is a valid compile-time expression.
 
 Making all compile-time expressions `val` allows the compiler to generate compile-time values as global constant values, one could imagine this permits more optimisations to be performed on the value.
 
@@ -146,6 +146,8 @@ There may be more scope for considering how we can use compile-time expressions 
 ###Target Specific Behaviour
 
 The results of a compile-time expression must match up to the result of the expressions, were the expression evaluated on the target machine. Evaluating expressions for the target introduces some complexity as they will be evaluated on the host machine. To ensure evaluation is correct, it must be arranged that whatever is responisble for evaluating expressions is aware of data types used for the target machine, for example the size of `USize`.
+
+We need to give special consideration to compile-time expressions using floating point values. Consideration needs to be given as there are different represenations of floating point values on different targets and as such we can get different values (due to rounding etc.) on different targets.
 
 ###Evaluating Compile-Time Expressions
 
@@ -181,7 +183,7 @@ Most of the functionailty described through this RFC can be achieved by doing al
 
 An important choice to discuss is whether the compiler should check prior to evaluation whether it can indeed evaluate an expression before it attempts to evaluate an expression. This would involve marking functions and variables in some way, for example `constexpr` or `const`. Using these keywords would mean that the compiler would check whether the function could be evaluated as a standalone entity.
 
-Futhermore, a design choice to consider is making this an opt-in feature, instead allowing the compiler to figure out and evaluate what it can do at compile-time. This is quite compilicated, for example some expressions may have to make many function calls are execute for a very long time before we know whether it can be evaluated at compile-time. Attempting to determine whether something can be evaluated at compile-time becomes similar to trying to evaluate the expression. Ofcourse this could be a natural progression from being an opt-in feature, which I think is how this feature should at least start.
+Futhermore, a design choice to consider is making this an opt-in feature, instead allowing the compiler to figure out and evaluate what it can do at compile-time. This is quite compilicated, for example some expressions may have to make many function calls are execute for a very long time before we know whether it can be evaluated at compile-time. Attempting to determine whether a complex expression can be evaluated at compile-time becomes similar to trying to evaluate the expression. Ofcourse, this could be a natural progression from being an opt-in feature (for trivial expressions), which I think is how this feature should at least start.
 
 How the expressions are to be evaulated has multiple solutions; I suggest (and have implemented) an AST collapsing pass that takes an AST tree an collapses it to a single node. Adding the evaluation of a new pass allows the passs to make use of all the information and knowledge already in the compiler, such as parsing and symbol tables etc.
 
