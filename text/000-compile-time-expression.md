@@ -143,13 +143,13 @@ Option (2.) extends what we can do with `error` by making assertions at compile-
 
 There may be more scope for considering how we can use compile-time expressions to extend the semantics of the language and this is an interesting point.
 
-### Target Specific Behaviour
+## Target Specific Behaviour
 
 The results of a compile-time expression must match up to the result of the expressions, were the expression evaluated on the target machine. Evaluating expressions for the target introduces some complexity as they will be evaluated on the host machine. To ensure evaluation is correct, it must be arranged that whatever is responisble for evaluating expressions is aware of data types used for the target machine, for example the size of `USize`.
 
 We need to give special consideration to compile-time expressions using floating point values. Consideration needs to be given as there are different represenations of floating point values on different targets and as such we can get different values (due to rounding etc.) on different targets.
 
-### Evaluating Compile-Time Expressions
+## Evaluating Compile-Time Expressions
 
 A point of detail that must be considered is how compile-time expressions are to be evaluated. I suggest a new pass that runs after the `expr` pass. The suggested pass, that I will refer to as the `evaluation` pass, will collapse the AST of the compile-time expressions into a result node. The `evaluation` pass runs after the `expr` pass as then the pass only needs to consider type-safe desugared programs.
 
