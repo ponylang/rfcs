@@ -33,7 +33,7 @@ Whilst more readable, the compiler will now generate 4 string literals when only
 ```
 We get the best of both, a string split over several lines but we only generate one string literal.
 
-Compile-time expression also pave the way for future features such as value-dependent types, value-depedent types become much more powerful when one can evaluate simple or complex expressions and use them to instantiate types.
+Compile-time expressions also pave the way for future features such as value-dependent types, value-dependent types become much more powerful when one can evaluate simple or complex expressions and use them to instantiate types.
 
 An interesting point is initialisation code. Sometimes one must write some code that is required to be run at startup time (for example generating some data-structure need by an actor), this introduces the overhead of ensuring that some actor is run to perform this initialisation. If the initialisation can be written as a compile-time expression then one can use compile-time expressions to ensure the compiler performs the initialisation and leaves the result in its place.
 
@@ -109,14 +109,15 @@ class C1
 actor Main
   new create(env: Env) =>
     let c: C1 = # C1
-    c.x = 72
+    let x: U32 = # (c.x * 2)
+    env.out.print(x.string())
 ```
 
-In the above we can consider `w.x` to be a compile-time expression as `w` is compile-time constructed object and because it is `val` the value of `w.x` could not have changed since the object was constructed.
+In the above we can consider `c.x` to be a compile-time expression as `c` is compile-time constructed object and because it is `val` the value of `c.x` could not have changed since the object was constructed.
 
 This means any expression to be evaluated at compile-time must be recoverable to `val`.
 
-Making all compile-time expressions allows the compiler to generate compile-time values as global constant values, one could imagine this permits more optimisations to be performed on the value.
+Making all compile-time expressions `val` allows the compiler to generate compile-time values as global constant values, one could imagine this permits more optimisations to be performed on the value.
 
 Note: we can achieve (1.) by providing a `clone()` method on objects that we want to be constructed at compile-time and then `clone()` the global instance to get a local mutable copy.
 
@@ -124,7 +125,7 @@ I personally prefer (2.), this most closesly matches how string literals are imp
 
 ##Language Semantics
 
-There is some discussion to be had about whether we can introduce new semantics to the language using compile-time expressions. An example of new semantics considers how a compiler handles the 'error' expression; take the following snippet:
+There is some discussion to be had about whether we can introduce new semantics to the language using compile-time expressions. An example of new semantics considers how a compiler handles the `error` expression; take the following snippet:
 ```
 actor Main
   fun check(x: U32): U32 ? => if x < 10 then error else x end
@@ -132,11 +133,15 @@ actor Main
   new create(env: Env) =>
     # check(3)
 ```
-Here, we have some method `check`
+Here, we have some method `check` that is partial. I propose we can do one of two things here:
+1. Allow the compile-time expression `check(3)` to resolve to an `error` (in this case we would need to wrap this is a `try` block).
+2. Stop compilation with an error that a compile-time expression resulted in an `error`.
 
-- Issues with target specfific things
+Option (2.) extends what we can do with `error` by making assertions at compile-time; this also has the effect that we don't need a `try` block around `check(3)` as the compiler as already garuanted that we don't need it and that `create` does not need to handle `error`s.
 
-If you are interested in exploring this feature please look at my current implementation of compile-time expressions [here|https://github.com/lukecheeseman/ponyc]
+There may be more scope for considering how we can use compile-time expressions to extend the semantics of the language and this is an interesting point.
+
+###Target Specific Behaviour
 
 # How We Teach This
 
@@ -151,12 +156,22 @@ The feature can be taught by explaining that the runtime and compile-time semant
 
 # Drawbacks
 
+Any expression that is evaluated at compile-time adds to the compilation time and will not (likely) be more efficient than executing at runtime. Conversely, this means there is less to execute at runtime and therefore saves time on every run of the program. This is a trade off that the developer will have to make as they see fit.
+
+This also adds a significant amount of complexity and code to the compiler
+
 Why should we *not* do this?
 
 # Alternatives
 
-What other designs have been considered? What is the impact of not doing this?
+Most of the functionailty described through this RFC can be achieved by doing all of the computation at runtime. I can't really think of what an alternative to a compile-time expression would be, other than hoping constant propagation during optimisation does some of this work. I am interested to hear or discuss what an alternative would be to compile-time expressions.
+
+One alternative to a design choice is making this an opt-in feature, instead allowing the compiler to figure out and evaluate what it can do at compile-time. This is quite compilicated, for example some expressions may have to make many function calls are execute for a very long time before we know whether it can be evaluated at compile-time. Attempting to determine whether something can be evaluated at compile-time becomes similar to trying to evaluate the expression. Ofcourse this could be a natural progression from being an opt-in feature, which I think is how this feature should at least start.
+
+How the expressions are to be evaulated has multiple solutions. I suggest (and have implemented) an AST collapsing pass that takes an AST tree an collapses it to a single node. One could imagine alternative implementations such as building an interepreter and calling out to this, or constructing machine code on the fly and executing it to get a result. The latter approaches seem fairly convulated and onerous to implement compared to AST rewriting.
 
 # Unresolved questions
 
-What parts of the design are still TBD?
+I've tried to mention questions as and when they are relevant in this RFC so please find them in the above. There is plenty of scope for discussion on most points.
+
+If you are interested in exploring this feature please look at my current implementation of compile-time expressions [here|https://github.com/lukecheeseman/ponyc]
