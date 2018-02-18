@@ -17,7 +17,7 @@ An example of an expression that we may want the compiler to evaluate follows:
 ```
 
 The examples considers a very long string that nobody would really want to write on a single line. The alternative would be as follows:
-```
+```pony
   let myverrylongstring = "Lorem ipsum dolor sit amet, consectetur adipiscing elit." +
                           "Morbi rutrum sodales metus, quis elementum ex dignissim non." +
                           "Maecenas non consectetur metus, sed accumsan orci." +
