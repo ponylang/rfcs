@@ -62,7 +62,9 @@ There is no special subset of the language that will be created for compile-time
 
 There is no `const` or `constexpr` keyword on variables and functions to denote which variables and functions the developer expects to be able to use at compile-time. The compiler attempts to evaluate any expressions denoted with a `#`, if the compiler cannot do so then an error is reported.
 
-To this end, support for this feature will involve building a kind of interepreter for pony. There will notable restrictions to compile-time expressions, `actor`s and `behaviour`s can not be compile-time expressions. These restrictions are made as it does not make sense to have parallel execution of actors at compile-time.
+To this end, support for this feature will involve building a kind of interepreter for pony. There will notable restrictions to compile-time expressions:
+  - `actor`s and `behaviour`s can not be compile-time expressions, this restriction is made as it does not make sense to have parallel execution of actors at compile-time.
+  - CFFI functions can not be compile-time expressions, otherwise we would need to be able to both execute C code (perhaps not the harderst task - assuming we have a compiled version of the code available) and analyse C functions to see if they were side-effecting.
 
 Compile-time expressions are pure functional expressions, they cannot have side-effects. This is because these cannot be reflected in the runtime in the same way, consider printing to `env.out` at compile-time.
 
