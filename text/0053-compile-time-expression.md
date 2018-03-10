@@ -1,7 +1,7 @@
 - Feature Name: Compile-Time Expressions
 - Start Date: 17/02/2018
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/120
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2591
 
 # Summary
 
