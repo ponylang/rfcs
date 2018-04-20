@@ -88,7 +88,7 @@ Extend exhaustive testing of capability operations to include the new formal rul
 
 # Alternatives
 
-Use a different operator syntax for extractive viewpoint adaptation, rather than `->>`.
+- Use a different operator syntax for extractive viewpoint adaptation, rather than `->>`.
 
 - Don't do this at all, and continue using an overly restrictive/simplistic model for viewpoint-adapted capabilities.
 
