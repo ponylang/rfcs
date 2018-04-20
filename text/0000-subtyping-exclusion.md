@@ -39,6 +39,12 @@ A new annotation, `nosupertype`, will be introduced. This annotation is recognis
 
 The example above can be fixed by annotating `Empty` with `nosupertype`. That way, `Empty` isn't a subtype of `Any`, which means that `A` and `Empty val` are guaranteed to be disjoint. This also means that `Empty` cannot be used as a type argument to `foo`.
 
+A `nosupertype` type will be declared with the following syntax.
+
+```pony
+class \nosupertype\ Empty
+```
+
 # How We Teach This
 
 The annotation will be described in the annotations section of the tutorial. In addition, it could be the subject of a pony pattern.
