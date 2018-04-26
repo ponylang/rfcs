@@ -1,7 +1,7 @@
 - Feature Name: subtyping-exclusion
 - Start Date: 2018-03-30
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/121
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2671
 
 # Summary
 
