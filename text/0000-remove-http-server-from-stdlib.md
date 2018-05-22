@@ -5,7 +5,7 @@
 
 # Summary
 
-Remove the HTTP server and client that is currently in the standard library. Place them in their own repository under the ponylang organization.
+Remove the HTTP server and client that are currently in the standard library. Place them in their own repository under the ponylang organization.
 
 # Motivation
 
