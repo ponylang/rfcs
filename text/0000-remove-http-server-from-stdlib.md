@@ -1,11 +1,11 @@
-- Feature Name: remove-http-server-from-stdlib
+- Feature Name: remove-http-packages-from-stdlib
 - Start Date: 2018-01-13
 - RFC PR: (leave this empty)
 - Pony Issue: (leave this empty)
 
 # Summary
 
-Remove the HTTP server that is currently in the standard library. Place it in its own repository under the ponylang organization.
+Remove the HTTP server and client that is currently in the standard library. Place them in their own repository under the ponylang organization.
 
 # Motivation
 
@@ -18,11 +18,13 @@ We, as a community, want a great HTTP server that we can use. Having a middling 
 
 There are many things that we can say really should be in a standard library. Strings, Arrays, Maps and other data structures that we want everyone to build on to make interoperation between libraries certainly fit the bill. The argument for having an HTTP server in the standard library is much weaker.
 
+The same general argument applies to the HTTP client. The API ergonomics are poor and a regular source of frustration for new users. By removing it from the standard library, we would be encouraging folks to create their own competing HTTP clients.
+
 # Detailed design
 
 Move the following to their own repository "example-http-server" under the Ponylang organization.
 
-- packages/net/*
+- packages/net/http/*
 - examples/httpget
 - examples/httpserver
 
@@ -33,7 +35,7 @@ use ex_httpget = "httpget"
 use ex_httpserver = "httpserver"
 ```
 
-In the new repo, the README for the http server, should make its lineage known. It should indicate that it is not an exemplar of how you would write high performance code. It can be used, with caveats about API ergonomics and performance. The README should strongly indicate that the Pony core team encourages community members to create their own, better HTTP server(s) and get them adopted by the community at large.
+In the new repo, the README for the http server and client, should make its lineage known. It should indicate that they are not an exemplar of how you would write high performance code. They can be used, with caveats about API ergonomics and performance. The README should strongly indicate that the Pony core team encourages community members to create their own, better HTTP server(s) and client(s) and get them adopted by the community at large.
 
 # How We Teach This
 
@@ -48,11 +50,11 @@ CI should pass for ponyc repo after the change is made. CI should be set up for 
 
 # Drawbacks
 
-This is a breaking change for anyone using the HTTP server. They will have to go through a small upgrade to use Pony stable to fetch the new dependency from a new location. Additionally, package names will change as it will no longer be `net/http`. That package name makes sense in the standard library, it doesn't as a standalone.
+This is a breaking change for anyone using the HTTP server or client. They will have to go through a small upgrade to use Pony stable to fetch the new dependency from a new location. Additionally, package names will change as it will no longer be `net/http`. That package name makes sense in the standard library, it doesn't as a standalone.
 
 # Alternatives
 
-We could leave in the standard library and incur the drawbacks that come from people thinking this is the officially sanctioned HTTP server that we as a community want to go forward with.
+We could leave in the standard library and incur the drawbacks that come from people thinking these is the officially sanctioned HTTP libraries that we as a community want to go forward with.
 
 # Unresolved questions
 
