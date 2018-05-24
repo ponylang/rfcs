@@ -20,7 +20,7 @@ For not having division stand out amongst the arithmetic operations, and for giv
 
 # Detailed design
 
-The operators need to be added in the parser. 
+The operators need to be added in the parser.
 
 They should be made customizable, so that users can write a partial `add` function for their objects, and make use of `+?` for adding two of their objects in a partial way. The method names should be the names for the base operations with a `_partial` suffix. E.g. `sub_partial` for partial subtraction.
 
@@ -34,11 +34,13 @@ The tutorial should introduce the different ways of doing arithmetic in greater 
 
 # How We Test This
 
-How do we assure that the initial implementation works? How do we assure going forward that the new functionality works after people make changes? Do we need unit tests? Something more sophisticated? What's the scope of testing? Does this change impact the testing of other parts of Pony? Is our standard CI coverage sufficient to test this change? Is manual intervention required?
+There needs to be at least one additional Pony unit test that tests the error conditions of the new operators.
+
+There need to be new compiler tests that ensure that the method-operator resolution works correctly, similar to how the existing operators are resolved.
 
 # Drawbacks
 
-This adds more code to the parser and adds more symbols and special methods to pony objects. 
+This adds more code to the parser and adds more symbols and special methods to pony objects.
 Also having 4 different kinds of doing basic arithmetic operations is a lot to grasp and to teach.
 
 
