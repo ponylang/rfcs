@@ -1,7 +1,7 @@
 - Feature Name: ssl-alpn
 - Start Date: 2018-05-28
-- RFC PR: 
-- Pony Issue: https://github.com/ponylang/ponyc/issues/2564
+- RFC PR:
+- Pony Issue:
 
 # Summary
 Add server and client support for the Application-Layer Protocol Negotiation (ALPN) TLS extension to the `net/ssl` package.
