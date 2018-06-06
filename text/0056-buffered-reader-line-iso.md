@@ -1,7 +1,7 @@
 - Feature Name: buffered-reader-line-iso
 - Start Date: 2018-05-23
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/126
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2755
 
 # Summary
 
