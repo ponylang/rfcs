@@ -1,7 +1,7 @@
 - Feature Name: remove-http-packages-from-stdlib
 - Start Date: 2018-01-13
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/117
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2753
 
 # Summary
 
