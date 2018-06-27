@@ -1,7 +1,7 @@
 - Feature Name: partial_arithmetic
 - Start Date: 2018-05-23
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/125
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2814
 
 # Summary
 
