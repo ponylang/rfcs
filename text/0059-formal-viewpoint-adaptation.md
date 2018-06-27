@@ -1,7 +1,7 @@
 - Feature Name: formal-viewpoint-adaptation
 - Start Date: 2018-04-19
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/122
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2815
 
 # Summary
 
