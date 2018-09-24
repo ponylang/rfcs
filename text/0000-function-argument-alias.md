@@ -27,7 +27,7 @@ obvious argument for that method is `name`.
 However, if we want to allow public access to that field then we're
 out of luck due to the shadowing prohibition. The only solution in
 this case is to use a different name for the function argument such as
-`new_name`, `_name` or `name'`, not of which are ideal.
+`new_name`, `_name` or `name'`, none of which are ideal.
 
 This problem applies for any function, whether it's a constructor or a
 method. It's been brought up occassionally on the mailing list with
