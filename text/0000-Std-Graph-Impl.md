@@ -61,7 +61,15 @@ This code expands the surface of the standard library. As such, there will be a 
 
 # Alternatives
 
-There could be a third-party library, not included in the standard library. This implementation follows the Graph theory definition, but another implementation might be more similar to a linkedlist. Instead of maintaining a collection of vertices and edges, each vertex could maintain a collection of outbound edges. I think such an implementation could coexist and allow for simple methods for building one from the other.
+There could be a third-party library, not included in the standard library. This implementation follows the Graph theory definition, but another implementation might be more similar to a linkedlist. Instead of maintaining a collection of vertices and edges, each vertex could maintain a collection of outbound edges. I think such an implementation could coexist and allow for simple methods for building one from the other. 
+
+```
+ class Node<T> {
+  T Item
+  List<Node> Edges
+ }
+```
+
 
 # Unresolved questions
 
