@@ -29,7 +29,7 @@ let T = { 1, 1, 3 } // invalid set
 ```
 
 
-## Equality and Comparability
+## Equality, Equivalence, and Comparability
 
 note: In logic, `IFF` denotes "if and only if", <=>. It will be used in the following section.
 
@@ -53,6 +53,24 @@ if   S = T
 and  T = V
 then S = V  // transitive
 ```
+
+Set Cardinality:
+The number of elements of a set is called the `cardinality` of the set.
+```
+let S = { 1, 2, 3 }
+let T = { 1, 2, 3, 4, 5 }
+let V = { 4, 5, 6, 7, 8, 9, 10 }
+```
+The `cardinality` of `S` = 3, `T` = 5, and `V` = 7.
+
+Set Equivalence:
+Two sets are equivalent `iff` elements of either set can correspond to exactly one element of the other set. Therefore, if the two sets have equal cardinalities, then the sets are equivelant, and any two sets which are equivalent will also have equal cardinalities.
+
+```
+let S = { 1, 2, 3 }
+let T = { A, B, C }
+```
+Sets `S` and `T` are said to be equivalent because elements of `S` can be mapped to exactly one element of `T`, and the inverse is also true. However, `S` and `T` are not equal sets.
 
 Subsets:
 ```
@@ -100,6 +118,48 @@ The complementary set of `S` `over` `T`, in the above example is as follows:
 ```
 V = { 4, 5, 6 }
 ```
+This can be expressed in the following way:
+```
+V = T - S
+```
+a note on subsets: for every set of N elements, there are exactly 2^N subsets.
+
+Unions:
+Given two sets, the `union` of the sets is a set which contains all elements of either set.
+
+```
+let S = { 1, 2, 3 }
+let T = { 4, 5, 6 }
+```
+The `union` of set `S` and `T` in the above example is as follows:
+```
+V = { 1, 2, 3, 4, 5, 6 }
+```
+As we have previously mentioned in our above definition of a set, elements of a set must be distinct. Therefore, a union of two sets, of which at least one is a subset of the other, will contain only one instance of each element. This property is demonstrated below:
+```
+let S = { 1, 2, 3, 6 }
+let T = { 1, 2, 3, 4, 5 }
+```
+The `union` of `S` and `T` is as follows:
+```
+V = { 1, 2, 3, 4, 5, 6 }
+```
+
+Intersections:
+Given two sets, the `intersection` of the sets is a set which contains all elements which are elements of both sets.
+
+```
+let S = { 1, 2, 3, 4, 5 }
+let T = { 3, 4, 5, 6, 7 }
+```
+The `intersection` of `S` and `T` is as follows:
+```
+V = { 3, 4, 5 }
+```
+In the case that two sets share no common elements, then the intersection of the two sets is the empty set, and the sets are said to be `disjoint`.
+
+With these formal definitions, we have sufficient information to begin describing the implementation.
+
 
 # How We Teach This
 
