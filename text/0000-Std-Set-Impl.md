@@ -249,7 +249,7 @@ The best terminology for this library would be to stick with pure set theory ter
  Unit tests will be created.
 
 # Drawbacks
-Adding this to the standard library will have some maintainece cost associated. 
+Adding this to the standard library will have some maintainence cost associated. 
 
 # Alternatives
 Some alternatives could be other naming conventions. Some Set Theory terminology can seem quite nuanced to novices, especially with terms like "Equal" and "Equivalent" having very different meanings. Another alternative would be completely leaving this structures and methods out of the standard library and using it as a free-standing thrid-party library.
