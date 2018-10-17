@@ -13,7 +13,7 @@ Sets are primitives of many fields in mathematics. Sets are integral to Graph Th
 
 # Detailed design
 
-Defintion of a Set:  
+## Defintion of a Set
 ```
 A `Set` is a collection of definite distinct objects called Elements (of the set).
 ```
@@ -29,7 +29,7 @@ let T = { 1, 1, 3 } // invalid set
 ```
 
 
-Equality and Comparability:
+## Equality and Comparability
 
 note: In logic, `IFF` denotes "if and only if", <=>. It will be used in the following section.
 
@@ -54,6 +54,52 @@ and  T = V
 then S = V  // transitive
 ```
 
+Subsets:
+```
+A set, S, is a subset of set T `iff` every element of S is also an element of T
+```
+A set is said to be a `Proper Subset` if it is simultaneously a subset and not equal to another set.
+```
+let S = { 1, 2, 3 }
+let T = { 1, 2, 3 }
+let V = { 1, 2, 3, 4 }
+```
+Set `S` is equal to set `T`.  
+Set `S` is a subset of set `T`.  
+Set `S` is a subset of set `V`.  
+Set `S` is a proper subset of `V`.  
+Set `S` is not a proper subset of `T`.  
+
+Subsets that are not proper subsets are said to be improper.
+
+Supersets:
+```
+A set, T, is a superset of S `iff` every element of S is also an element of T
+```
+Supersets have similar proper/improper labels. Using the same example as above, the following is true:  
+Set `T` is a superset of set `S`.  
+Set `V` is a superset of set `S`.  
+Set `V` is a proper superset of set `S`.  
+Set `T` is an improper superset of set `S`.  
+
+We should also agree, based on the previous principles, (1) that all sets are improper subsets (and supersets) of themselves, and (2) that the empty set is a subset of every set.
+
+The Empty Set:
+```
+the empty set = { }
+```
+
+Complementary Sets:
+
+Given that a set `S` is a proper subset of another set, `T`, then there exists a third set, `V`, which contains all elements of `T` which are not contained in `S`. This set, `V`, is said to be the `complementary` set of `S` `over` `T`.
+```
+let S = { 1, 2, 3 }
+let T = { 1, 2, 3, 4, 5, 6 }
+```
+The complementary set of `S` `over` `T`, in the above example is as follows:
+```
+V = { 4, 5, 6 }
+```
 
 # How We Teach This
 
