@@ -160,34 +160,100 @@ In the case that two sets share no common elements, then the intersection of the
 
 With these formal definitions, we have sufficient information to begin describing the implementation.
 
+## Data Structures
+
+Set:
+```pony
+  class Set
+    """
+     Docs
+    """
+    create // todo
+```
+
+Empty Set:
+```
+  static Set Empty = Set{ } 
+```
+## Methods
+
+Equality:
+```
+  Bool is_equal(set: Set)
+```
+
+Cardinality:
+```
+  uint cardinality()
+```
+
+Equivelance:
+```
+  Bool is_equivalent(set: Set)
+```
+
+Subsets:
+```
+  Bool is_subset(set: Set)
+  Bool is_proper_subset(set: Set)
+```
+
+Supersets: 
+```
+  Bool is_superset(set: Set)
+  Bool is_proper_superset(set: Set)
+```
+
+Empty:
+```
+  Bool is_empty_set()
+```
+
+Complementary:
+```
+  Set get_complementary_set(set: Set)
+  Bool is_complementary_set(set: Set, complement: Set)
+```
+
+Unions:
+```
+  Set get_union(set: Set)
+  Bool is_union(set: Set, union: Set)
+```
+
+Intersections:
+```
+  Set get_intersection(set: Set)
+  Bool is_intersection(set: Set, intersect: Set)
+  Bool are_disjoint(set: Set)
+```
+
+Operators:
+```
+  Set A == Set B => A.is_equal(B)
+  Set A != Set B => !A.is_equal(B)
+  Set A >= Set B => A.is_superset(B)
+  Set A >  Set B => A.is_proper_superset(B)
+  Set A <= Set B => A.is_subset(B)
+  Set A <  Set B => A.is_proper_subset(B)
+  Set A |  Set B => A.get_union(B)
+  Set A &  Set B => A.get_intersection(B)
+```
+
 
 # How We Teach This
 
-What names and terminology work best for these concepts and why? How is this idea best presented? As a continuation of existing Pony patterns, or as a wholly new one?
-
-Would the acceptance of this proposal mean the Pony guides must be re-organized or altered? Does it change how Pony is taught to new users at any level?
-
-How should this feature be introduced and taught to existing Pony users?
+The best terminology for this library would be to stick with pure set theory terminology. There likely won't be much to teach, as anyone who will be using this library will have some familiarity with set theory, and it's terminology. Set Theorists who will be the target consumers of this library will feel most comfortable with their usual terms.
 
 # How We Test This
-
-How do we assure that the initial implementation works? How do we assure going forward that the new functionality works after people make changes? Do we need unit tests? Something more sophisticated? What's the scope of testing? Does this change impact the testing of other parts of Pony? Is our standard CI coverage sufficient to test this change? Is manual intervention required?
-
-In general this section should be able to serve as acceptance criteria for any implementation of the RFC.
+ Unit tests will be created.
 
 # Drawbacks
-
-Why should we *not* do this? Things you might want to note:
-
-* Breaks existing code
-* Introduces instability into the compiler and or runtime which will result in bugs we are going to spend time tracking down
-* Maintenance cost of added code
+Adding this to the standard library will have some maintainece cost associated. 
 
 # Alternatives
-
-What other designs have been considered? What is the impact of not doing this?
-None is not an acceptable answer. There is always to option of not implementing the RFC.
+Some alternatives could be other naming conventions. Some Set Theory terminology can seem quite nuanced to novices, especially with terms like "Equal" and "Equivalent" having very different meanings. Another alternative would be completely leaving this structures and methods out of the standard library and using it as a free-standing thrid-party library.
 
 # Unresolved questions
-
-What parts of the design are still TBD?
+What is the most idiomatic way to structure this class?
+Can operators be overloaded?
