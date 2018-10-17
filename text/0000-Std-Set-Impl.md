@@ -228,6 +228,11 @@ Intersections:
   Bool are_disjoint(set: Set)
 ```
 
+Validity:
+```
+  Bool is_valid_set()
+```
+
 Operators:
 ```
   Set A == Set B => A.is_equal(B)
