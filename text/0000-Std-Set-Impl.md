@@ -187,7 +187,7 @@ Cardinality:
   uint cardinality()
 ```
 
-Equivelance:
+Equivalence:
 ```
   Bool is_equivalent(set: Set)
 ```
