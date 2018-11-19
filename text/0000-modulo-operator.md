@@ -5,7 +5,7 @@
 
 # Summary
 
-Add a modulo operator `%%` for integer types that is defined as the remainder after floor division. Most importantly the result always has the sign of the Divisor, in contrast to `rem` (`%` operator), whose results always have the result of the dividend.
+Add a modulo operator `%%` for integer types that is defined as the remainder after floor division. Most importantly the result always has the sign of the Divisor, in contrast to `rem` (`%` operator), whose results always have the sign of the dividend.
 This RFC will also add floored division as a method on integer types.
 
 # Motivation
