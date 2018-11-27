@@ -1,7 +1,7 @@
 - Feature Name: binary-heaps
 - Start Date: 2018-11-02
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/133
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2948
 
 # Summary
 
