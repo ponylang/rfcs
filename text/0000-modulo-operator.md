@@ -5,8 +5,8 @@
 
 # Summary
 
-Add a modulo operator `%%` for integer types that is defined as the remainder after floor division. Most importantly the result always has the sign of the Divisor, in contrast to `rem` (`%` operator), whose results always have the sign of the dividend.
-This RFC will also add floored division as a method on integer types.
+Add a modulo operator `%%` for integer and floating point types that is defined as the remainder after floor division. Most importantly the result always has the sign of the Divisor, in contrast to `rem` (`%` operator), whose results always have the result of the dividend.
+This RFC will also add floored division as a method on integer and floating point types.
 
 # Motivation
 
@@ -23,13 +23,15 @@ In order to achieve consistency here, the `%` operator has been renamed to `rem`
 
 - Defined as the remainder from euclidian division (truncating towards zero).
 - The result has the sign of the dividend.
-- Implemented by LLVM [`srem`](https://releases.llvm.org/6.0.1/docs/LangRef.html#srem-instruction)/[`urem`](https://releases.llvm.org/6.0.1/docs/LangRef.html#urem-instruction) instruction.
+- For integers implemented by LLVM [`srem`](https://releases.llvm.org/6.0.1/docs/LangRef.html#srem-instruction)/[`urem`](https://releases.llvm.org/6.0.1/docs/LangRef.html#urem-instruction) instruction.
 
 **mod**
 
-- Defined as remainder from floored division.
+- For Integers it is defined as remainder from floored division.
+- For floats, no flooring is involved, it just uses the sign of the divisor, but the actual remainder operation is the same.
 - The result has the sign of the divisor.
-- [Implementation](https://github.com/JuliaLang/julia/blob/0d713926f85dfa3e4e0962215b909b8e47e94f48/base/int.jl#L182-L225)
+- [Integer Implementation](https://github.com/JuliaLang/julia/blob/0d713926f85dfa3e4e0962215b909b8e47e94f48/base/int.jl#L182-L225)
+- [Float Implementation](https://github.com/JuliaLang/julia/blob/7ea4542359b8629621a1f3cdb1f9aa97fdcfcde2/base/float.jl#L424-L433)
 
 
 ### Haskell
@@ -39,19 +41,21 @@ In order to achieve consistency here, the `%` operator has been renamed to `rem`
 - Defined as remainder after the `quot` operation, which is division truncating towards zero.
 - The result has sign of the dividend.
 - Satisfies the following rule: `(x quot y) * y + (x rem y) == x`
-- Multiple implementations are possible, when using llvm, it uses [`srem`](https://releases.llvm.org/6.0.1/docs/LangRef.html#srem-instruction)/[`urem`](https://releases.llvm.org/6.0.1/docs/LangRef.html#urem-instruction).
+- Multiple implementations are possible, when using llvm, it uses [`srem`](https://releases.llvm.org/6.0.1/docs/LangRef.html#srem-instruction)/[`urem`](https://releases.llvm.org/6.0.1/docs/LangRef.html#urem-instruction)/frem for floats.
 
 **mod**
 
-- Defined as remainder after `div`, which is floored division, rounded towards negative infinity.
+- For integers defined as remainder after `div`, which is floored division, rounded towards negative infinity.
 - The result has the sign of the divisor.
 - Satisfies the following rule: `(x div y) * y + (x mod y) == x`.
 
-As in those languages, Pony should also get back its `mod` operator/function, but this time, correctly defined as the remainder after *floored division* which truncates the result towards negative infinity.
+As in those languages, Pony should also get back its `mod` operator/function, but this time, correctly defined as the remainder after *floored division* (for integers) which truncates the result towards negative infinity. For floats `mod` should not be truncating, but always have the sign of the divisor.
 
 # Detailed design
 
-The `mod` function will be defined on all integer types and will have an accompagnying operator: `%%`.
+The `mod` function will be defined on all integer and floating point types and will have an accompagnying operator: `%%`.
+
+## Integers
 
 `mod` will be defined as the remainder from floored division (rounded towards negative inifinity).
 
@@ -82,6 +86,12 @@ With floored division being defined, `mod` can be implemented as:
 
 Floored division and `mod` will satisfy the following rule: `((fld(x, y) * y) + mod(x, y)) == x`
 
+## Floating Points
+
+The floating point `fld` will be implemented as `(x / y).floor()`.
+
+The floating point `mod` will apply the `rem` operator and make sure the result has the sign of the divisor.
+
 # How We Teach This
 
 The new operators will be added to the operator list in the tutorial. The differences between `rem` and `mod` and between `div` and floored division
@@ -89,7 +99,7 @@ will be also explained in the respective docstrings.
 
 # How We Test This
 
-Add test cases to stdlib tests that ensure that mod and floored division work according to their definition on all integer types.
+Add test cases to stdlib tests that ensure that mod and floored division work according to their definition on all integer and floating point types.
 Verify that `((fld(x, y) * y) + mod(x, y)) == x` holds. Also verify that the same equation is true for the pair of `rem` and `div`.
 
 # Drawbacks
@@ -98,9 +108,9 @@ Verify that `((fld(x, y) * y) + mod(x, y)) == x` holds. Also verify that the sam
 
 # Alternatives
 
-It is also possible to implement both of these functions in the `math` package in stdlib instead of definining it for the integer types in the `builtin` package.
+It is also possible to implement both of these functions in the `math` package in stdlib instead of definining it for the integer and floating point types in the `builtin` package.
 
-It is also possible to just leave the integer types as they are. e.g. Rust also only seems to supply the `rem` operation.
+It is also possible to just leave the integer and floating point types as they are. e.g. Rust also only seems to supply the `rem` operation.
 
 Maybe a more efficient solution exists, which i am not aware of right now. This might also depend on the CPU instruction set.
 
