@@ -16,12 +16,20 @@ Additionally, I think it is helpful to be able to specify the conversion in a co
 
 # Detailed design
 
-`Struct` consists of two functions:
-`pack(fmt: String, args: Array[(Bool | Number | String | Array[U8] val)], wb: Writer = writer): Array[ByteSeq] ?` which is used to pack arguments into a bytestream, and `unpack(fmt: String, rb: Reader): Array[(Bool | Number | String | Array[U8] val)] ?` which does the reverse.
+This is currently implemented in a separate package at [pony-struct](https://github.com/nisanharamati/pony-struct).
 
-It also uses the private type alias `type _Packable is (Bool | Number | String | Array[U8] val)`, which I'll use for the rest of the discussion, and the private helper `_ParseFormat(fmt: String)` which handles the format string parsing for both `pack` and `unpack`.
+
+`Struct` consists of two functions:
+
+1. `pack(fmt: String, args: Array[(Bool | Number | String | Array[U8] val)], wb: Writer = writer): Array[ByteSeq] ?`
+  which is used to pack arguments into a bytestream
+2. `unpack(fmt: String, rb: Reader): Array[(Bool | Number | String | Array[U8] val)] ?`
+  which does the reverse.
+
+It also uses the private type alias `type _Packable is (Bool | Number | String | Array[U8] val)`, and the private helper primitive `_ParseFormat(fmt: String)` which handles the format string parsing for both `pack` and `unpack`.
 
 Under the hood, `Struct` uses the type conversion methods of `Writer` and `Reader` from the `buffered` package.
+
 It might make sense to include the functionality from Struct as part of the `buffered` package, given this close dependency, and how closely related the two are.
 
 Example usage:
@@ -64,7 +72,7 @@ Another benefit is that format specification strings can be reused, as seen in t
 
 # How We Teach This
 
-The inspiration for this work is Python's `struct` built-in module. so initially i named it after it.
+The inspiration for this work is Python's `struct` built-in module. so initially I named it after it.
 
 The documentation included should be enough to get most folks started with it, as the concept itself is similar to `printf` format strings, and to other similar conversion functionality in other languages.
 
@@ -72,7 +80,8 @@ The `pack` and `unpack` function names as well as the order of arguments is borr
 
 The acceptance of this proposal would not require any reorganization of the Pony guides or how it is taught.
 
-This feature could be reintroduced and taught to existing users via the weekly newsletter, and by including it in the documentation.
+This feature could be introduced and taught to existing users via the weekly newsletter, and by including it in the documentation.
+
 As it doesn't change the base functionality of `buffered`, it would not impact existing users whereas users looking for this functionality will be able to find it and use it directly.
 
 # How We Test This
@@ -87,7 +96,7 @@ I think that standard CI coverage will suffice for ongoing test coverage of this
 - However... When writing a network format spec between Python and Pony, I found myself wishing I could use the Python struct format to specify the actual bytestream formatting rules.
   - Even more appealing was the idea of using the same format string on both sides. But perhaps that's a bit too Python<->Pony specific to be generally applicable.
 - While this is really handy when converting from Pony to a bytestream, the other way around still feels a little clunky.
-  Because the return type is Array[(Bool | Number | String | Array[U8] val)], when accessing the unpacked arguments, the user still has to explicitly cast to their target type.
+  Because the return type is `Array[(Bool | Number | String | Array[U8] val)]`, when accessing the unpacked arguments, the user still has to explicitly cast to their target type.
   I'm not super happy about this part, but I don't have any good ideas on how to make this more user friendly. I'd be happy to incorporate any ideas or feedback you might have for this!
   e.g. (from one of the unit tests):
   ```pony
