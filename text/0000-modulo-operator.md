@@ -57,9 +57,11 @@ The `mod` function will be defined on all integer and floating point types and w
 
 ## Integers
 
+For Integer types this operator will have the partial and unsafe variants: `%%?` and `%%~`. There will also be a `modc` function being added, returning a flag for overflow/underflow and the actual result.
+
 `mod` will be defined as the remainder from floored division (rounded towards negative inifinity).
 
-As the current integer division operation is truncated towards zero, an additional floored division function needs to be defined on all integer types. This one will be called `floored_div`, a short version `fld` or `fldiv` is also possible. This function will have no operator symbol mapping to it. For unsigned integer types, floored division will be the same as `div`. For signed integer types it needs to be implemented differently.
+As the current integer division operation is truncated towards zero, an additional floored division function needs to be defined on all integer types. This one will be called `fld`. This function will have no operator symbol mapping to it. For unsigned integer types, floored division will be the same as `div`. For signed integer types it needs to be implemented differently. To stay consistent there will also be `fld_unsafe`, `fld_partial` and `fldc`.
 
 Floored division for signed integers will be implemented as follows:
 
