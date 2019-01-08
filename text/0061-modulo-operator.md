@@ -1,7 +1,7 @@
 - Feature Name: modulo_operator
 - Start Date: 2018-11-09
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/135
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2974
 
 # Summary
 
@@ -74,7 +74,7 @@ Floored division for signed integers will be implemented as follows:
     else
       div_res
     end
-    
+
 ```
 
 With floored division being defined, `mod` can be implemented as:
