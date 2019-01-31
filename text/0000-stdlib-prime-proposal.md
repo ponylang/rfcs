@@ -18,6 +18,8 @@ This feature may also be used for benchmarking, to show how fast Pony crunches d
 # Detailed design
 
 A draft/proposal of the feature is up at [pony-primes](https://github.com/adri326/pony-primes).
+It is there for you to criticize and stands as a proposal for what would then be implemented in the `stdlib`, which could still be modified to fit for its needs (see the *Unresolved Questions*).
+
 Most of the features will be contained in a `Prime` primitive, with the only exception of the prime iterator, which has its own class, `PrimeIterator`.
 
 The methods and class will have generics, to allow the user to choose what type they want to be working with. `USize` is the default type for these generics.
@@ -132,11 +134,12 @@ None of the code here have an impact on the other parts of the stdlib and only t
 This code would sit next to fibonacci's code and should not require much maintenance (the fibonacci code hasn't been updated in 2 years).
 
 However, this feature is not important an important one, and only implements common algorithms which are rarely implemented in other languages' standard library.
-It could thus find a better home in `main.actor`.
+It could thus remain as an independent library and be referenced on
+`main.actor`.
 
 # Alternatives
 
-As stated above, this feature could be redirected to `main.actor`, or even stay where it currently is - in its own repository.
+As stated above, this feature could stay in its current form, that is, as an independent library at [pony-primes](https://github.com/adri326/pony-primes) and be referenced on `main.actor`.
 
 # Unresolved questions
 
