@@ -19,9 +19,8 @@ close the connection.
 
 # Detailed design
 
-A new public method `fun ref hard_close()` would be created on `TCPConnection`.
-This method would invoke the existing private method `fun ref _hard_close()`
-which in-turn would perform the hard close.
+The existing private method `fun ref _hard_close()` would be made public (`fun
+ref hard_close()`).
 
 # How We Teach This
 
@@ -29,7 +28,7 @@ This new method should be noted in the changelog.
 
 # How We Test This
 
-A code review should suffice as this would be a trivial implementation.
+A code review should suffice as this would be trivial.
 
 # Drawbacks
 
@@ -49,4 +48,4 @@ is achievable via a call to `TCPConnection.mute()` and subsequently to
 # Unresolved questions
 
 If the alternative was implemented, would it be useful to introduce `fun ref
-unmute_now()` as a counterpart.
+unmute_now()` as a counterpart?
