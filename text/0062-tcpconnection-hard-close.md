@@ -1,7 +1,7 @@
 - Feature Name: tcpconnection-hard-close
 - Start Date: 2019-03-03
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/145
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3109
 
 # Summary
 
