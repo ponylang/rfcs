@@ -68,9 +68,9 @@ The error management and the logic of the parameter `step` also deserve a dedica
 
 # Drawbacks
 
-* Some behaviors might differ compared to the old Range implementation 
+* Some behaviors might differ compared to the old Range implementation. In particular, the range definitions that before would have created an infinite range, will now produce an empty range.
 * The "empty list error" logic instead of explicit errors might surprise a fraction of the users
-
+* If a range is increasing or decreasing will depend on the specific values of begin and end, making the "direction" of the range known only at runtime without explicit checks on these values. Nonetheless this behavior can be observed by the user using `is_forward`.
 
 # Alternatives
 
