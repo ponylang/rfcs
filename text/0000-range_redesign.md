@@ -10,9 +10,9 @@ A Range reimplementation that includes the features from collections.Reverse tog
 # Motivation
 
 The existence of Range and Reverse as separate classes, each one with their own limitations, to cover a use case that in most languages is addressed by a single API highlights the possibility for an improvement. Having a single, well-tested implementation to generate numeric ranges will improve the quality of life of new developers and possibly reduce unexpected behaviors for a core piece of the stdlib.
-For example in the existing implementation it is possible to generate infinite ranges without any explicit control. 
+For example in the existing implementation it is possible to generate infinite ranges without any explicit control. To check that a range is infinite, the user has to call the dedicated function (`is_infinite`) to be sure that its range will terminate. This unloads onto the user a lot of unnecessary checks that could be incorporated into the Range class. In addition to that, the current implementation doesn't allow to express a range spanning over a whole data type since it makes assumptions on the exclusiveness of the right bound. This prevents the user from creating a range that includes the max element of a given data type. 
 
-In addition to that, the current implementation doesn't allow to express a range spanning over a whole data type since it makes assumptions on the exclusiveness of the right bound.
+
 
 # Detailed design
 
@@ -29,8 +29,28 @@ The reference implementation solves these problems in the following way:
 * implements a more flexible constructor with the following signature: `
   new define(b: Bound[T], e: Bound[T], step: T=1)`. 
 * Defines Step so that it cannot be negative or zero. In that case the range is considered empty. 
-**** Supports the notion of range direction. If b<e the range is defined as forward, otherwise backward. If b==e the range is empty.
-* implements two additional constructors `incl` and `to`, to support the case where both bounds are inclusive and the case where the range starts at 0. Additional constructors can be considered.
+* Supports the notion of range direction. If b<e the range is defined as forward, otherwise backward. If b==e the range is empty.
+* implements the additional constructor `to`, to support the case where the range starts at 0. Additional constructors can be considered.
+
+Building on this, we can lay out a prospective structure for the `Range` class API.
+
+```
+class Range[T: (Real[T] val & Number) = USize]
+
+  new create(lower:T, upper:T,step:T=1)
+  new define(b: Bound[T], e: Bound[T], step: T=1)
+  new to(e:T, step:T=1)
+  fun is_forward():Bool
+  fun is_invalid():Bool
+  fun has_next(): Bool
+  fun ref next(): T
+  fun get_increment_step():T
+  fun get_end():Bound[T]
+  fun get_begin():Bound[T]
+    
+```
+
+
 
 # How We Teach This
 
