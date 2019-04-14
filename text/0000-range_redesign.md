@@ -85,4 +85,4 @@ The main alternative to the redesign as a whole is to keep the existing implemen
 
 # Unresolved questions
 
-Some behaviors with float arithmetic are not really covered by the reference implementation and should be discussed.
+In the reference implementation, the overflow check doesn't behave correctly for floating point numbers. It might very well be just an implementation mistake but given the trickyness of floating point arithmetics, it might hide some complexity that might reverberate in the specs too. 
