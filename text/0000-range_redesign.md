@@ -26,8 +26,8 @@ The reference implementation solves these problems in the following way:
 
 * implements a trait `Bound[T]`, implemented by two classes: `Inclusive[T]` and `Exclusive[T]` to represent the bounds. Each one of them will be able to return the value to be used to define the range in the case that they are used as an upper or lower bound.
 * implements a class `Range` with a default constructor that respects the existing API
-* implements a more flexible constructor with the following signature: `
-  new define(b: Bound[T], e: Bound[T], step: T=1)`. 
+* implements a more flexible constructor with the following signature: 
+ `new define(b: Bound[T], e: Bound[T], step: T=1)`. 
 * Defines Step so that it cannot be negative or zero. In that case the range is considered empty. 
 * Supports the notion of range direction. If b<e the range is defined as forward, otherwise backward. If b==e the range is empty.
 * implements the additional constructor `to`, to support the case where the range starts at 0. Additional constructors can be considered.
@@ -62,14 +62,15 @@ The error management and the logic of the parameter `step` also deserve a dedica
 
 * Test that the constructors actually set the fields as expected
 * Generate partial and full ranges, forward and backward, for a given data type and verify that the returned iterator contains the expected values
-* Verify that all the error conditions actually return an empty iterator (negative step, invalid bounds)
-* Explicitely test the behavior of bounds around the min and max values to avoid overflow errors
+* Verify that passing a negative step returns an empty iterator
+* Verify that passing bounds with the same value returns an empty iterator
+* Explicitely test the behavior of bounds around the min and max values to avoid overflow errors. In particular, one must verify that using the max or min value of a given data type as a bound produces a range that actually starts or ends with the value specified as a bound. 
 
 
 # Drawbacks
 
 * Some behaviors might differ compared to the old Range implementation. In particular, the range definitions that before would have created an infinite range, will now produce an empty range.
-* The "empty list error" logic instead of explicit errors might surprise a fraction of the users
+* The "empty list error" logic instead of explicit errors might surprise a fraction of the users. Also it might break some existing code.
 * If a range is increasing or decreasing will depend on the specific values of begin and end, making the "direction" of the range known only at runtime without explicit checks on these values. Nonetheless this behavior can be observed by the user using `is_forward`.
 
 # Alternatives
