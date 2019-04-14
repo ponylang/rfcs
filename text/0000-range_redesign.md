@@ -54,9 +54,9 @@ class Range[T: (Real[T] val & Number) = USize]
 
 # How We Teach This
 
-The API of the `Range` class is rather similar to the API of the `Range` implementations in many other languages. Explaining the basic behavior should be straightforward. The Bounds logic might deserve a dedicated explanation since it's necessary to use the default constructor and might be unexpected. 
+The API of the `Range` class is rather similar to the API of the `Range` implementations in many other languages. This should be documented in the stdlib documentation, explaining the basic usage alongside the details of the `Bounds` classes. On top of this, a dedicated example file can be produced, containing the intended usage of the API in scenarios where, for example, an error or an invalid range is produced.
 
-The error management and the logic of the parameter `step` also deserve a dedicated explanation: while being similar to the logic seen in many other languages, in a quick survey we understood that the design of these behaviors have a much bigger variance and diversity across different languages. 
+In many languages you would also find explanations on how to create a range in every tutorial. Pony's tutorial is currently lacking coverage of the `collections` package but if and when it will be added, it should also contain an introduction to the `Range` class.
 
 # How We Test This
 
