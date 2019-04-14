@@ -20,7 +20,7 @@ The new implementation should fullfil the following design principles:
 
 * be able to generate all the possible ranges, increasing and decreasing, for all the data types, without incurring in overflow errors.
 * offer a unified, usable, coherent API with the possibility to specify inclusive or exclusive bounds. To achieve this, the definition of the bounds and the range should be independent. The Range class should offer helper methods to cover the most common cases without explicitely instancing the bounds.
-* never raise errors but instead return an empty list. This is done to make the class more usable in day to day usage. A version of the class with explicit errors can be considered.
+* never raise errors but instead return an empty list. This decision arises from the assumption that a majority of ranges are defined with bounds known at compile time while declaring ranges using runtime values is less common. The error handling in that case has to be done by calling the `is_invalid()` method. A version of the class with explicit errors can be considered.
 
 The reference implementation solves these problems in the following way:
 
