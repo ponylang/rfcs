@@ -5,15 +5,15 @@
 
 # Summary
 
-This RFC proposes renaming the `MaybePointer` struct of the `builtin` package to `StructPointer`.
+This RFC proposes renaming the `MaybePointer` struct of the `builtin` package to `NullablePointer`.
 
 # Motivation
 
-The current name, `MaybePointer`, has caused confusion for many Pony users who are either new to the language or using the C Foreign Function Interface (C-FFI) for the first time. As I understand it, the purpose of `MaybePointer` is for passing pointers to structs across the C-FFI boundary where those pointers may be null. `StructPointer` may lead to less confusion for users searching through the standard library for the functionality that this struct provides.
+The current name, `MaybePointer`, has caused confusion for many Pony users who are either new to the language or using the C Foreign Function Interface (C-FFI) for the first time. As I understand it, the purpose of `MaybePointer` is for passing pointers to structs across the C-FFI boundary where those pointers may be null. `NullablePointer` may lead to less confusion for users searching through the standard library for the functionality that this struct provides.
 
 # Detailed design
 
-The `MaybePointer` struct in builtin will be renamed to `StructPointer`. It will otherwise remain unchanged.
+The `MaybePointer` struct in builtin will be renamed to `NullablePointer`. It will otherwise remain unchanged.
 
 # How We Teach This
 
