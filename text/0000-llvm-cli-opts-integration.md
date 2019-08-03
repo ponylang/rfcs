@@ -17,8 +17,8 @@ Other cases like turning on advanced mode in some LLVM passes (e.g. the `-basica
 3. Not available in release build, as we want to keep minimum exposure of internal LLVM part to normal users.
 
 # Detailed design
+LLVM already has a nice and handy infrastructure for command line interface. Configuring command line options for LLVM would be as simple as calling just one function (i.e. `llvm::cl::ParseEnvironmentOptions`). The real challenge here is to avoid conflicts between LLVM-specific command line options and existing `ponyc` command line options. Here are two possible options:
 
-One of the goals of this feature is to keep LLVM-specific command line options separated from existing `ponyc` command line options. There are two ways to achieve it.
 ## Option1 - Clang style options prepending
 For every LLVM-specific command line option, one need to prepend a special token command line options before it. For example, to pass `-basicaa-recphi` , a LLVM-specific option, to `ponyc`, instead of running command like this:
 ```
@@ -76,7 +76,7 @@ The LLVM interfaces changes pretty fast, thus there is no gurantee on compatibil
 
 # Alternatives
 
-I've cover alternatives in the _Detailed design_ section.
+Use environment variables to pass LLVM-specific command line options. Similar to what Julia lang does: https://docs.julialang.org/en/v1/manual/environment-variables/index.html#JULIA_LLVM_ARGS-1 .
 
 # Unresolved questions
 
