@@ -1,7 +1,7 @@
 - Feature Name: rename_maybe_pointer
 - Start Date: 2019-07-30
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/152
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3273
 
 # Summary
 
