@@ -17,9 +17,40 @@ Other cases like turning on advanced mode in some LLVM passes (e.g. the `-basica
 3. Not available in release build, as we want to keep minimum exposure of internal LLVM part to normal users.
 
 # Detailed design
-LLVM already has a nice and handy infrastructure for command line interface. Configuring command line options for LLVM would be as simple as calling just one function (i.e. `llvm::cl::ParseEnvironmentOptions`). The real challenge here is to avoid conflicts between LLVM-specific command line options and existing `ponyc` command line options. Here are two possible options:
+LLVM already has a nice and handy infrastructure for command line interface. Configuring command line options for LLVM would be as simple as calling just one function (i.e. `llvm::cl::ParseEnvironmentOptions`). The real challenge here is to avoid conflicts between LLVM-specific command line options and existing `ponyc` command line options.
 
-## Option1 - Clang style options prepending
+This RFC proposes to join all the LLVM-specific options into a comma separated string, then pass it to `ponyc`. For example, if we want to pass `-basicaa-recphi` and `-stats-json` to `ponyc`, we do:
+```
+ponyc -llvm_opts=-basicaa-recphi,-stats-json <rest of the ponyc options>
+```
+To pass the aforementioned `-opt-bisect-limits 20` option to `ponyc`:
+```
+ponyc -llvm_opts=-opt-bisect-limits,20 <rest of the ponyc options>
+```
+However, some of the LLVM options have _already_ been comma separated (e.g. the `-debug-only` option). We can solve this by using different separator, for example, the '+' symbol:
+```
+ponyc -llvm_opts=-debug-only+dce,licm+-stats-json <rest of the ponyc options>
+```
+
+Another detail is that this feature should only be turned on in dev builds. Since it is probably only useful for `ponyc` developers, and we want to keep minimum exposures of internal LLVM components as well.
+
+# How We Teach This
+This idea is best presented as an improvement for `ponyc` development experience. Especially the development of LLVM part in `ponyc`.
+
+This idea will be a new feature for `ponyc`. And we do not need to alter any of the existing Pony guideline rules. Nevertheless, we could add this as a new pattern into `ponyc` developer's guildline as the suggested way to debug the LLVM part.
+
+# How We Test This
+This feature should not break the existing tests. But we need new tests for this feature.
+
+The new tests should make sure that LLVM-specific options are correctly forwarded. Thus unit tests are not necessary, the tests could be performed by executing `ponyc` and checking its output message.
+
+The standard CI coverage should be sufficient and there is no manual intervention required.
+
+# Drawbacks
+The LLVM interfaces changes pretty fast, thus there is no gurantee on compatibilities of using LLVM-specific command line options.
+
+# Alternatives
+## Clang style option prepending
 For every LLVM-specific command line option, one need to prepend a special token command line options before it. For example, to pass `-basicaa-recphi` , a LLVM-specific option, to `ponyc`, instead of running command like this:
 ```
 ponyc -basicaa-recphi <rest of the ponyc options>
@@ -41,43 +72,11 @@ In here, we need to use like this:
 ponyc -mllvm -opt-bisect-limits -mllvm 20 <rest of the ponyc options>
 ```
 
-## Option2 - Comma separated list
-Another approach is to join all the LLVM-specific options into a comma separated string, and pass it to `ponyc`. For example, if we want to pass `-basicaa-recphi` and `-stats-json` to `ponyc`, we do:
-```
-ponyc -llvm_opts=-basicaa-recphi,-stats-json <rest of the ponyc options>
-```
-To pass the aforementioned `-opt-bisect-limits 20` option to `ponyc`:
-```
-ponyc -llvm_opts=-opt-bisect-limits,20 <rest of the ponyc options>
-```
-However, some of the LLVM options have _already_ been comma separated (e.g. the `-debug-only` option). We can solve this by using different separator, for example, the '+' symbol:
-```
-ponyc -llvm_opts=-debug-only+dce,licm+-stats-json <rest of the ponyc options>
-```
-
-I think pros and cons of these two options are complementary: Option1 is a little bit annoying as we need to prepend a lot of `-mllvm` tokens if our option list is long, but it can avoid the seperator symbol confusion occurs in option2. On the other hand, option2 looks more straight forward and less wordy. However, even we're not using comma as the separator symbol, picking a right separator symbol is still tricky as it might not compatible with future LLVM changes. Therefore, it might be a good idea to include _both_ approaches in `ponyc`.
-
-Another detail is that this feature should only be turned on in dev builds. Since it is probably only useful for `ponyc` developers, and we want to keep minimum exposures of internal LLVM components as well.
-
-# How We Teach This
-This idea is best presented as an improvement for `ponyc` development experience. Especially the development of LLVM part in `ponyc`.
-
-This idea will be a new feature for `ponyc`. And we do not need to alter any of the existing Pony guideline rules. Nevertheless, we could add this as a new pattern into `ponyc` developer's guildline as the suggested way to debug the LLVM part.
-
-# How We Test This
-This feature should not break the existing tests. But we need new tests for this feature.
-
-The new tests should make sure that LLVM-specific options are correctly forwarded. Thus unit tests are not necessary, the tests could be performed by executing `ponyc` and checking its output message.
-
-The standard CI coverage should be sufficient and there is no manual intervention required.
-
-# Drawbacks
-The LLVM interfaces changes pretty fast, thus there is no gurantee on compatibilities of using LLVM-specific command line options.
-
-# Alternatives
-
+## Using enviornment variable
 Use environment variables to pass LLVM-specific command line options. Similar to what Julia lang does: https://docs.julialang.org/en/v1/manual/environment-variables/index.html#JULIA_LLVM_ARGS-1 .
+
+Last but not the least, we can support all the possible approaches mentioned in this RFC. That is, comma-separated string, Clang style options prepending and using environment variable.
 
 # Unresolved questions
 
-Should we use both Option1 and Option2 approaches mentioned in the _Detailed design_ section?
+As mentioned in the detailed design section, some of the LLVM options have already been comma separated, how do we pick a proper delimiter? How do we ensure the delimiter we pick is compatible with future LLVM changes?
