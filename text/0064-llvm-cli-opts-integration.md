@@ -1,7 +1,7 @@
 - Feature Name: llvm-cli-opts-integration
 - Start Date: 2019-08-03
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/153
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3327
 
 # Summary
 
