@@ -13,7 +13,15 @@ A call site distinction between functions and behaviours on an actor would give 
 
 # Detailed design
 
-A new syntax of `a~b()` is used for calling a behaviour (`b`) on an actor (`a`). The previous notation of `a.b()` will now only be allowed at a function call site.
+- A new syntax of `a~b()` is used for calling a behaviour (`b`) on an actor (`a`). The previous notation of `a.b()` will now only be allowed at a function call site.
+
+- Any actor function with sendable parameters may be called asynchronously as behaviours using the new `~` syntax. Doing so will cause the return type of the function to become `None` when called as a behaviour.
+
+- Apply sugar on behaviour calls will take the form of `a~()` as the asynchronous alternative to `a()`. So `a~()` will be sugar for `a~apply()`.
+
+- Similarly, `A~()` will be the new create sugar for actor constructors that execute asynchronously as they do now. `A()` will now be syntactic sugar for calling the `create` constructor of any class or actor synchronously. Synchronous actor constructors will be a new language feature.
+
+- Partial function application will use the `$` operator instead of the current `~` operator in order to remove ambiguity from these two disparate language features.
 
 As an example, the following `TCPConnectionNotify` has its `received` function executed within a `TCPConnection` behaviour. In this example, "stuff" will never be written if "done" has been received. This is because `conn~write("things")` is called as a behaviour and `conn.close()` is called as a function. Using the new syntax, it is immediately obvious that the execution of `write` is not occurring in-line with the rest of the function body.
 ```pony
@@ -62,20 +70,8 @@ This would be a major breaking change, and would likely break most existing Pony
 
 # Alternatives
 
-Alternative operator for async call syntax (currently `~`) that doesn't conflict with the [partial applications](https://tutorial.ponylang.io/expressions/partial-application.html).
+- Alternative syntax for partial function application, instead of `~` or `$`.
 
 # Unresolved questions
 
-- How should partial application syntax be modified to support this change? I believe that behaviour calls are much more common than partial application, and should therefore take the more "understandable" and terse syntax. But this is very subjective and suggestions for alternative syntax for either are welcome.
-
-- Should apply sugar still be allowed for actors? If so, we would have to differentiate behaviour calls with something like `a~()`. For reference, here is a list of all public actors in the stdlib with `apply` behaviours:
-  - `builtin.InputStream`
-  - `builtin.Stdin`
-  - `bureaucracy.Custodian`
-  - `ponybench.PonyBench`
-  - `ponytest.PonyTest`
-  - `promises.Promise`
-  - `term.ANSITerm`
-  - `time.Timers`
-
-- May any actor function with sendable parameters be called, using the new syntax, as behaviours? If so, any return type on the function would become `None` when called this way.
+- Should the `be` keyword continue to exist to enforce that a function may be called asynchronously (and therefore has only sendable parameters)?
