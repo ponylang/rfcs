@@ -41,7 +41,11 @@ They have methods for detecting if they are within a certain IP range (e.g. mult
 
 They also have methods for returning the addresses in other formats e.g. Strings, octets or similar.
 
-`NetAddress` will return instances of those classes, instead of the raw representations. Its internal state will not change, as it must be equivalent to `sockaddr_storage` and thus cannot be changed.
+`NetAddress` will return instances of those classes, in addition to the raw representations. Its internal state will not change, as it must be equivalent to `sockaddr_storage` and thus cannot be changed. The signature of the methods `ipv4_addr` and `ipv6_addr` to return an `IPv4Address` and `IPv6Address` respectively.
+Additional methods (`ipv4_addr_raw`, `ipv6_addr_raw`) will be added that return the raw representation of the IP addresses in host byte order as the old `ipv4_addr` and `ipv6_addr` methods did,
+in order to make the raw value available without additional allocation as it would be necessary with the new classes: 
+`net_address.ipv4_addr().u32()` 
+which might hurt performance if the compiler is not optimizing it away.
 
 With this change, and some tiny tweaks to libponyrt, it is possible to make `NetAddress` Stringable, too.
 
