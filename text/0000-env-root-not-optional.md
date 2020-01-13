@@ -42,6 +42,7 @@ actor Main
       env.err.print("no auth available.")
       env.exitcode(1)
     end
+```
 
 [`Env.root`](https://stdlib.ponylang.org/builtin-Env#let-root-ambientauth-val-none-val) is of type `(AmbientAuth | None)`
 and can thus possibly be `None`. This is for enabling people to create artificial `Env` instances that not need an `AmbientAuth` e.g. for testing
