@@ -54,7 +54,7 @@ class WithOptionalStuff
 
 It is idiomatic in Pony to express optional types as a union of that type and `None`: `(Type | None)`. To get to the actual reference a `match` expression or an `as` expression must be used. Both might not be the most convenient way to deal with optional types. The former, because might be a lot of code to write, the latter because it is partial and requires a suurrounding `try` block. Especially people coming from languages like java or scala, that have a class `Option[T]` or `Optional<T>` might find a similar api more appealing.
 
-To this end the [maybe](https://github.com/mfelsche/pony-maybe) library should be included into the Pony stdlib as a separate package.
+To this end the [maybe](https://github.com/mfelsche/pony-maybe) library should be included into the Pony stdlib as a separate package. It provides an alternative api to the Pny core language instruments for handling optional types. The [maybe](https://github.com/mfelsche/pony-maybe) api allows to use operations like `map`, `flat_map`, `filter`  on optional types in Pony, that are well-known from other functional languages 
 
 Handling optional types is a regular question on the Ponylang zulip chat, especially for newcomers, and also because it is so common; And nearly everytime we suggest pattern matching using `match` expressions, `as` expression or using the [maybe](https://github.com/mfelsche/pony-maybe) library.
 
@@ -66,6 +66,58 @@ The detailed design of the [maybe](https://github.com/mfelsche/pony-maybe) libra
     https://github.com/mfelsche/pony-maybe
 
 As a package name, i would stick to `maybe`, as the other alternatives that come to mind: `option` or `optional` or `opt` is too close to the existing (though deprecated) stdlib package [options](https://stdlib.ponylang.io/options--index).
+
+## Usage examples
+
+Do something when the optional type is present:
+
+```pony
+// without maybe
+match opt_thing
+| let thing: T =>
+  // do something with thing
+end
+
+// with maybe
+Opt.apply[T](opt_thing, {(thing) => /* do something with thing */ })
+
+// with maybe II
+for thing in Opt.iter[T](opt_thing) do
+  // do something with thing
+end
+```
+
+Get the thing out of an optional type and get a default value if it is not:
+
+```pony
+// without maybe
+match opt_thing
+| let thing: T => thing
+else
+  some_default_thing
+end
+
+// with maybe
+Opt.get[T](opt_thing, some_default_thing)
+```
+
+Chain multiple expression, returning an optional type, together:
+
+```pony
+// without maybe
+let opt_t2: (T2 | None) = 
+  match get_me_some_opt_thing()
+  | let thing: T => take_t_return_opt_t2(thing)
+  end
+
+// with maybe
+let opt_t2: Maybe[T2] = Opt.flat_map[T, T2](
+  get_me_some_opt_thing(), {
+    (thing) => take_t_return_opt_t2(thing)
+  }
+)
+```
+
 
 # How We Teach This
 
