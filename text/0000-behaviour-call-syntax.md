@@ -19,7 +19,11 @@ A call site distinction between functions and behaviours on an actor would give 
 
 - Apply sugar on behaviour calls will take the form of `a~()` as the asynchronous alternative to `a()`. So `a~()` will be sugar for `a~apply()`.
 
-- Similarly, `A~()` will be the new create sugar for actor constructors that execute asynchronously as they do now. `A()` will now be syntactic sugar for calling the `create` constructor of any class or actor synchronously. Synchronous actor constructors will be a new language feature.
+- Update sugar on behaviour calls will take the form of `a~(key) = value` as the asynchronous alternative to `a(key) = value`. So `a~(key) = value` will be sugar for `a~update(key, value)`.
+
+- `A~()` will be the new create sugar for actor constructors that execute asynchronously as they do now.
+
+- The compiler will no longer treat `fun tag` as equivalent to `be` for the purposes of structural or nominal subtyping.
 
 - Partial function application will use the `$` operator instead of the current `~` operator in order to remove ambiguity from these two disparate language features.
 
@@ -72,6 +76,8 @@ This would be a major breaking change, and would likely break most existing Pony
 
 - Alternative syntax for partial function application, instead of `~` or `$`.
 
-# Unresolved questions
+# Unresolved questions for future RFCs
 
 - Should the `be` keyword continue to exist to enforce that a function may be called asynchronously (and therefore has only sendable parameters)?
+
+- Should we allow synchronous actor constructors?
