@@ -1,7 +1,7 @@
-- Feature Name: env_root_require_ambientauth
+- Feature Name: env-root-require-ambientauth
 - Start Date: 2020-01-20
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/159
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3557
 
 # Summary
 
@@ -12,7 +12,6 @@
 In a discussion in the community it was mentioned that having to always use `as` with surrounding `try` or a pattern-match for accessing `AmbientAuth` via [`Env.root`](https://stdlib.ponylang.org/builtin-Env#let-root-ambientauth-val-none-val) is a lot of ceremony and it turned out the reason for this was kind of hard to justify, especially for newcomers:
 
 ```pony
-
 actor Main
   new create(env: Env) =>
     try
