@@ -31,7 +31,7 @@ set -o nounset
 LABEL=$(jq -r '.label.name' "${GITHUB_EVENT_PATH}")
 STATUS_LABEL=$(
   jq -r '.label.name' "${GITHUB_EVENT_PATH}" |
-  grep -o -E '1- final comment period|2 - ready for vote' ||
+  grep -o -E '1 - final comment period|2 - ready for vote' ||
   true
 )
 
