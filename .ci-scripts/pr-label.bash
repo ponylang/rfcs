@@ -28,6 +28,7 @@ set -o nounset
 # If it isn't a changelog label, let's exit.
 #
 
+LABEL=$(jq -r '.label.name' "${GITHUB_EVENT_PATH}")
 STATUS_LABEL=$(
   jq -r '.label.name' "${GITHUB_EVENT_PATH}" |
   grep -o -E '1- final comment period|2 - ready for vote' ||
@@ -36,7 +37,7 @@ STATUS_LABEL=$(
 
 if [ -z "${STATUS_LABEL}" ];
 then
-  echo -e "\e[34m${STATUS_LABEL} isn't a status label. Exiting.\e[0m"
+  echo -e "\e[34m'${LABEL}' isn't a status label. Exiting.\e[0m"
   exit 0
 fi
 
