@@ -41,8 +41,8 @@ then
   exit 0
 fi
 
-PR_TITLE=$(jq -r '.title' "${GITHUB_EVENT_PATH}")
-PR_URL=$(jq -r '.url' "${GITHUB_EVENT_PATH}")
+PR_TITLE=$(jq -r '.pull_request.title' "${GITHUB_EVENT_PATH}")
+PR_HTML_URL=$(jq -r '.pull_request.html_url' "${GITHUB_EVENT_PATH}")
 
 # Update Last Week in Pony
 echo -e "\e[34mAdding RFC status change to Last Week in Pony...\e[0m"
@@ -53,7 +53,7 @@ lwip_url=$(echo "${result}" | jq -r '.[].url')
 if [ "$lwip_url" != "" ]; then
   body="
 The '${PR_TITLE}' RFC has been updated to '${STATUS_LABEL}'
-See the [RFC](https://github.com/ponylang/rfcs/pull/${PR_URL}) for more details.
+See the [RFC](https://github.com/ponylang/rfcs/pull/${PR_HTML_URL}) for more details.
 "
 
   jsontemplate="
