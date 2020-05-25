@@ -54,7 +54,7 @@ lwip_url=$(echo "${result}" | jq -r '.[].url')
 if [ "$lwip_url" != "" ]; then
   body="
 The '${PR_TITLE}' RFC has been updated to '${STATUS_LABEL}'
-See the [RFC](https://github.com/ponylang/rfcs/pull/${PR_HTML_URL}) for more details.
+See the [RFC](${PR_HTML_URL}) for more details.
 "
 
   jsontemplate="
