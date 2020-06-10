@@ -15,9 +15,10 @@ would be much easier if the log level was exposed in LogFormatter.apply().
 
 # Detailed design
 
-- Add a `log_level` argument to `LogFormatter.apply()` with type `LogLevel`.
-- Change `Logger.log` to add `_level` to `_formatter.apply()`
-- Change `DefaultLogFormatter.apply` to accept (and ignore) the new `log_level`
+- Add a `log_level` argument with type `LogLevel` to `LogFormatter.apply()`, in the first position
+- Have all subtypes of `LogLevel` implement the `Stringable` interface
+- Change `Logger.log` to add the `_level` field as an argument to `_formatter.apply()`
+- Change `DefaultLogFormatter.apply()` to accept (and ignore) the new `log_level`
   argument.
 
 # How We Teach This
