@@ -40,13 +40,13 @@ Should include `BigInt` and `BigFloat`.
 
 `math/series` should include a `Series` interface which is a superclass of `Iterator`. The purpose of creating a new abstract data type is to generalize functions over mathematical series which do not make sense over iterators -- such as whether a `Series` is diverging or converging, a property that is all but meaningless for an `Iterator`.
 
-Potential series include `Fibonacci` (already exists), `Pascal` (nCk), `Triangular` ({n+1}C{2}), `Square` (n^2), `Pentagonal` ({2n * (2n - 1)} / 2), etc.
+Example series include `Fibonacci` (already exists), `Pascal` (nCk), `Triangular` ({n+1}C{2}), `Square` (n^2), `Pentagonal` ({2n * (2n - 1)} / 2), etc.
 
 ### `math/constant`
 
 Initial values to include are those with underlying LLVM representations from the [number namespace](https://llvm.org/doxygen/namespacellvm_1_1numbers.html).
 
-Once these values exist in `math/constant`, they should be removed from where they are now, which is on [`Float`](https://github.com/ponylang/ponyc/blob/master/packages/builtin/float.pony).
+Once these values exist in `math/constant`, they should be removed from where they are now, which is on `F32` and `F64` of [`Float`](https://github.com/ponylang/ponyc/blob/master/packages/builtin/float.pony).
 
 I foresee this as a primitive `Constant` with methods for each value (e.g., `Constant.pi[A: Float](): A`).
 
@@ -62,7 +62,7 @@ Changing the underlying precision "in-place" is done via a `prec[C: Real]()` met
 
 `Complex` should follow similar to `math/rational` in that it is parameterized on `Real` types which are used to represent both the real and imaginary part of the number -- `let x = Complex[U128](7, 2)` is `7 + 2i`.
 
-Changing the underlying precision "in-place" is done via a `prec[C: Real]()` method which creates a new instance of the value with a different precision.
+Changing the underlying precision is done via a `prec[C: Real]()` method which creates a new instance of the value with a different precision.
 
 ### `math/(x,exp,etc)`
 
@@ -94,9 +94,9 @@ The amount of subpackages is a lot and could be reduced down to one single `math
 
 # Unresolved questions
 
-+ How expansive should the `math` library (whether that is one package or multiple subpackages) become?
-+ Does `Rational` mean `Decimal` and/or `Fractional` types are not needed?
++ How expansive should the `math` library become (whether that is one package or multiple subpackages)?
++ Does having `Rational` mean `Decimal` and/or `Fractional` types are not needed at the moment?
 
 ---
 
-My personal opinion is that the standard `math` library, in any form, should only include elements of no opinion. That is to say, a `Rational` is numerator over denominator and any implementation reduces down to that form, meanwhile a `Graph` type could be backed by: adjacency list, adjacency matrix, or incidence matrix and given there are multiple options is better left out of the standard library in favor of community implementations.
+My personal opinion is that the standard `math` library, in any form, should only include elements of no opinion. That is to say, a `Rational` is numerator over denominator and any implementation reduces down to that form, meanwhile a `Graph` type could be backed by: adjacency list, adjacency matrix, or incidence matrix, and given there are multiple options is better left out of the standard library in favor of community implementations.
