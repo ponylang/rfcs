@@ -1,7 +1,7 @@
 - Feature Name: add-log-level-argument-to-logformatter
 - Start Date: 2020-06-07
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/175
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3594
 
 # Summary
 
