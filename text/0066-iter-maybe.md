@@ -1,7 +1,7 @@
 - Feature Name: iter-maybe
 - Start Date: 2020-04-21
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/161
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3593
 
 # Summary
 
