@@ -9,7 +9,7 @@ Add a `SortBy` primitive to `collections` package.
 
 # Motivation
 
-The generic parameter of sort requires the implementation of the A interface，`SortBy` allows any type. If the existing type does not implement `Comparable` interface will be helpless. `SortBy` solves this problem by injecting a lambda.
+The generic parameter of sort requires the implementation of the `Comparable` interface， if the existing type does not implement `Comparable` interface will be helpless. `SortBy` allows any type, it solves this problem by injecting a lambda.
 
 # Detailed design
 
