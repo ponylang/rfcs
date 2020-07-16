@@ -9,8 +9,7 @@ Add a `SortBy` primitive to `collections` package.
 
 # Motivation
 
-- Sort is not beginner friendly，The generic parameter of sort requires the implementation of the A interface.`SortBy` allows any type.
-- If the existing type does not implement `Comparable` interface will be helpless. sort solves this problem by injecting a lambda.
+The generic parameter of sort requires the implementation of the A interface，`SortBy` allows any type. If the existing type does not implement `Comparable` interface will be helpless. `SortBy` solves this problem by injecting a lambda.
 
 # Detailed design
 
@@ -36,5 +35,6 @@ Source : https://github.com/damon-kwok/pony-shoe/blob/master/sort_by.pony
 
 # Drawbacks
 
-The user must ensure that the lambda evaluation function is valid.
+- The user must ensure that the lambda evaluation function is valid.
+- Compared to Sort's compile-time check, `SortBy` has a little runtime overhead.
 
