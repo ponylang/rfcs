@@ -9,12 +9,12 @@ Add a `SortBy` primitive to `collections` package.
 
 # Motivation
 
-- Sort is not beginner friendly.
-- Sort requires the implementation of the `Comparable interface`, if the existing type does not implement this interface will be helpless.
+- Sort is not beginner friendly，The generic parameter of sort requires the implementation of the A interface.`SortBy` allows any type.
+- If the existing type does not implement `Comparable` interface will be helpless. sort solves this problem by injecting a lambda.
 
 # Detailed design
 
-- `SortBy` has the same interface as `Sort`, but `SortBy` use any type as the key. 
+- `SortBy` has the same interface as `Sort`. 
 - `SortBy` uses a `lambda` as the hash evaluation method instead of `interface Comparable`.
 
 ```pony
