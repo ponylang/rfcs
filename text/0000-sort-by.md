@@ -9,12 +9,14 @@ Add a `SortBy` primitive to `collections` package.
 
 # Motivation
 
-The generic parameter of sort requires the implementation of the `Comparable` interface， if the existing type does not implement `Comparable` interface will be helpless. `SortBy` allows any type, it solves this problem by injecting a lambda.
+The generic parameter of `Sort` requires the implementation of the `Comparable` interface， if the existing type does not implement `Comparable` interface will be helpless, `SortBy` allows any type, it solves this problem by injecting a lambda.
 
 # Detailed design
 
 - `SortBy` has the same interface as `Sort`. 
 - `SortBy` uses a `lambda` as the hash evaluation method instead of `interface Comparable`.
+
+For example:
 
 ```pony
 use "collections"
@@ -22,7 +24,7 @@ use "collections"
 actor Main
   new create(env:Env) =>
     let array = [ "aa"; "aaa"; "a" ]
-    SortBy(array, {(x: String): USize => x.size() })
+    SortBy[String](array, {(x: String): USize => x.size() })
     for e in array.values() do
       env.out.print(e) // prints "a \n aa \n aaa"
     end
