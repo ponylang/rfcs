@@ -9,11 +9,13 @@ Add a `SortBy` primitive to `collections` package.
 
 # Motivation
 
-`SortBy` primitive like `Sort`, but `SortBy` use any type as the key. 
+- Sort is not beginner friendly.
+- Sort requires the implementation of the `Comparable interface`, if the existing type does not implement this interface will be helpless.
 
 # Detailed design
 
-`SortBy` uses a `lambda` as the hash evaluation method instead of `interface Comparable`.
+- `SortBy` has the same interface as `Sort`, but `SortBy` use any type as the key. 
+- `SortBy` uses a `lambda` as the hash evaluation method instead of `interface Comparable`.
 
 ```pony
 use "collections"
