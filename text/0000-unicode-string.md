@@ -21,19 +21,19 @@ Where String functions took parameters of type U8 or returned values of U8, they
 
 The following additional changes will be made to the String class:
 1. The size() function will return the number of unicode codepoints in the string. A new byte_size() function will return the number of bytes.
-1. The truncate() function will only supports len parameter values less than string size.
-1. The utf32() function has been removed. It is redundant, and returns pair that includes a byte count that is no longer needed.
-1. The insert_byte() function has been changed to insert_utf32()
+1. The truncate() function will only support len parameter values less than the string size.
+1. The utf32() function will be removed. It is redundant, and returns pair that includes a byte count that is no longer needed.
+1. The insert_byte() function will be changed to insert_utf32()
 1. The values() function will return an iterator over the string codepoints. Same as runes().
-1. A concat_bytes() function has been added to add a sequence of codepoints to the string from an iterator of bytes.
+1. A concat_bytes() function will be added to add a sequence of codepoints to the string from an iterator of bytes.
 
 Add traits Encoder and Decoder to the builtin package. Any function that produces a String from bytes, or produces bytes from a String must take an Encoder or Decoder as a parameter as is appropriate. 
 ```
 trait val Encoder
-  fun encode(value: U32): (USize, U8, U8, U8, U8)
+  fun encode(codepoint: U32): (USize, U8, U8, U8, U8)
   
 trait val Decoder
-  fun decode(b:U32): (U32, U8)
+  fun decode(bytes: U32): (U32, U8)
 ```
 
 The ByteSeq type defined in std_stream.pony will be changed to remove String.
@@ -46,7 +46,7 @@ A new StringIter interface will be added to std_stream.pony
 ```
 interface val StringIter
   """
-  An iterable collection of String val.
+  An iterable collection of String box.
   """
   fun values(): Iterator[this->String box]
 ```
@@ -70,7 +70,7 @@ Change the Pony tutorial to reflect the changes to the String class and characte
 
 Not Supported:
 1. lower() and upper() for unicode characters. Should remove lower_in_place() and upper_in_place() because these conversion are not safe.
-1. The StdStream's (out, err, in) do not support specifying a character encoding. Ideally, the encoding for these streams would be set by the system run-time based on the default encoding of the underlying system. For now, they will use utf-8 only.
+1. The StdStream's (out, err, in) do not support specifying a character encoding. Ideally, the encoding for these streams would be set by the system at run-time based on the default encoding of the underlying system. For now, they will use utf-8 only.
 
 # How We Teach This
 
