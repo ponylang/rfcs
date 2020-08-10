@@ -24,15 +24,15 @@ The following additional changes will be made to the String class:
 1. The truncate() function will only support len parameter values less than the string size.
 1. The utf32() function will be removed. It is redundant, and returns pair that includes a byte count that is no longer needed.
 1. The insert_byte() function will be changed to insert_utf32()
-1. The values() function will return an iterator over the string codepoints. Same as runes().
+1. The values() function will return an iterator over the string codepoints. Same as runes(). A new bytes() function will return an iterator over string encoded as bytes. The bytes() function will take a StringEncoder parameter.
 1. A concat_bytes() function will be added to add a sequence of codepoints to the string from an iterator of bytes.
 
-Add traits Encoder and Decoder to the builtin package. Any function that produces a String from bytes, or produces bytes from a String must take an Encoder or Decoder as a parameter as is appropriate. 
+Add traits StringEncoder and StringDecoder to the builtin package. Any function that produces a String from bytes, or produces bytes from a String must take a StringEncoder or StringDecoder as a parameter as is appropriate. 
 ```
-trait val Encoder
+trait val StringEncoder
   fun encode(codepoint: U32): (USize, U8, U8, U8, U8)
   
-trait val Decoder
+trait val StringDecoder
   fun decode(bytes: U32): (U32, U8)
 ```
 
@@ -53,9 +53,9 @@ interface val StringIter
 
 Change Reader in buffered/reader.pony to add functions to read a codepoint and to read a String of a given number of codepoints. Update function line() to accept a decoder, and to return a pair with the line string, and the number of bytes consumed.
 
-Change Writer in buffered/writer.pony to accept Encoder parameters in the write() and writev() functions. 
+Change Writer in buffered/writer.pony to accept StringEncoder parameters in the write() and writev() functions. 
 
-Add a FileCharacters class in buffered/file_characters.pony that provides an iterator of characters in a file. The implementation will be similar to the FileLines class.
+Add a FileCharacters class in files/file_characters.pony that provides an iterator of characters in a file. The implementation will be similar to the FileLines class in files/file_lines.pony.
 
 Change character literals so that a character literal can only represent a single unicode codepoint. The following would be valid character literals:
 ```
