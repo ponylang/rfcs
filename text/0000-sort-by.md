@@ -24,7 +24,7 @@ use "collections"
 actor Main
   new create(env:Env) =>
     let array = [ "aa"; "aaa"; "a" ]
-    SortBy[String](array, {(x: String): USize => x.size() })
+    SortBy[String](array, {(x: String): U64 => x.size().u64() })
     for e in array.values() do
       env.out.print(e) // prints "a \n aa \n aaa"
     end
