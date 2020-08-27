@@ -1,5 +1,5 @@
-- Feature Name: (fill me in with a unique ident, my_awesome_feature)
-- Start Date: (fill me in with today's date, YYYY-MM-DD)
+- Feature Name: recover-with-receiver
+- Start Date: 2020-08-26
 - RFC PR: (leave this empty)
 - Pony Issue: (leave this empty)
 
