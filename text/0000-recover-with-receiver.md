@@ -58,7 +58,7 @@ of the variable that the expression is, or the rightmost field name.
 The capability of the new binding will depend on the capability of the expression. If it is a unique capability, `iso` or `trn`, then the resulting capability
 will be the strongest aliasable type: `ref`. If it is any self-aliasing capability `k`, then the resulting capability will be `k`.
 Acknowledging that there may be better choices available, at this time `iso^` or `trn^` will take the capability `ref` and act identically to their
-non-ephemeral counterparts.
+non-ephemeral counterparts. Any variables syntactically present in the receiver expression are considered in-use for the duration of the block and cannot be consumed or re-assigned.
 
 The body of the recover expression will be type-checked similarly to how recover blocks are checked today, with two exceptions. The block will have
 a capability associated with it, and instead of restricting to sendable variable usage, they are restricted to capabilities which are safe-to-write.
