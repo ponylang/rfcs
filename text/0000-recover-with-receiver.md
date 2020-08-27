@@ -1,0 +1,101 @@
+- Feature Name: (fill me in with a unique ident, my_awesome_feature)
+- Start Date: (fill me in with today's date, YYYY-MM-DD)
+- RFC PR: (leave this empty)
+- Pony Issue: (leave this empty)
+
+# Summary
+
+This feature will expand recover syntax to allow general usage of
+recovery as appears in automatic receiver recovery. The change
+will make some use cases possible, while improving the performance
+or ergonomics of some other use cases.
+
+# Motivation
+
+Currently, Pony supports two forms of recovery, `recover` blocks,
+as well as automatic receiver recovery. In some cases, these are
+equivalent. If we have a single variable `x: T iso`, then we can
+temporarily use it as another capability inside a recover block,
+with something like:
+```
+x = recover
+   let x_ref = consume ref x
+   // do something with x ...
+   x_ref
+end
+```
+Alternatively, if the action being taken is precisely a ref method call,
+then automatic receiver recovery can be used if the
+arguments and return types meet the isolation guarantees for `x`.
+```
+x.foo(y, z)
+```
+
+This automatic receiver recovery syntax also works for expressions more complicated than a single variable, but the above recover block method may be cumbersome such as `obj.field` when `field` is a var, or impossible, such as for `obj.field` with a let, or `array(i)?` when an array has `iso` entries.
+In these cases, only existing methods may be called, greatly restricting usage.
+
+This RFC will add a syntax to expand the design of recover blocks to allow a receiver, subsuming automatic receiver recovery.
+
+# Detailed design
+
+We will add new syntactic forms to allow recover blocks based around an existing receiver expression.
+
+```
+e.recover as x =>
+   e
+end
+```
+and a shorthand
+```
+e.recover
+   e
+end
+```
+Where in both cases, `e` is an expression, and `x` is a variable binding. In the second case, the first `e` should be either a variable or a field access.
+Inside the body of the recover block, the variable `x` will be bound as a `let` binding. For the shorthand, the name of this variable will be the name
+of the variable that the expression is, or the rightmost field name.
+
+The capability of the new binding will depend on the capability of the expression. If it is a unique capability, `iso` or `trn`, then the resulting capability
+will be the strongest aliasable type: `ref`. If it is any self-aliasing capability `k`, then the resulting capability will be `k`.
+Acknowledging that there may be better choices available, at this time `iso^` or `trn^` will take the capability `ref` and act identically to their
+non-ephemeral counterparts.
+
+The body of the recover expression will be type-checked similarly to how recover blocks are checked today, with two exceptions. The block will have
+a capability associated with it, and instead of restricting to sendable variable usage, they are restricted to capabilities which are safe-to-write.
+In practice, the only special case here is writing `trn` to `trn. The result of the recover block will be adapted in the the viewpoint of the
+recover block. This subsumes the existing conditions of being either unused or safe to extract.
+
+If the receiver capability is not a unique cap (`iso` or `trn`), then this environment is always treated as `ref` and there are no restrictions on used or returned variables.
+
+For a method call to a `ref` method, it is treated as being wrapped in an implicit receiver recovery block. That is,
+`x.f(y, z)` can be de-sugared to `x.recover x.f(y, z) end`, using the shorthand syntax above.
+
+For implementation, each recover block will have an optional receiver and a capability of the recover (note that this capability is different than the return capability of a regular recover block). Until the adoption of the more permissive viewpoint adaptation for ephemerals, we will have to treat recover blocks without receiver a special case. A sensible choice would be to mark all such blocks as capability `iso^`. When checking expressions for the recover block, sendability restrictions will be checked relative to the block. Return values would be checked with viewpoint adaptation as specified, except for standard recover blocks, which will use existing rules.
+
+# How We Teach This
+
+We can refer to this feature as either reciever recovery or recovery with receiver. The section on recover blocks will be modified with an additional section to
+reflect the new type of recover blocks. In this setting we may wish to make a footnote as to `trn` receivers having looser isolation requirements.
+Examples should reflect some of the previously impossible use cases above, as this helps in explaining usage of isolated capabilities in data structures.
+
+The existing cases of automatic recovery, when calling ref methods, and constructors, will be presented together as conveniences.
+
+# How We Test This
+
+This will require additional tests for different receivers and both of the unique capabilities. Existing tests around automatic receiver recovery should be maintained and should continue to pass.
+
+# Drawbacks
+
+Why should we *not* do this? Things you might want to note:
+
+* This may frontload recovery concepts slightly sooner for learners, rather than just presenting receiver recovery for functions
+* Generic technical costs of new features
+
+# Alternatives
+
+We may try to expand automated recovery to handle more cases like the above, at the cost of a lack of simplicity.
+
+# Unresolved questions
+
+The syntax may still need work.
+Research has not fully caught up to more powerful recovery mechanisms as a general detail.
