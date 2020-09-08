@@ -93,7 +93,7 @@ requiring extra potentially erroring accesses or allocating and swapping new val
 We will add new syntactic forms to allow recover blocks based around an existing receiver expression.
 
 ```
-e.recover as x =>
+e.recover | x =>
    e
 end
 ```
