@@ -59,7 +59,7 @@ This is a cranky, crufty and ugly, hand-crafted hash-function for the class abov
 
 ```pony
   fun hash(): USize =>
-    var result = USiz(17)
+    var result = USize(17)
     result = (result * 37) + _field1.hash()
     result = (result * 37) + _field2.hash()
     result
