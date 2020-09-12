@@ -109,15 +109,16 @@ of the variable that the expression is, or the rightmost field name.
 
 The capability of the new binding will depend on the capability of the expression. If it is a unique capability, `iso` or `trn`, then the resulting capability
 will be the strongest aliasable type: `ref`. If it is any self-aliasing capability `k`, then the resulting capability will be `k`.
-Acknowledging that there may be better choices available, at this time `iso^` or `trn^` will take the capability `ref` and act identically to their
-non-ephemeral counterparts. Any variables syntactically present in the receiver expression are considered in-use for the duration of the block and cannot be consumed or re-assigned.
+Acknowledging that there might be better choices available, at this time `iso^` or `trn^` will take the capability `ref` and act identically to their
+non-ephemeral counterparts.
 
-The body of the recover expression will be type-checked similarly to how recover blocks are checked today, with two exceptions. The block will have
-a capability associated with it, and instead of restricting to sendable variable usage, they are restricted to capabilities which are safe-to-write.
-In practice, the only special case here is writing `trn` to `trn. The result of the recover block will be adapted in the the viewpoint of the
-recover block. This subsumes the existing conditions of being either unused or safe to extract.
+To soundly access the outside environment, we must use a few provisions:
+* As in any recover block, the outside environment can be accessed only via sendables
+* All variables which were used in the receiver of the block are considered in-use (and cannot be consumed)
+* To prevent invalidation, the outside environment should be accessed only immutably (though this condition can be loosened for provably disjoint references).
+  This does not prevent consuming `iso` variables to move into the recover block, as they are always disjoint from the receiver.
 
-If the receiver capability is not a unique cap (`iso` or `trn`), then this environment is always treated as `ref` and there are no restrictions on used or returned variables.
+The value which is returned will be viewpoint-adapted according to the capability of the receiver. This subsumes the existing conditions for the returns of automatic receiver recovery.
 
 For a method call to a `ref` method, it is treated as being wrapped in an implicit receiver recovery block. That is,
 `x.f(y, z)` can be de-sugared to `x.recover x.f(y, z) end`, using the shorthand syntax above.
