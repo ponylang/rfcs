@@ -93,16 +93,23 @@ requiring extra potentially erroring accesses or allocating and swapping new val
 We will add new syntactic forms to allow recover blocks based around an existing receiver expression.
 
 ```
-e.recover | x =>
-   e
+e1.recover | x =>
+   e2[x]
 end
 ```
-and a shorthand
+and shorthands
 ```
-e.recover
-   e
+x.recover
+   e[x]
 end
 ```
+and shorthands
+```
+x.f.recover
+   e[f]
+end
+```
+
 Where in both cases, `e` is an expression, and `x` is a variable binding. In the second case, the first `e` should be either a variable or a field access.
 Inside the body of the recover block, the variable `x` will be bound as a `let` binding. For the shorthand, the name of this variable will be the name
 of the variable that the expression is, or the rightmost field name.
