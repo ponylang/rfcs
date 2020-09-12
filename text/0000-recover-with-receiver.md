@@ -136,10 +136,10 @@ no execution to take place after the receiver has been determined.
 # How We Teach This
 
 We can refer to this feature as either reciever recovery or recovery with receiver. The section on recover blocks will be modified with an additional section to
-reflect the new type of recover blocks. In this setting we may wish to make a footnote as to `trn` receivers having looser isolation requirements.
-Examples should reflect some of the previously impossible use cases above, as this helps in explaining usage of isolated capabilities in data structures.
+reflect the new type of recover blocks. Examples should reflect some of the previously impossible use cases above, as this helps in explaining usage of isolated capabilities in data structures.
 
-The existing cases of automatic recovery, when calling ref methods, and constructors, will be presented together as conveniences.
+The existing cases of automatic recovery, when calling ref methods, and constructors, will be presented together as conveniences, as it is now a truly representable
+form of recovery.
 
 # How We Test This
 
@@ -158,5 +158,6 @@ We may try to expand automated recovery to handle more cases like the above, at 
 
 # Unresolved questions
 
-The syntax may still need work.
-Research has not fully caught up to more powerful recovery mechanisms as a general detail.
+* The syntax may still need work.
+* Research has not fully caught up to more powerful recovery mechanisms as a general detail.
+* Some methods may be given more flexible types, but these can't be easily expressed generically. Should we add new connectives?
