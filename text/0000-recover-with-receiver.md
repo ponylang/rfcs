@@ -120,8 +120,17 @@ To soundly access the outside environment, we must use a few provisions:
 
 The value which is returned will be viewpoint-adapted according to the capability of the receiver. This subsumes the existing conditions for the returns of automatic receiver recovery.
 
-For a method call to a `ref` method, it is treated as being wrapped in an implicit receiver recovery block. That is,
-`x.f(y, z)` can be de-sugared to `x.recover x.f(y, z) end`, using the shorthand syntax above.
+For a method call to a `ref` method, it can be treated as being wrapped in an implicit receiver recovery block. That is,
+`x.f(y, z)` can be de-sugared to:
+```
+let a1 = y
+let a2 = z
+x.recover
+   x.f(consume a1, consume a2)
+end
+```
+Note that the arguments are evaluated ahead of time, and then consumed. This is how automatic receiver recovery prevents invalidation today, by allowing
+no execution to take place after the receiver has been determined.
 
 For implementation, each recover block will have an optional receiver and a capability of the recover (note that this capability is different than the return capability of a regular recover block). Until the adoption of the more permissive viewpoint adaptation for ephemerals, we will have to treat recover blocks without receiver a special case. A sensible choice would be to mark all such blocks as capability `iso^`. When checking expressions for the recover block, sendability restrictions will be checked relative to the block. Return values would be checked with viewpoint adaptation as specified, except for standard recover blocks, which will use existing rules.
 
