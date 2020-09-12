@@ -132,7 +132,6 @@ end
 Note that the arguments are evaluated ahead of time, and then consumed. This is how automatic receiver recovery prevents invalidation today, by allowing
 no execution to take place after the receiver has been determined.
 
-For implementation, each recover block will have an optional receiver and a capability of the recover (note that this capability is different than the return capability of a regular recover block). Until the adoption of the more permissive viewpoint adaptation for ephemerals, we will have to treat recover blocks without receiver a special case. A sensible choice would be to mark all such blocks as capability `iso^`. When checking expressions for the recover block, sendability restrictions will be checked relative to the block. Return values would be checked with viewpoint adaptation as specified, except for standard recover blocks, which will use existing rules.
 
 # How We Teach This
 
