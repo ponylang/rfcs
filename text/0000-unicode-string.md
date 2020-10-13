@@ -26,7 +26,6 @@ The following additional changes will be made to the String class:
 1. The insert_byte() function will be changed to insert_utf32()
 1. The values() function will return an iterator over the string codepoints. Same as runes(). A new bytes() function will return an iterator over string encoded as bytes. The bytes() function will take a StringEncoder parameter.
 1. A concat_bytes() function will be added to add a sequence of codepoints to the string from an iterator of bytes.
-1. Change the internal implementation of String to replace the _size, _alloc and _ptr variables with an embedded Array.
 1. Change 'fun val array: Array[U8] val' to 'fun array: this->Array[U8] box'. This is a superset of what we have now, and allows a readable "byte string" reference to a String ref, rather than requiring val.
 
 Add whatever methods we need to add to Array[U8] that are restricted by A:U8 (e.g. read_u8) to make Array[U8] have everything that a "byte string" class needs.
