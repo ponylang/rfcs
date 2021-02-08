@@ -94,7 +94,7 @@ I propose the following API changes to the `builtin` package.
 
 # How We Teach This
 
-* We should extend the Pony pattern about [limiting string allocations](https://github.com/ponylang/pony-patterns/blob/master/performance/limiting-string-allocations.md) to include a section about using `trim` and `trim_in_place`.
+* We should extend the Pony pattern about [limiting string allocations](https://github.com/ponylang/pony-patterns/blob/main/performance/limiting-string-allocations.md) to include a section about using `trim` and `trim_in_place`.
 
 * We should lead by example, using `trim` and `trim_in_place` wherever applicable in the standard library and official Pony examples.
 

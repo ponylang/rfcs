@@ -44,7 +44,7 @@ which has quite the exact same implementation as
 fun ref _line_length(): USize ?
 ```
 
-(https://github.com/ponylang/ponyc/blob/master/packages/buffered/reader.pony#L532)
+(https://github.com/ponylang/ponyc/blob/main/packages/buffered/reader.pony#L532)
 
 The only difference is that it searches for the provided `byte'` rather than `'\n'`.
 

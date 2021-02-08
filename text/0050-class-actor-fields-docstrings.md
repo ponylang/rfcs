@@ -5,7 +5,7 @@
 
 # Summary
 
-This RFC suggests adding docstrings to fields of classes and actors 
+This RFC suggests adding docstrings to fields of classes and actors
 in order to make necessary documentation avaliable on them.
 This is especially important for public fields of classes.
 
@@ -15,7 +15,7 @@ Docstrings are currently only allowed on type-, class-, actor, function- and beh
 But for usage of certain classes it is important to know something about their fields too,
 as they can also be exposed publicly.
 
-One example class that definitely needs to have its fields documented is: [net.NetAddress](https://github.com/ponylang/ponyc/blob/master/packages/net/net_address.pony) which needs some documentation stating that e.g. the field `port` is in network byteorder. This information is not available at the moment and leads to confusion. Putting this information into the class docstring is not a satisfying solution here.
+One example class that definitely needs to have its fields documented is: [net.NetAddress](https://github.com/ponylang/ponyc/blob/main/packages/net/net_address.pony) which needs some documentation stating that e.g. the field `port` is in network byteorder. This information is not available at the moment and leads to confusion. Putting this information into the class docstring is not a satisfying solution here.
 
 The exepected outcome is to have the docstring for each field of a class or actor rendered in the `Public Fields` and `Private Fields` section below their field names and types.
 
@@ -29,10 +29,10 @@ class MyClass
 
   let number: U32
   """field docstring"""
-  
+
   let name: String = "Rainbow Dash"
   """fields docstring"""
-  
+
   fun method(arg: String): None =>
     """method docstring"""
     None
@@ -66,7 +66,7 @@ As far as I can see only the docgen pass is interested in this docstring.
 
 These new docstrings should be called field-docstrings.
 
-The tutorial should have a section about documenting pony code, which consists of a how-to about: 
+The tutorial should have a section about documenting pony code, which consists of a how-to about:
 
 - how to document pony code, syntactically (where to place docstrings, docstrings being parsed as markdown, ...)
 - what good documentation should cover (maybe)

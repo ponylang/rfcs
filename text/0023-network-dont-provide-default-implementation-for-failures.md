@@ -5,7 +5,7 @@
 
 # Summary
 
-Remove default implementations currently provided for failures on `TCPConnectionNotify`, `UDPNotify` and `TCPListenNotify`. 
+Remove default implementations currently provided for failures on `TCPConnectionNotify`, `UDPNotify` and `TCPListenNotify`.
 
 # Motivation
 
@@ -33,7 +33,7 @@ There's nothing to test as it will cause a compiler error to not implement.
 
 # Drawbacks
 
-This breaks all existing network code that is currently ignoring connection failures. Additionally, it forces users to implement a method on each of the notify types where previously, they didn't have to implement any. I think the advantage of having people opt in to 
+This breaks all existing network code that is currently ignoring connection failures. Additionally, it forces users to implement a method on each of the notify types where previously, they didn't have to implement any. I think the advantage of having people opt in to
 
 # Alternatives
 
@@ -41,6 +41,6 @@ Leave as is but eventually develop better Pony standard library networking docum
 
 # Unresolved questions
 
-How does this impact on [RFC 16](https://github.com/ponylang/rfcs/blob/master/text/0016-tcp-must-be-connected.md)?
+How does this impact on [RFC 16](https://github.com/ponylang/rfcs/blob/main/text/0016-tcp-must-be-connected.md)?
 
 I think a reasonable case can be made that RFC 16 should be reversed if this is adopted. We can assume that the user is aware of the dangers of ignoring connection failure and stop pending time checking for it during normal operations. I'm in favor of reviewing TCPListener, TCPConnection and UDPSocket for code that can be removed by this change and adding it in this RFC as part of the detailed design.
