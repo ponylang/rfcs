@@ -5,7 +5,7 @@
 
 # Summary
 
-This proposal aims to make mandatory the declaration of all C-FFI (Foreign Function Interface) functions through `use` statements, such that the compiler is able to distinguish variadic functions from regular functions.
+This proposal aims to make mandatory the declaration of all C-FFI (Foreign Function Interface) functions through `use` statements, such that the compiler is able to distinguish variadic functions from regular functions. In addition, it also aims to remove from the language the ability to specify the return type of an FFI function at the call site, as this is made redundant in the face of mandatory declarations.
 
 # Motivation
 
@@ -24,6 +24,8 @@ In the absence of an explicit declaration, Pony will assume the function is vari
 Making declarations mandatory only for variadic FFI functions would make it hard for the Pony compiler to detect undeclared variadic C functions, given that it is impossible to distinguish a regular function from a variadic function that is always called with the same number of arguments. This limitation would restrict the ability of the Pony compiler to give meaningful errors to users. Making declarations mandatory only for variadic FFI functions is also confusing for users, as the choice of making some declarations mandatory while others are kept optional can feel arbitrary unless they have explicit knowledge of calling convention differences.
 
 Given that forgetting to write `use` declarations for variadic functions could cause Pony programs to crash at runtime only when run on specific platforms, this proposal aims to make `use` declarations mandatory for _all_ FFI functions, variadic or not. In this way, the Pony compiler will be able to give meaningful error messages when a FFI function is used, but not declared via a `use` statement.
+
+With mandatory declarations in place, specifying the return type for an FFI function at the call site is made redundant, so it should be removed from the language to minimise syntax noise.
 
 # Detailed design
 
@@ -45,11 +47,35 @@ This RFC proposes to remove option (3) above. The default behaviour by the compi
 
 Since we expect the compiler to catch any possible errors that can arise at runtime, it is expected that the compiler enforces mandatory `use` declarations, at least for variadic functions. However, from the point of view of the compiler, it is impossible to distinguish regular functions from variadic ones that happen to always use the same number of arguments. Merely changing (3) above so that the compiler generates FFI functions as if they had a fixed number of parameters by default, and relying on heuristics to know if a function is variadic, will not work. It is for this reason that this RFC aims to enforce declarations for _all_ FFI functions.
 
+## Removing explicit return type declarations at call sites
+
+Currently, one can specify the return type of an FFI function at the call site, as such:
+
+```pony
+let foo = @printf[I32]("some words here".cpointer())
+```
+
+If a declaration for an FFI function is not provided, the compiler enforces that an explicit return type is specified, since otherwise it wouldn't have enough information to generate the correct function signature. If the programmer provides an explicit `use` declaration, specifying the return type at the call site is still allowed, with the compiler attempting to type-check the types against the original declaration.
+
+However, if `use` declarations are made mandatory for all FFI calls, the use of the return type at the call site is made redundant. As such, if this RFC is accepted, the option to specify the return type of an FFI call will be removed, and the compiler should treat any explicit return type declarations as a syntax error. Keeping the option of specify return types at the call site could be confusing to the users: specifying the correct return type would not accomplish anything, so it can only become a source of unintentional type-check errors.
+
 ## Compiler changes
+
+Changes related to enforcing FFI declarations:
 
 1. In the `expr` pass: the `expr_ffi` function in `ffi.c` should ensure that an explicit declaration exists for all FFI calls. If a declaration is not found, it should emit an error, stopping the compilation process. Intrinsic and internal functions should also require declarations.
 
-2. Code generation: the `gen_ffi` function in `gencall.c` won't need to generate FFI declarations on the fly, and as such it can be simplified, since it will always have enough information to generate the correct function for LLVM. Intrinsic and internal functions will no longer be generated as regular functions by default, the compiler will use the provided declarations.
+2. In the `reach` pass: the `reachable_ffi` function in `reach.c` won't need to defer reification of an FFI call due to having an undeclared FFI declaration.
+
+3. Code generation: the `gen_ffi` function in `gencall.c` won't need to generate FFI declarations on the fly, and as such it can be simplified, since it will always have enough information to generate the correct function for LLVM. Intrinsic and internal functions will no longer be generated as regular functions by default, the compiler will use the provided declarations.
+
+Changes related to removing explicit return types on FFI calls:
+
+1. In the `name` pass: the `ffidecl` rule in `treecheckdef.h` should change to remove the return type.
+
+2. In the `reach` pass: the `reachable_ffi` function in `gencall.c` should remove any references to the return type of the FFI call.
+
+3. Code generation: the `declared_ffi` function in `ffi.c` should change to remove any references to the return type of the FFI call. This function can be simplified to remove any type-checking related to the return type of the function.
 
 ## Standard Library, example, test changes
 
@@ -151,7 +177,9 @@ Downloaded all repos under the ponylang org, ran grep, then removed some false p
 
     In particular, the ["Calling C from Pony" section](https://tutorial.ponylang.io/c-ffi/calling-c.html) should note that a declaration is needed in order to call a FFI function, as well as introduce the `...` syntax for declaring variadic functions. Although we could expect that users that attempt to use the C FFI will be familiar with the concept of variadic functions, it wouldn't hurt to mention them, even if we don't use the "variadic" term.
 
-- All the examples that show FFI code, be it in the `examples/` folder of the compiler or on the tutorial should be changed to include mandatory declarations. These examples are located in the C FFI and [Serialisation](https://tutorial.ponylang.io/appendices/serialisation.html) chapters, and in the [examples appendix](https://tutorial.ponylang.io/appendices/examples.html).
+    The chapter should also remove any explicit type declarations from FFI calls.
+
+- All the examples that show FFI code, be it in the `examples/` folder of the compiler or on the tutorial should be changed to include mandatory declarations, and remove return types at the call site. These examples are located in the C FFI and [Serialisation](https://tutorial.ponylang.io/appendices/serialisation.html) chapters, and in the [examples appendix](https://tutorial.ponylang.io/appendices/examples.html).
 
 In general, the use of the C-FFI should be considered an advanced feature, as its usage can violate many of the safety properties enforced by the language. As such, not much would change for regular Pony users.
 
@@ -164,6 +192,8 @@ In general, the use of the C-FFI should be considered an advanced feature, as it
 * Compiler tests can/should be written to demonstrate that programs that lack explicit FFI declarations fail to compile.
 
 * Apple ARM64 should be added as a target platform for CI when our current provider (Cirrus CI) offers instances of this type. In the meantime, the Pony team owns two machines with Apple Silicon chips that should serve as testing infrastructure.
+
+* We should ensure that `use` scoping rules allow us to remove explicit return types on FFI calls.
 
 # Drawbacks
 
@@ -182,6 +212,3 @@ In general, the use of the C-FFI should be considered an advanced feature, as it
 # Unresolved questions
 
 Exact implementation details are still to be determined.
-
-If declarations are mandatory, specifying the return type at FFI call site is made redundant, and maybe should be removed from the language.
-
