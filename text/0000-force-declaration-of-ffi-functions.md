@@ -31,23 +31,23 @@ The change proposed in this RFC will remove the possibility of calling a C-FFI f
 
 In the Pony compiler, the information as to whether an FFI function is variadic or not comes from several places:
 
-1. For the set of FFI functions that are needed to run a minimal Pony program, this information is hard-coded in compiler, added when `init_runtime` is called during the code generation pass.
+1. For the set of FFI functions that are needed to run a minimal Pony program, this information is hard-coded in the compiler, added when `init_runtime` is called during the code generation pass.
 
 2. From `use` declarations. If the declaration uses the `...` literal as the last parameter of the function, Pony will consider it variadic. Otherwise, the function is considered to have a fixed number of parameters.
 
 3. From FFI calls. If no explicit declaration for a function is provided, the compiler will attempt to generate one based on the first call to such function, and future calls to the same function will be checked against the generated declaration. The compiler generates the declaration as follows:
 
-    - If the function is intrinsic (of the `"@llvm.*"` or `"@internal.*"` form), the compiler will use the exact arguments supplied to the function at the call site to generate a regular function. Currently, all intrinsic function have a fixed number of parameters, so this doesn't cause any problems.
+    - If the function is intrinsic (of the `"@llvm.*"` or `"@internal.*"` form), the compiler will use the exact arguments supplied to the function at the call site to generate a regular function. Currently, all intrinsic functions have a fixed number of parameters, so this doesn't cause any problems.
 
     - Otherwise, it will consider the function to be variadic, such that any future calls to this function will type-check as long as they have the same return type.
 
 This RFC proposes to remove option (3) above. The default behaviour by the compiler of generating a variadic function if it doesn't have an explicit declaration is only sane if the final program is correct. As explained in the motivation, this is not the case in platforms where variadic functions use a different calling convention from regular ones. It's important to note that this distinction also applies when attempting to call variadic functions as if they were not: the result will also be incorrect.
 
-Since we expect the compiler to catch any possible errors that can arise at runtime, it is expected that the compiler enforces mandatory `use` declarations, at least for variadic functions. However, from the point of view of the compiler, it is impossible to distinguish regular functions from variadic ones that happen to always use the same number of arguments. Merely changing (3) above so that the compiler generates FFI functions as if they had a fixed number of parameters by default, and relies on heuristics to know if a function is variadic, will not work. It is for this reason that this RFC aims to enforce declarations for _all_ FFI functions.
+Since we expect the compiler to catch any possible errors that can arise at runtime, it is expected that the compiler enforces mandatory `use` declarations, at least for variadic functions. However, from the point of view of the compiler, it is impossible to distinguish regular functions from variadic ones that happen to always use the same number of arguments. Merely changing (3) above so that the compiler generates FFI functions as if they had a fixed number of parameters by default, and relying on heuristics to know if a function is variadic, will not work. It is for this reason that this RFC aims to enforce declarations for _all_ FFI functions.
 
 ## Compiler changes
 
-1. In the `expr` pass: the `expr_ffi` function in `ffi.c` should ensure that an explicit declaration exists for all FFI calls. If a declaration is not found, it should emit an an error, stopping the compilation process. Whether intrinsic and internal functions require an explicit declaration is left up for discussion.
+1. In the `expr` pass: the `expr_ffi` function in `ffi.c` should ensure that an explicit declaration exists for all FFI calls. If a declaration is not found, it should emit an error, stopping the compilation process. Whether intrinsic and internal functions require an explicit declaration is left up for discussion.
 
 2. Code generation: the `gen_ffi` function in `gencall.c` won't need to generate FFI declarations on the fly, and as such it can be simplified, since it will always have enough information to generate the correct function for LLVM. As before, it is up for discussion if this function should still generate FFI declarations for intrinsic functions, if no declaration is provided for them.
 
