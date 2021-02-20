@@ -47,9 +47,9 @@ Since we expect the compiler to catch any possible errors that can arise at runt
 
 ## Compiler changes
 
-1. In the `expr` pass: the `expr_ffi` function in `ffi.c` should ensure that an explicit declaration exists for all FFI calls. If a declaration is not found, it should emit an error, stopping the compilation process. Whether intrinsic and internal functions require an explicit declaration is left up for discussion.
+1. In the `expr` pass: the `expr_ffi` function in `ffi.c` should ensure that an explicit declaration exists for all FFI calls. If a declaration is not found, it should emit an error, stopping the compilation process. Intrinsic and internal functions should also require declarations.
 
-2. Code generation: the `gen_ffi` function in `gencall.c` won't need to generate FFI declarations on the fly, and as such it can be simplified, since it will always have enough information to generate the correct function for LLVM. As before, it is up for discussion if this function should still generate FFI declarations for intrinsic functions, if no declaration is provided for them.
+2. Code generation: the `gen_ffi` function in `gencall.c` won't need to generate FFI declarations on the fly, and as such it can be simplified, since it will always have enough information to generate the correct function for LLVM. Intrinsic and internal functions will no longer be generated as regular functions by default, the compiler will use the provided declarations.
 
 ## Standard Library, example, test changes
 
@@ -166,6 +166,3 @@ Exact implementation details are still to be determined.
 
 If declarations are mandatory, specifying the return type at FFI call site is made redundant, and maybe should be removed from the language.
 
-Should C functions provided by the runtime (`@pony*`) be declared explicitly?
-
-Should LLVM (`@"llvm.*"`) and internal (`@"internal.*"`) functions be declared explicitly?
