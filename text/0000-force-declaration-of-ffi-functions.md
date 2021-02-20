@@ -126,6 +126,25 @@ All `ponyc` tests that contain FFI calls will need to be updated to use explicit
    5 test/libponyc/verify.cc
 ```
 
+## Pony libraries under the ponylang org
+
+Downloaded all repos under the ponylang org, ran grep, then removed some false positives:
+
+```shell
+> grep -n "@.*\[" -r --include=\*.pony . | grep -v "use @.*" | awk -F':' '{print $1}' | sort | uniq -c
+   4 ./appdirs/appdirs/known_folders.pony
+   1 ./corral/corral/test/integration/test_info.pony
+  33 ./crypto/crypto/digest.pony
+  16 ./crypto/crypto/hash_fn.pony
+   4 ./net_ssl/net_ssl/_ssl_init.pony
+  26 ./net_ssl/net_ssl/ssl.pony
+  26 ./net_ssl/net_ssl/ssl_context.pony
+  18 ./net_ssl/net_ssl/x509.pony
+   1 ./reactive_streams/examples/spl4/main.pony
+   9 ./regex/regex/match.pony
+  11 ./regex/regex/regex.pony
+```
+
 # How We Teach This
 
 - The ["C FFI" chapter of the tutorial](https://tutorial.ponylang.io/c-ffi.html) should be updated to reflect this change.
