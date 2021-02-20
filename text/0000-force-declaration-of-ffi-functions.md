@@ -51,6 +51,81 @@ Since we expect the compiler to catch any possible errors that can arise at runt
 
 2. Code generation: the `gen_ffi` function in `gencall.c` won't need to generate FFI declarations on the fly, and as such it can be simplified, since it will always have enough information to generate the correct function for LLVM. As before, it is up for discussion if this function should still generate FFI declarations for intrinsic functions, if no declaration is provided for them.
 
+## Standard Library, example, test changes
+
+All FFI functions without a corresponding declaration should be updated. Here follows a list of all examples and files in the standard library that should be changed, along with how many lines contain FFI calls in each one.
+
+```shell
+> grep -n "@.*\[" -r packages/*/*.pony examples/*/*.pony | grep -v "use @.*" | grep -v "\`@.*" | awk -F':' '{print $1}' | sort | uniq -c
+   6 examples/fan-in/main.pony
+   4 examples/message-ubench/main.pony
+  10 examples/under_pressure/main.pony
+   1 packages/assert/assert.pony
+   2 packages/builtin/_to_string.pony
+   3 packages/builtin/env.pony
+  64 packages/builtin/float.pony
+  85 packages/builtin/signed.pony
+   5 packages/builtin/std_stream.pony
+   1 packages/builtin/stdin.pony
+   2 packages/builtin/string.pony
+  89 packages/builtin/unsigned.pony
+   4 packages/builtin_test/_test.pony
+   5 packages/builtin_test/_test_valtrace.pony
+   1 packages/capsicum/cap.pony
+   8 packages/capsicum/cap_rights.pony
+   2 packages/collections/_test.pony
+   3 packages/collections/hashable.pony
+   3 packages/debug/debug.pony
+   3 packages/files/_file_des.pony
+   2 packages/files/_test.pony
+  23 packages/files/directory.pony
+   4 packages/files/file.pony
+   3 packages/files/file_info.pony
+  21 packages/files/file_path.pony
+   2 packages/files/path.pony
+   2 packages/format/_format_float.pony
+   6 packages/net/dns.pony
+  11 packages/net/net_address.pony
+   2 packages/net/ossocket.pony
+   1 packages/net/ossockopt.pony
+  17 packages/net/tcp_connection.pony
+   9 packages/net/tcp_listener.pony
+  17 packages/net/udp_socket.pony
+   2 packages/ponybench/_runner.pony
+   1 packages/ponytest/pony_test.pony
+  16 packages/process/_pipe.pony
+  16 packages/process/_process.pony
+   9 packages/serialise/serialise.pony
+   2 packages/signals/signal_notify.pony
+   1 packages/term/ansi_term.pony
+   4 packages/time/posix_date.pony
+  10 packages/time/time.pony
+```
+
+The above command outputs all calls with an explicit return type (which means a declaration is not in scope), excludes declarations and possible calls made in comments. Remove anything past `awk` to see all FFI calls in their context.
+
+## Compiler test changes
+
+All `ponyc` tests that contain FFI calls will need to be updated to use explicit declarations. Here follows a list:
+
+```shell
+> grep -n "@.*\[" -r test/*/*.cc | grep -v "use @.*" | awk -F':' '{print $1}' | sort | uniq -c
+   4 test/libponyc/badpony.cc
+  13 test/libponyc/bare.cc
+  37 test/libponyc/codegen.cc
+   8 test/libponyc/codegen_ffi.cc
+   5 test/libponyc/codegen_final.cc
+  17 test/libponyc/codegen_identity.cc
+   1 test/libponyc/codegen_optimisation.cc
+ 102 test/libponyc/codegen_trace.cc
+   1 test/libponyc/compiler_serialisation.cc
+  10 test/libponyc/ffi.cc
+   3 test/libponyc/iftype.cc
+   1 test/libponyc/parse_entity.cc
+   3 test/libponyc/signature.cc
+   5 test/libponyc/verify.cc
+```
+
 # How We Teach This
 
 - The ["C FFI" chapter of the tutorial](https://tutorial.ponylang.io/c-ffi.html) should be updated to reflect this change.
