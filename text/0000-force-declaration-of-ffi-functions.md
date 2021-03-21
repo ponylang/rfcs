@@ -59,6 +59,20 @@ If a declaration for an FFI function is not provided, the compiler enforces that
 
 However, if `use` declarations are made mandatory for all FFI calls, the use of the return type at the call site is made redundant. As such, if this RFC is accepted, the option to specify the return type of an FFI call will be removed, and the compiler should treat any explicit return type declarations as a syntax error. Keeping the option of specify return types at the call site could be confusing to the users: specifying the correct return type would not accomplish anything, so it can only become a source of unintentional type-check errors.
 
+There are some cases in the standard library where FFI calls specify different return types: most examples are found in the [`unsigned.pony`](https://github.com/ponylang/ponyc/blob/dbe4bfbc3caf0ef5337cda0923d6900a5fec09ef/packages/builtin/unsigned.pony) / [`signed.pony`](https://github.com/ponylang/ponyc/blob/dbe4bfbc3caf0ef5337cda0923d6900a5fec09ef/packages/builtin/signed.pony) files. This is allowed by the compiler, provided the specified types are compatible according to the following rules:
+
+1. [If both types have the same ABI size](https://github.com/ponylang/ponyc/blob/08e82205917a6e9174496e4a656813ff886a739c/src/libponyc/codegen/gencall.c#L1109-L1113), LLVM will insert a bitcast from one type to the other.
+
+2. [If the cast is done between pointer types and integer types](https://github.com/ponylang/ponyc/blob/08e82205917a6e9174496e4a656813ff886a739c/src/libponyc/codegen/gencall.c#L1118-L1128).
+
+3. [If both types are a struct type](https://github.com/ponylang/ponyc/blob/08e82205917a6e9174496e4a656813ff886a739c/src/libponyc/codegen/gencall.c#L1130-L1134). There are no cases of this in the compiler on in any other official ponylang project.
+
+The standard library makes ample usage of (1) to implicitly cast between signed and unsigned types, as well as between different numeric types due to the code being compiled on 32 or 64 bit platforms. These cases can be handled by explicit type-casting in Pony.
+
+All of cases of (2) are currently present in Windows-dependent code and involve modeling an opaque type (a file handle object). These cases can be handled by picking a standard return type, be it a pointer or an integer type.
+
+Since all the cases above can be solved via explicit type-casting, this feature can be safely removed from the compiler along with explicit return type declarations.
+
 ## Compiler changes
 
 Changes related to enforcing FFI declarations:
@@ -76,6 +90,8 @@ Changes related to removing explicit return types on FFI calls:
 2. In the `reach` pass: the `reachable_ffi` function in `gencall.c` should remove any references to the return type of the FFI call.
 
 3. Code generation: the `declared_ffi` function in `ffi.c` should change to remove any references to the return type of the FFI call. This function can be simplified to remove any type-checking related to the return type of the function.
+
+4. Code generation: the `gen_ffi` function in `gencall.c` can be simplified. Since type declarations on FFI calls are to be removed, no casting is allowed on the specified return type of a FFI call.
 
 ## Standard Library, example, test changes
 
@@ -195,11 +211,15 @@ In general, the use of the C-FFI should be considered an advanced feature, as it
 
 * We should ensure that `use` scoping rules allow us to remove explicit return types on FFI calls.
 
+* We should ensure that explicit type-casting handles overflow / underflow behaviours in the same way as implicit type-casting at the LLVM level.
+
 # Drawbacks
 
 * Breaks existing code that uses FFI functions.
 
 * Imposes overhead on users to declare the type of FFI functions in advance.
+
+* Could restrict FFI usage by removing return-type declarations at call-site, as no implicit type-casting is allowed.
 
 # Alternatives
 
@@ -211,4 +231,6 @@ In general, the use of the C-FFI should be considered an advanced feature, as it
 
 # Unresolved questions
 
-Exact implementation details are still to be determined.
+* We should ensure that explicit type-casting involves no run-time overhead.
+
+* Exact implementation details are still to be determined.
