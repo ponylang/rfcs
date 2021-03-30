@@ -1,7 +1,7 @@
 - Feature Name: Force declaration of FFI functions
 - Start Date: 2021-02-17
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/184
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3735
 
 # Summary
 
