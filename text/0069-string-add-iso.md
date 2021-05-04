@@ -1,7 +1,7 @@
 - Feature Name: Make String.add return String iso^
 - Start Date: 2021-04-19
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/185
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3750
 
 # Summary
 
