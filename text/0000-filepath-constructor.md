@@ -5,7 +5,7 @@
 
 # Summary
 
-It should be without error to constructor a `FilePath` when `AmbientAuth` is available. The current constructor uses a union of `(FilePath | AmbientAuth)` to limit capabilities and access for the newly created `FilePath`. Insufficient capabilities or access allows the first half of this union, `FilePath`, to fail, however the latter half `AmbientAuth` can never fail.
+It should be without error to construct a `FilePath` when `AmbientAuth` is available as `FilePath` is a pairing between some path string and capabilities on that path. For capabilities, the current constructor uses a union of `(FilePath | AmbientAuth)`. Insufficient capabilities or access allows the first half of this union, `FilePath`, to fail, however the latter half, `AmbientAuth`, can never fail.
 
 # Motivation
 
