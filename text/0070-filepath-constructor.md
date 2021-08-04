@@ -1,7 +1,7 @@
 - Feature Name: Split `FilePath` constructor to guarantee constructor with `AmbientAuth`
 - Start Date: 2021-07-02
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/190
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3820
 
 # Summary
 
