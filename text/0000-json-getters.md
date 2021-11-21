@@ -26,9 +26,9 @@ mutations to the document and then recover and `iso` reference afterwards.
 The implementation consists of using the `apply()` style access to introducing
 three getters, into `JsonDoc`, `JsonObject` and `JsonArray` respectively:
 
-- document data access: `fun apply(): this->JsonType! => ...`,
-- object data access: `fun apply(): this->Array[JsonType]! => ...`,
-- array data access: `fun apply(): this->Map[String, JsonType]! => ...`.
+- document data access: `fun apply(): this->JsonType => ...`,
+- object data access: `fun apply(): this->Array[JsonType] => ...`,
+- array data access: `fun apply(): this->Map[String, JsonType] => ...`.
 
 These access methods can then be used via direct calls or via syntactic sugar
 calls.
