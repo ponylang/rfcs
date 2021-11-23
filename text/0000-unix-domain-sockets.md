@@ -82,6 +82,17 @@ using OS specific features. On other OSes a suitable error can be returned.
 
 TODO/WIP - more alternatives probably need to be considered.
 
+## Direct use of ASIO
+
+It might be possible to implement the mechanism needed to unix domain sockets by
+using the asio API directly. That way, `libponyrt` might not need to be changed.
+Instead, calls from Pony code to `libc` could potentially be used, along with
+making use of `_event_notify`.
+
+For prior-art and an example of direct calls to ASIO, see the experimental
+project:
+[Lori](https://github.com/seantallen-org/lori/blob/main/lori/pony_asio.pony).
+
 # Unresolved questions
 
 ## Naming
