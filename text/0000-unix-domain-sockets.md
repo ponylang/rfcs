@@ -16,49 +16,88 @@ interprocess communications support that is well suited to modular component
 development under Unix. Additionally, integration with existing services
 sometimes requires interaction via named unix domain sockets.
 
+Part of the motivation for supporting Unix domain sockets is the support for
+connection oriented boundary preserving reads and writes. That is, the
+`SOCK_SEQPACKET` type, under the `AF_UNXI` domain, provides reliable and
+sequential datagram style sockets. This is useful for implementing system
+services.
+
 # Detailed design
 
-TODO
+We will provide implementations of:
 
-This is the bulk of the RFC. Explain the design in enough detail for somebody familiar with the language to understand, and for somebody familiar with the compiler to implement. This should get into specifics and corner-cases, and include examples of how the feature is used.
+- `UnixConnection`
+- `UnixConnectionNotify`
+- `UnixListener`
+- `UnixListenerNotify`
+
+When creating a new connection the socket type can be set to one of:
+
+- `SOCK_STREAM`
+- `SOCK_DGRAM`
+- `SOCK_SEQPACKET`
+
+When creating a new listener the socket type can be set to one of:
+
+- `SOCK_STREAM`
+- `SOCK_SEQPACKET`
+
+Beyond the above coarse grained API types, it is expected that the actual
+methods that are exposed will be similar to those of the TCP or UDP
+implementations.
+
+TODO/WIP - this section does not contains enough detail yet.
 
 # How We Teach This
 
-TODO
+As with TCP and UDP sockets, the in-code documentation would provide sufficient
+examples of the usage.
 
-What names and terminology work best for these concepts and why? How is this idea best presented? As a continuation of existing Pony patterns, or as a wholly new one?
-
-Would the acceptance of this proposal mean the Pony guides must be re-organized or altered? Does it change how Pony is taught to new users at any level?
-
-How should this feature be introduced and taught to existing Pony users?
+Most of the API patterns, in terms of notifiers etc., will be common to the Unix
+domain sockets and the other supported socket types.
 
 # How We Test This
 
-TODO
+It will be possible to implement unit tests to create unix domain sockets and
+then exercise both the server side listening code and the client side connection
+code.
 
-How do we assure that the initial implementation works? How do we assure going forward that the new functionality works after people make changes? Do we need unit tests? Something more sophisticated? What's the scope of testing? Does this change impact the testing of other parts of Pony? Is our standard CI coverage sufficient to test this change? Is manual intervention required?
+Additionally, the build pipelines will be able to test this on all of the
+supported Unix operating systems.
 
-In general this section should be able to serve as acceptance criteria for any implementation of the RFC.
+While the final implementation may benefit from reusing some o the existing TCP
+or UDP code, the impact should be mitigated by existing testing.
 
 # Drawbacks
 
-TODO
+## OS Specific
 
-Why should we *not* do this? Things you might want to note:
+By definition, the Unix domain sockets are specific to particular supported
+operating systems.
 
-* Breaks existing code
-* Introduces instability into the compiler and or runtime which will result in bugs we are going to spend time tracking down
-* Maintenance cost of added code
+However, this would not impact TCP or UDP, and the programmer would be aware of
+using OS specific features. On other OSes a suitable error can be returned.
 
 # Alternatives
 
-TODO
-
-What other designs have been considered? What is the impact of not doing this?
-None is not an acceptable answer. There is always to option of not implementing the RFC.
+TODO/WIP - more alternatives probably need to be considered.
 
 # Unresolved questions
 
-TODO
+## Naming
 
-What parts of the design are still TBD?
+Should the new components be named: `UnixConnection`, `UnixListener` etc.? Or,
+should the components be named: `UNIXConnection`, `UNIXListener` etc.?
+
+## Abstract Socket Addresses
+
+Should there be explicit support for the Linux specific abstract socket
+addresses? Or, do we simply allow names to start with `\0` in order to enable
+the abstract naming convention?
+
+## Sharing interface definitions
+
+Given the similarities between the TCP domain and the Unix domain (when using
+the stream or sequential-packet socket types), or between the UDP domain and the
+Unix domain (when using the datagram or sequential-packet socket types), should
+there be an attempt to pull out common interface types?
