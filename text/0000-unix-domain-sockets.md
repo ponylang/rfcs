@@ -76,7 +76,8 @@ By definition, the Unix domain sockets are specific to particular supported
 operating systems.
 
 However, this would not impact TCP or UDP, and the programmer would be aware of
-using OS specific features. On other OSes a suitable error can be returned.
+using OS specific features. On other OSes a suitable compile time error can be
+returned by making use of the `ifdef ... else compile_error ... end` directive.
 
 # Alternatives
 
