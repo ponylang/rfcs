@@ -1,0 +1,105 @@
+- Feature Name: array_private_classes
+- Start Date: 2022-01-08
+- RFC PR: (leave this empty)
+- Pony Issue: (leave this empty)
+
+# Summary
+
+Using information hiding design principle, the builtin classes `ArrayKeys`, `ArrayValues` and `ArrayPairs` can be made private as they are only used as return types for `Array` functions `keys`, `values` and `pairs`. The return values for these functions is be changed to general `Iterator`. A new interface `Rewindable` is defined to allow for rewindable iterators.
+
+# Motivation
+
+This change brings:
+
+- Applying the design principle of [hiding implementation details](https://en.wikipedia.org/wiki/Information_hiding) but offer a general and stable interface. Returning interfaces instead of concrete classes allows changing the implementation.
+- `Array` functions `keys`, `values` and `pairs` definitions are made more general. `Array` iterators implementation details are not public. `_ArrayKeys`, `_ArrayValues` and `_ArrayPairs` are now [opaque data types](https://en.wikipedia.org/wiki/Opaque_data_type).
+- Makes the standard library more simple by removing 3 specialised classes.
+- The interface `Rewindable` can be combined to create rewindable iterators or other types that can be rewinded.
+
+This change is compatible with the existing code base but for client code that is directly using the classes `ArrayKeys`, `ArrayValues` and `ArrayPairs`. A search on Github shows that the impact is very limited.
+
+# Detailed design
+
+`Array` functions `keys`, `values` and `pairs` are changed to return `Iterator` and the classes that implement these iterators are make private. Here are the full implementation of these functions.
+
+```pony
+  fun keys(): Iterator[USize]^ =>
+    """
+    Return an iterator over the indices in the array.
+    """
+    _ArrayKeys[A, this->Array[A]](this)
+
+  fun values(): (Iterator[this->A] & Rewindable[this->A]) =>
+    """
+    Return an iterator over the values in the array.
+    """
+    _ArrayValues[A, this->Array[A]](this)
+
+  fun pairs(): Iterator[(USize, this->A)]^ =>
+    """
+    Return an iterator over the (index, value) pairs in the array.
+    """
+    _ArrayPairs[A, this->Array[A]](this)
+```
+
+As the function `values` uses an iterator with a `rewind` function that is not part of the `Iterator` interface, a new interface `Rewindable` is added to enbale creation of rewindable iterators.
+
+```pony
+interface Rewindable[A]
+  """
+  An `Iterator` is rewindable when it can be rewinded, that is start again from
+  first value.
+  """
+  fun ref rewind(): Iterator[A]^
+```
+
+The code of the standard library is adapted to remove use of these now private classes, mainly in tests. Here are the files that must be changed:
+
+* `iter.pony` in function `cycle`
+* `heap.pony` in function `values`
+* `_test.pony` in class `_TestArrayValuesRewind`
+* `util.cc` to change the name of the class to `_ArrayValues`
+
+# How We Teach This
+
+This change keeps the code compatible in most cases. When client classes are defining objects of these types, the reason is usually to get access to the function `rewind` that was not defined in `Iterator`. By adding the interface `Rewindable`, client code can easily be adapted, replacing `ArrayValues[A]` by `(Iterator[A] & Rewindable[A])`. A [search on Github Pony code](https://github.com/search?q=%22ArrayValues%22+language%3APony&type=code) finds 24 files using the class `ArrayValues`, of which 6 are copies of `array.pony` file.
+
+For instance, in [xml2xpath.pony](https://github.com/redvers/pony-libxml2/blob/bbca5d98d48854bfec2c6ee110220873ecc4df34/pony-libxml2/xml2xpath.pony#L41), the code can be changed from
+
+```pony
+  fun values(): ArrayValues[Xml2node, this->Array[Xml2node]]^ ? =>
+    if (allocated) then
+      ArrayValues[Xml2node, this->Array[Xml2node]](nodearray)
+    else
+      error
+    end
+```
+
+to
+
+```pony
+  fun values(): (Iterator[Xml2node] & Rewindable[Xml2node]) ? =>
+    if (allocated) then
+      nodearray.values()
+    else
+      error
+    end
+```
+
+This change in `array.pony` will break such code but it can be easily adapted to use the new API. And it will make the standard library easier when reducing the number of builin types exposed.
+
+# How We Test This
+
+Pony tests must continue to pass.
+
+# Drawbacks
+
+As said, some client's code must me adapted when using these classes. As these classes are just concreted implementations of `Iterator` for use by `Array`, their use in client code is limited and the code can very easily be changed.
+
+# Alternatives
+
+Stay as is with these 3 builtin classes. Continue the [discussion on Zulip](https://ponylang.zulipchat.com/#narrow/stream/189959-RFCs/topic/Make.20Array.20iterators.20private).
+
+# Unresolved questions
+
+None
