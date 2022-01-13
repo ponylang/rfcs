@@ -29,10 +29,10 @@ use @pony_schedulers[U32]()
 use @pony_active_schedulers[U32]()
 
 primitive Scheduler
-  fun schedulers(): U32 =>
+  fun schedulers(auth: RuntimeInfoAuth): U32 =>
     @pony_schedulers()
 
-  fun active_schedulers(): U32 =>
+  fun active_schedulers(auth: RuntimeInfoAuth): U32 =>
     @pony_active_schedulers()
 ```
 
@@ -49,6 +49,15 @@ with:
 - pony_active_schedulers
 
 which will be marked as `PONY_API`.
+
+Additionally, we will define a single auth required to access runtime information. The auth will be defined in a file called `auth.pony`:
+
+```pony
+type RuntimeInfoAuth is (AmbientAuth | SchedulerInfoAuth)
+
+primitive SchedulerInfoAuth
+  new create(auth: AmbientAuth) => None
+```
 
 # How We Teach This
 
@@ -69,7 +78,8 @@ The design as detailed will break existing code that was relying on the `ponyint
 
 # Alternatives
 
-We could leave the existing `ponyint_` methods in place.
+- We could leave the existing `ponyint_` methods in place.
+- We could not require an object capability to access scheduler info.
 
 # Unresolved questions
 
