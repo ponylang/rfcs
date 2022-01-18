@@ -5,7 +5,7 @@
 
 # Summary
 
-The current default is to allow FFI calls from any package. The optional `--safe` flag takes an argument of a colon delemeted list of packages and limits FFI calls to those and `builtin`.
+The current default is to allow FFI calls from any package. The optional `--safe` flag takes an argument of a colon delimited list of packages and limits FFI calls to those and `builtin`.
 
 The purpose of this RFC is three-fold:
 
