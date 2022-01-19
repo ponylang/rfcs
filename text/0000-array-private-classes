@@ -130,6 +130,64 @@ classes, mainly in tests. Here are the files that must be changed:
 * `packages/collections/set.pony`
 * `test/libponyc/util.cc` to change the name of the class to `_ArrayValues`
 
+## Detailed changes
+
+In order to judge how the API becomes simpler to use understand clients of the
+collections classes, here are the changes in the functions' signatures. The `-`
+line shows the old signature while the `+` one is the new:
+
+```pony
+// Array
+-  fun keys(): ArrayKeys[A, this->Array[A]]^ =>
++  fun keys(): Iterator[USize]^ =>
+-  fun values(): ArrayValues[A, this->Array[A]]^ =>
++  fun values(): RewindableIterator[this->A]^ =>
+-  fun pairs(): ArrayPairs[A, this->Array[A]]^ =>
++  fun pairs(): Iterator[(USize, this->A)]^ =>
+
+// Heap
+-  fun values(): ArrayValues[A, this->Array[A]]^ =>
++  fun values(): Iterator[this->A]^ =>
+
+// List
+-  fun nodes(): ListNodes[A, this->ListNode[A]]^ =>
++  fun nodes(): Iterator[this->ListNode[A]]^ =>
+-  fun rnodes(): ListNodes[A, this->ListNode[A]]^ =>
++  fun rnodes(): Iterator[this->ListNode[A]]^ =>
+-  fun values(): ListValues[A, this->ListNode[A]]^ =>
++  fun values(): Iterator[this->A]^ =>
+-  fun rvalues(): ListValues[A, this->ListNode[A]]^ =>
++  fun rvalues(): Iterator[this->A]^ =>
+
+// Map
+-  fun keys(): MapKeys[K, V, H, this->HashMap[K, V, H]]^ =>
++  fun keys(): Iterator[this->K]^ =>
+-  fun values(): MapValues[K, V, H, this->HashMap[K, V, H]]^ =>
++  fun values(): Iterator[this->V]^ =>
+-  fun pairs(): MapPairs[K, V, H, this->HashMap[K, V, H]]^ =>
++  fun pairs(): Iterator[(this->K, this->V)]^ =>
+
+// Persistent Map
+-  fun val keys(): MapKeys[K, V, H] =>
++  fun val keys(): Iterator[K] =>
+-  fun val values(): MapValues[K, V, H] =>
++  fun val values(): Iterator[V] =>
+-  fun val pairs(): MapPairs[K, V, H] =>
++  fun val pairs(): Iterator[(K, V)] =>
+
+// Persistent Vec
+-  fun val keys(): VecKeys[A]^ =>
++  fun val keys(): Iterator[USize]^ =>
+-  fun val values(): VecValues[A]^ =>
++  fun val values(): Iterator[A]^ =>
+-  fun val pairs(): VecPairs[A]^ =>
++  fun val pairs(): Iterator[(USize, A)]^ =>
+
+// Set
+-  fun values(): SetValues[A, H, this->HashSet[A, H]]^ =>
++  fun values(): Iterator[this->A]^ =>
+```
+
 # How We Teach This
 
 This change keeps the code compatible in the vast majority of cases. When client
