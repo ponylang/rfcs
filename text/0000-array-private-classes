@@ -28,6 +28,10 @@ internals too like:
 * `Set`
 * `Itertools`
 
+This is a breaking change for collections' client code that use now internal
+classes but a search on Github repositories shows that the impact should be
+limited.
+
 # Motivation
 
 This change brings:
