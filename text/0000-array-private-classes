@@ -1,26 +1,39 @@
-- Feature Name: array_private_classes
+- Feature Name: collections should not expose internal classes through iterators
 - Start Date: 2022-01-08
 - RFC PR: (leave this empty)
 - Pony Issue: (leave this empty)
 
 # Summary
 
-Using information hiding design principle, the builtin classes `ArrayKeys`, `ArrayValues` and `ArrayPairs` can be made private as they are only used as return types for `Array` functions `keys`, `values` and `pairs`. The return values for these functions is be changed to general `Iterator`. A new interface `Rewindable` is defined to allow for rewindable iterators.
+Following information hiding design principle, the builtin classes of collection data structures must not be made visible through iterator functions like `ArrayKeys`, `ArrayValues` and `ArrayPairs`. These classes can be made private as they are only used as return types for `Array` functions `keys`, `values` and `pairs`. The return values for these functions are changed to the more general interface `Iterator`.
+
+A new interface `RewindableIterator` is defined to allow for rewindable iterators, like it is the case for `Array` `values`.
+
+This design principle is applied to the other collection classes that expose internals too like:
+
+* `List`
+* `Map`
+* persistent `Map`
+* `Vec`
+* persistent `Vec`
+* `Set`
+* `Itertools`
 
 # Motivation
 
 This change brings:
 
-- Applying the design principle of [hiding implementation details](https://en.wikipedia.org/wiki/Information_hiding) but offer a general and stable interface. Returning interfaces instead of concrete classes allows changing the implementation.
-- `Array` functions `keys`, `values` and `pairs` definitions are made more general. `Array` iterators implementation details are not public. `_ArrayKeys`, `_ArrayValues` and `_ArrayPairs` are now [opaque data types](https://en.wikipedia.org/wiki/Opaque_data_type).
-- Makes the standard library more simple by removing 3 specialised classes.
-- The interface `Rewindable` can be combined to create rewindable iterators or other types that can be rewinded.
+- Applying the design principle of [hiding implementation details](https://en.wikipedia.org/wiki/Information_hiding) but offer a general and stable interface. Returning interfaces instead of concrete classes allows changing the implementation. Usually, one must return the most general type that fullfils the contract of the function (in the case of the functions discussed in this RFC, iteration).
+- Collections' functions `keys`, `values` and `pairs` definitions are made more general. Iterators implementation details are not public. Internal classes used by implementation like `*Keys`, `*Values` and `*Pairs` are now [opaque data types](https://en.wikipedia.org/wiki/Opaque_data_type). Generally, when using these collection classes, clients are not interested by the iterators implementation, but by the types these iterators return and that is provided by the generic parameters.
+- The generic return signature of these 3 iterating functions is simpler to understand for clients of collection classes.
+- Makes the standard library more simple by hiding 18 specialised classes from stdlib of which 3 are from `builtin`.
+- The interface `RewindableIterator` is added to create rewindable iterators (can be re-start from first value).
 
-This change is compatible with the existing code base but for client code that is directly using the classes `ArrayKeys`, `ArrayValues` and `ArrayPairs`. A search on Github shows that the impact is very limited.
+This change remains compatible with the existing code base but for client code that is directly using the classes `*Keys`, `*Values` and `*Pairs`. A search on Github shows that the impact is very limited.
 
 # Detailed design
 
-`Array` functions `keys`, `values` and `pairs` are changed to return `Iterator` and the classes that implement these iterators are make private. Here are the full implementation of these functions.
+Iterating functions in collections `keys`, `values` and `pairs` are changed to return `Iterator` and the classes that implement these iterators are made private. Here are the full implementation of these functions for the `Array` class (changes in other collection classes are identical).
 
 ```pony
   fun keys(): Iterator[USize]^ =>
@@ -29,7 +42,7 @@ This change is compatible with the existing code base but for client code that i
     """
     _ArrayKeys[A, this->Array[A]](this)
 
-  fun values(): (Iterator[this->A] & Rewindable[this->A]) =>
+  fun values(): RewindableIterator[this->A]^ =>
     """
     Return an iterator over the values in the array.
     """
@@ -42,27 +55,55 @@ This change is compatible with the existing code base but for client code that i
     _ArrayPairs[A, this->Array[A]](this)
 ```
 
-As the function `values` uses an iterator with a `rewind` function that is not part of the `Iterator` interface, a new interface `Rewindable` is added to enbale creation of rewindable iterators.
+As the function `values` of class `Array` uses an iterator with a `rewind` function that is not part of the `Iterator` interface, a new interface `RewindableIterator` is added to enable creation of rewindable iterators.
+
+Note: To remain consistent with `Array` behaviour, functions `keys` and `pairs` should return a `RewindableIterator` too but we limited the API change to minimum as we did not understood why it was not already the case.
 
 ```pony
-interface Rewindable[A]
+interface RewindableIterator[A] is Iterator[A]
   """
-  An `Iterator` is rewindable when it can be rewinded, that is start again from
-  first value.
+  A `RewindableIterator` is an iterator that can be rewinded, that is start
+  again from first item. The data structure being iterated on can't change the
+  order it return iterated items.
   """
+  fun has_next(): Bool
+    """
+    Return `true` when function `next` can be called to get next iteration item.
+    """
+
+  fun ref next(): A ?
+    """
+    Return the next item of the iteration or an error in case there are no other
+    items. A previous call to `has_next` check if we can continue iteration.
+    """
+
   fun ref rewind(): Iterator[A]^
+    """
+    Get a new iterator that can be used to start the iteration again from the
+    first item.
+    """
 ```
 
 The code of the standard library is adapted to remove use of these now private classes, mainly in tests. Here are the files that must be changed:
 
-* `iter.pony` in function `cycle`
-* `heap.pony` in function `values`
-* `_test.pony` in class `_TestArrayValuesRewind`
-* `util.cc` to change the name of the class to `_ArrayValues`
+* `packages/builtin/array.pony` as shown above
+* `packages/itertools/iter.pony` in function `cycle`
+* `packages/collections/heap.pony` in function `values`
+* `packages/collection/builtin/_test.pony` in class `_TestArrayValuesRewind`
+* `packages/collections/list.pony`
+* `packages/collections/map.pony`
+* `packages/collections/persistent/map.pony`
+* `packages/collections/persistent/vec.pony`
+* `packages/collections/set.pony`
+* `test/libponyc/util.cc` to change the name of the class to `_ArrayValues`
 
 # How We Teach This
 
-This change keeps the code compatible in most cases. When client classes are defining objects of these types, the reason is usually to get access to the function `rewind` that was not defined in `Iterator`. By adding the interface `Rewindable`, client code can easily be adapted, replacing `ArrayValues[A]` by `(Iterator[A] & Rewindable[A])`. A [search on Github Pony code](https://github.com/search?q=%22ArrayValues%22+language%3APony&type=code) finds 24 files using the class `ArrayValues`, of which 6 are copies of `array.pony` file.
+This change keeps the code compatible in the vast majority of cases. When client classes are defining objects of these now private types, the reason is usually to get access to the function `rewind` that was not defined in `Iterator`. By adding the interface `RewindableIterator`, client code can easily be adapted, replacing `ArrayValues[A]` by `RewindableIterator[A]`.
+
+ Also, client code generally uses these functions to iterate on the returned types and does not try to access the iterator directly but is interested by the iterated items. When client code refers to the iterator type, that's generally useless and the code can be rewritten to be made shorter and more future proof.
+
+A [search on Github Pony code](https://github.com/search?q=%22ArrayValues%22+language%3APony&type=code) finds 24 files using the class `ArrayValues`, of which 6 are copies of `array.pony` file.
 
 For instance, in [xml2xpath.pony](https://github.com/redvers/pony-libxml2/blob/bbca5d98d48854bfec2c6ee110220873ecc4df34/pony-libxml2/xml2xpath.pony#L41), the code can be changed from
 
@@ -78,7 +119,7 @@ For instance, in [xml2xpath.pony](https://github.com/redvers/pony-libxml2/blob/b
 to
 
 ```pony
-  fun values(): (Iterator[Xml2node] & Rewindable[Xml2node]) ? =>
+  fun values(): RewindableIterator[Xml2node]^ ? =>
     if (allocated) then
       nodearray.values()
     else
@@ -86,7 +127,9 @@ to
     end
 ```
 
-This change in `array.pony` will break such code but it can be easily adapted to use the new API. And it will make the standard library easier when reducing the number of builin types exposed.
+In this sample, the developer was not really concerned by the type of the iterator but that the `values` function must return an `RewindableIterator` over `Xml2node`. The new version makes the code simpler to understand.
+
+This change in `array.pony` and other collections will break such code but it can be easily adapted to use the new API. And it will make the standard library easier to learn by reducing the number of public types.
 
 # How We Test This
 
@@ -94,11 +137,11 @@ Pony tests must continue to pass.
 
 # Drawbacks
 
-As said, some client's code must me adapted when using these classes. As these classes are just concreted implementations of `Iterator` for use by `Array`, their use in client code is limited and the code can very easily be changed.
+As said, some client's code must me adapted when using these classes. As these classes are just concreted implementations of `Iterator` by collection classes, their use in client code is limited and the code can very easily be changed.
 
 # Alternatives
 
-Stay as is with these 3 builtin classes. Continue the [discussion on Zulip](https://ponylang.zulipchat.com/#narrow/stream/189959-RFCs/topic/Make.20Array.20iterators.20private).
+Stay as is. Continue the [discussion on Zulip](https://ponylang.zulipchat.com/#narrow/stream/189959-RFCs/topic/Make.20Array.20iterators.20private).
 
 # Unresolved questions
 
