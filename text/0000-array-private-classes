@@ -116,8 +116,7 @@ interface RewindableIterator[A] is Iterator[A]
 
   fun ref rewind(): Iterator[A]^
     """
-    Get a new iterator that can be used to start the iteration again from the
-    first item.
+    Start the iterator over again from the beginning.
     """
 ```
 
