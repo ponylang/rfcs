@@ -68,6 +68,14 @@ return `Iterator` and the classes that implement these iterators are made privat
 Here are the full implementation of these functions for the `Array` class (changes
 in other collection classes are identical).
 
+As the function `values` of class `Array` uses an iterator with a `rewind` function
+that is not part of the `Iterator` interface, a new interface `RewindableIterator`
+is added to enable creation of rewindable iterators.
+
+Note: To remain consistent with `Array` behaviour, functions `keys` and `pairs`
+should return a `RewindableIterator` too but we limited the API change to minimum
+as we did not understood why it was not already the case.
+
 ```pony
   fun keys(): Iterator[USize]^ =>
     """
@@ -87,14 +95,6 @@ in other collection classes are identical).
     """
     _ArrayPairs[A, this->Array[A]](this)
 ```
-
-As the function `values` of class `Array` uses an iterator with a `rewind` function
-that is not part of the `Iterator` interface, a new interface `RewindableIterator`
-is added to enable creation of rewindable iterators.
-
-Note: To remain consistent with `Array` behaviour, functions `keys` and `pairs`
-should return a `RewindableIterator` too but we limited the API change to minimum
-as we did not understood why it was not already the case.
 
 ```pony
 interface RewindableIterator[A] is Iterator[A]
