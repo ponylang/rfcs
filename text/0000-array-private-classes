@@ -247,9 +247,8 @@ the existing coverage in Pony standard library tests is sufficient
 
 # Drawbacks
 
-As said, some client's code must me adapted when using these classes. As these
-classes are just concreted implementations of `Iterator` by collection classes,
-their use in client code is limited and the code can very easily be changed.
+Will break any existing code that uses any of the classes that are currently
+public and will be made private by this RFC.
 
 # Alternatives
 
