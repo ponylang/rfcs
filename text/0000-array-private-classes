@@ -51,8 +51,9 @@ implementation, but by the types these iterators return and that is provided by
 the generic parameters.
 - The generic return signature of these 3 iterating functions is simpler to
 understand for clients of collection classes.
-- Makes the standard library more simple by hiding 18 specialised classes from
-stdlib of which 3 are from `builtin`.
+- Reduces the number of public classes in the standard library by hiding 18
+specialised classes (iterators implementations) of which 3 are from the
+`builtin` module.
 - The interface `RewindableIterator` is added to create rewindable iterators
 (can be re-start from first value).
 
@@ -136,7 +137,7 @@ classes, mainly in tests. Here are the files that must be changed:
 
 ## Detailed changes
 
-In order to judge how the API becomes simpler to use understand clients of the
+In order to judge how the API becomes simpler to understand for clients of the
 collections classes, here are the changes in the functions' signatures. The `-`
 line shows the old signature while the `+` one is the new:
 
