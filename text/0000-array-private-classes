@@ -242,7 +242,8 @@ easier to learn by reducing the number of public types.
 
 # How We Test This
 
-Pony tests must continue to pass.
+Pony tests must continue to pass. No additional tests are need as after review
+the existing coverage in Pony standard library tests is sufficient
 
 # Drawbacks
 
