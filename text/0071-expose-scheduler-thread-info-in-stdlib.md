@@ -1,7 +1,7 @@
 - Feature Name: Expose scheduler thread information in standard library
 - Start Date: 2022-01-12
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/194
+- Pony Issue: https://github.com/ponylang/ponyc/issues/3985
 
 # Summary
 
