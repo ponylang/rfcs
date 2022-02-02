@@ -106,6 +106,42 @@ is no longer needed as the only reference to it has been removed.
 
 The removal of the type union removes the possible incorrect usage with `as` seen in the motivation section. And the lack of ability to use a non-specific auth at the final call site encourages only passing around the most specific auth required.
 
+Capability constructors like `ApplyReleaseBackpressureAuth` will remain unchanged whether they currently take a single auth to derive from:
+
+```pony
+primitive ApplyReleaseBackpressureAuth
+  new create(from: AmbientAuth) =>
+    None
+```
+
+Or like many in the `net` package, take more than one auth to derive from:
+
+```pony
+primitive NetAuth
+  new create(from: AmbientAuth) =>
+    None
+
+primitive DNSAuth
+  new create(from: (AmbientAuth | NetAuth)) =>
+    None
+
+primitive UDPAuth
+  new create(from: (AmbientAuth | NetAuth)) =>
+    None
+
+primitive TCPAuth
+  new create(from: (AmbientAuth | NetAuth)) =>
+    None
+
+primitive TCPListenAuth
+  new create(from: (AmbientAuth | NetAuth | TCPAuth)) =>
+    None
+
+primitive TCPConnectAuth
+  new create(from: (AmbientAuth | NetAuth | TCPAuth)) =>
+    None
+```
+
 # How We Teach This
 
 We will need to update examples in documentation in the standard library to account for this change as well as possibly, examples in the `examples` directory of the ponyc repo. The latter will be caught during standard CI testing. The former will require manual review of the documentation for each package impacted by this change.
