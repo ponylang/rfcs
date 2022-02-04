@@ -27,6 +27,7 @@ From the [ponycheck repository](https://github.com/ponylang/ponycheck):
 - Add the example test application in `examples` to a new folder `examples/ponycheck` in the ponyc repo.
 - Review the content in `README` to see what if any should form the basis of a section on ponycheck in the tutorial (see more below). The README contains similar content to what is already in the generated package documentation which I believe can stay the same so it is possible that in addition to taking content from the README, we might want to also crib from the package level documentation.
 - Update the README to announce that ponycheck has become part of the pony standard library and then archive the repository so that it is read only.
+- Transfer `ponycheck` repo issues to the `ponyc` repo
 
 I think it is important to note as part of this design that ponycheck has no dependencies other than standard library so no additional packages need to be added to the standard library to support this change. I believe that for the sake of precedent that this should be noted as in the future, RFCs might be opened to include other packages in the standard library and those that would require bringing in additional dependencies should be vetted with even more caution than a single package/dependency free addition as advocated by this RFC.
 
