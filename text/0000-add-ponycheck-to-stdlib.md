@@ -24,7 +24,7 @@ It isn't currently possible to do any property based testing in the standard lib
 From the [ponycheck repository](https://github.com/ponylang/ponycheck):
 
 - Add the `ponycheck` package as a new package in the top-level of the standard library
-- Add the example test application in `examples` to a new folder `examples/ponycheck` in the ponyc repo.
+- Add the example test application in `examples` to a new folder `examples/ponycheck` in the ponyc repo. The `examples` should follow the README usage already in place for each README in the ponyc repo.
 - Review the content in `README` to see what if any should form the basis of a section on ponycheck in the tutorial (see more below). The README contains similar content to what is already in the generated package documentation which I believe can stay the same so it is possible that in addition to taking content from the README, we might want to also crib from the package level documentation.
 - Update the README to announce that ponycheck has become part of the pony standard library and then archive the repository so that it is read only.
 - Transfer `ponycheck` repo issues to the `ponyc` repo
