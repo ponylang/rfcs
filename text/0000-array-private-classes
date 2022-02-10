@@ -14,7 +14,7 @@ only used as return types for `Array` functions `keys`, `values` and `pairs`.
 The return values for these functions are changed to the more general interface
 `Iterator`.
 
-A new interface `RewindableIterator` is defined to allow for rewindable iterators,
+A new interface `CollectionIterator` is defined to allow for rewindable iterators,
 like it is the case for `Array` `values`.
 
 This design principle is applied to the other collection classes that expose
@@ -54,7 +54,7 @@ understand for clients of collection classes.
 - Reduces the number of public classes in the standard library by hiding 18
 specialised classes (iterators implementations) of which 3 are from the
 `builtin` module.
-- The interface `RewindableIterator` is added to create rewindable iterators
+- The interface `CollectionIterator` is added to create rewindable iterators
 (can be re-start from first value).
 
 This change remains compatible with the existing code base but for client code
@@ -69,23 +69,23 @@ Here are the full implementation of these functions for the `Array` class (chang
 in other collection classes are identical).
 
 As the function `values` of class `Array` uses an iterator with a `rewind` function
-that is not part of the `Iterator` interface, a new interface `RewindableIterator`
+that is not part of the `Iterator` interface, a new interface `CollectionIterator`
 is added to enable creation of rewindable iterators.
 
 ```pony
-  fun keys(): Iterator[USize]^ =>
+  fun keys(): CollectionIterator[USize]^ =>
     """
     Return an iterator over the indices in the array.
     """
     _ArrayKeys[A, this->Array[A]](this)
 
-  fun values(): RewindableIterator[this->A]^ =>
+  fun values(): CollectionIterator[this->A]^ =>
     """
     Return an iterator over the values in the array.
     """
     _ArrayValues[A, this->Array[A]](this)
 
-  fun pairs(): Iterator[(USize, this->A)]^ =>
+  fun pairs(): CollectionIterator[(USize, this->A)]^ =>
     """
     Return an iterator over the (index, value) pairs in the array.
     """
@@ -93,13 +93,12 @@ is added to enable creation of rewindable iterators.
 ```
 
 Note: To remain consistent with `Array` behaviour, functions `keys` and `pairs`
-should return a `RewindableIterator` too but we limited the API change to minimum
-as we did not understood why it was not already the case.
+will return a `CollectionIterator`.
 
 ```pony
-interface RewindableIterator[A] is Iterator[A]
+interface CollectionIterator[A] is Iterator[A]
   """
-  A `RewindableIterator` is an iterator that can be rewinded, that is start
+  A `CollectionIterator` is an iterator that can be rewinded, that is start
   again from first item. The data structure being iterated on can't change the
   order it return iterated items.
   """
@@ -145,7 +144,7 @@ line shows the old signature while the `+` one is the new:
 -  fun keys(): ArrayKeys[A, this->Array[A]]^ =>
 +  fun keys(): Iterator[USize]^ =>
 -  fun values(): ArrayValues[A, this->Array[A]]^ =>
-+  fun values(): RewindableIterator[this->A]^ =>
++  fun values(): CollectionIterator[this->A]^ =>
 -  fun pairs(): ArrayPairs[A, this->Array[A]]^ =>
 +  fun pairs(): Iterator[(USize, this->A)]^ =>
 
@@ -192,13 +191,36 @@ line shows the old signature while the `+` one is the new:
 +  fun values(): Iterator[this->A]^ =>
 ```
 
+For instance, in `Array`
+
+```pony
+-  fun keys(): ArrayKeys[A, this->Array[A]]^ =>
++  fun keys(): Iterator[USize]^ =>
+```
+
+now the client user knows now that she gets an iterator over `USize`.
+
+Another more complex example with `Map`,
+
+```pony
+-  fun keys(): MapKeys[K, V, H, this->HashMap[K, V, H]]^ =>
++  fun keys(): Iterator[this->K]^ =>
+-  fun values(): MapValues[K, V, H, this->HashMap[K, V, H]]^ =>
++  fun values(): Iterator[this->V]^ =>
+```
+
+we see that we iterate over keys (`K` type) or values (`V`). The initial signature
+gave complex generic classes that the user has to find in the documentation to
+understand that they are iterators, and then dive deeper to understand on what
+they iterate.
+
 # How We Teach This
 
 This change keeps the code compatible in the vast majority of cases. When client
 classes are defining objects of these now private types, the reason is usually
 to get access to the function `rewind` that was not defined in `Iterator`. By
-adding the interface `RewindableIterator`, client code can easily be adapted,
-replacing `ArrayValues[A]` by `RewindableIterator[A]`.
+adding the interface `CollectionIterator`, client code can easily be adapted,
+replacing `ArrayValues[A]` by `CollectionIterator[A]`.
 
 Also, client code generally uses these functions to iterate on the returned types
 and does not try to access the iterator directly but is interested by the iterated
@@ -224,7 +246,7 @@ the code can be changed from
 to
 
 ```pony
-  fun values(): RewindableIterator[Xml2node]^ ? =>
+  fun values(): CollectionIterator[Xml2node]^ ? =>
     if (allocated) then
       nodearray.values()
     else
@@ -233,7 +255,7 @@ to
 ```
 
 In this sample, the developer was not really concerned by the type of the iterator
-but that the `values` function must return an `RewindableIterator` over `Xml2node`.
+but that the `values` function must return an `CollectionIterator` over `Xml2node`.
 The new version makes the code simpler to understand.
 
 This change in `array.pony` and other collections will break such code but it
@@ -252,25 +274,31 @@ public and will be made private by this RFC.
 
 # Alternatives
 
-Stay as is. Continue the
+1. Stay as is. Continue the
 [discussion on Zulip](https://ponylang.zulipchat.com/#narrow/stream/189959-RFCs/topic/Make.20Array.20iterators.20private).
 
-Instead of defining a new type of iterator with the `RewindableIterator` interface,
+2. Update the existing concrete classes to include `rewind` where needed.
+
+3. Instead of defining a new type of iterator with the `CollectionIterator` interface,
 we can consider only the rewindable part of it in an `Rewindable` interface:
 
 ```pony
 interface Rewindable[A]
-  fun ref rewind(): Iterator[A]^
+  fun ref rewind(): A^
     """
-    Start the iterator over again from the beginning.
+    Rewind the type `A`.
     """
 ```
 
-Then one can create a rewindable iterator by composing these two interfaces:
+Then one can create a rewindable iterator by combining these two interfaces:
 
 ```pony
-type RewindableIterator[A] is (Iterator[A] & Rewindable[A])
+type CollectionIterator[A] is (Iterator[A] & Rewindable[Iterator[A]])
 ```
+
+Perhaps, a more general interface name instead if `Rewindable` would be `Resetable`
+to define the traits of a type that can be reset to its initial state, as in the
+case of iterators `reset` == `rewind`.
 
 The rewindable type can be used with other types than `Iterator`, like a data
 structure that would implement a rewindable property. This alternative was
@@ -278,8 +306,3 @@ structure that would implement a rewindable property. This alternative was
 prevent name colisions in `builtin` with user-named types.
 
 # Unresolved questions
-
-Pony language definition is not precise about
-[type variance](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science))
-and its impact in collections classes, particularly for covariant return types
-of functions (in this RFC, `keys`, `values` and `pairs`).
