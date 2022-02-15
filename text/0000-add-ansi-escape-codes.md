@@ -27,6 +27,7 @@ I would like to have the default value in these functions be zero.
 - Add escape codes for scroll up/down.
 - Add escape codes for next/previous line.
 - Add escape code for cursor horizontal position (moves the cursor to column n in the current line).
+- Add escape codes for hide/show cursor.
 
 If a value passed to any of the functions is invalid, such as 200 being passed to `fg_3bit`, an empty string would be returned.
 
