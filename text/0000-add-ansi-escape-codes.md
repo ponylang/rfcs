@@ -5,7 +5,7 @@
 
 # Summary
 
-This RFC proposes the addition of more escape code functions to the ANSI primitive of the term package and the consolodation of the thirty-two existing color functions into four functions.
+This RFC proposes the addition of more escape code functions to the ANSI primitive of the term package and the consolidation of the thirty-two existing color functions into four functions.
 
 # Motivation
 
