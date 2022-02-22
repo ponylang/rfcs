@@ -67,6 +67,7 @@ The functions that have parameters would have tests added to ensure that they
 return the correct escape code for the given parameters.
 
 The functions that would have parameters and would be tested are:
+
 - 8-bit and 24-bit colors for the foreground and background
 - scroll up and scroll down
 - next line and previous line
