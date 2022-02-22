@@ -54,8 +54,6 @@ primitive EraseBuffer
 type EraseDisplay is (EraseAfter | EraseBefore | EraseAll | EraseBuffer)
 type EraseLine is (EraseAfter | EraseBefore | EraseAll)
 ```
-
-
 # How We Teach This
 
 The added functions would be documented as the existing functions on the `ANSI`
