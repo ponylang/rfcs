@@ -5,59 +5,84 @@
 
 # Summary
 
-This RFC proposes the addition of more escape code functions to the ANSI primitive of the term package and the consolidation of the thirty-two existing color functions into four functions.
+This RFC proposes the addition of more escape code functions to the ANSI
+primitive of the term package.
 
 # Motivation
 
-The purpose of these additional methods is to cover more of the standard ANSI escape codes within the stdlib.
+The purpose of these additional methods is to cover more of the standard ANSI
+escape codes within the stdlib.
 
 # Detailed design
 
-- Add escape codes for 3-bit, 4-bit, 8-bit, and 24-bit colors for the foreground and background.  
-The naming scheme of the color functions would be `{fg,bg}_{3,4,8,24}bit`.  
-The 3-bit, 4-bit, and 8-bit versions would take a U8 specifying the color.  
-The 24-bit versions would take three U8s specifying the r, g, and b values.  
-- Remove the thirty-two named color functions in favor of the 3-bit and 4-bit functions.
-- Add escape codes for enter and leave alternate screen buffer.
-- Add escape code for the bell alert.
-- Change `clear` and `erase` functions to take a U8 specifying what part of the screen/line to clear.  
-The default for the escape codes if a value isn't given is zero.  
-The action these functions currently take is three for `clear` and one for `erase`.  
-I would like to have the default value in these functions be zero.
-- Add escape codes for scroll up/down.
-- Add escape codes for next/previous line.
-- Add escape code for cursor horizontal position (moves the cursor to column n in the current line).
-- Add escape codes for hide/show cursor.
-- Add escape codes for save/restore cursor position.
-- Add escape code for get cursor position (it is sent to stdin).
-- Add escape codes for various text styles: italic, strike, conceal, faint.
+## Added Escape Codes
 
-If a value passed to any of the functions is invalid, such as 200 being passed to `fg_3bit`, an empty string would be returned.
+- 8-bit forground `\x1B[38;5;nm` and background `\x1B[48;5;nm` colors
+- 24-bit foreground `\x1B[38;2;r;g;bm` and background `\x1B[48;2;r;g;bm` colors
+- enter alternate screen buffer `\x1B[?1049h` and leave alternate screen buffer `\x1B[?1049l`
+- bell alert `\x7`
+- scroll up `\x1B[nS` and scroll down `\x1B[nT`
+- next line `\x1B[nE` and previous line `\x1B[nF`
+- cursor horizontal absolute `\x1B[nG`
+- hide cursor `\x1B[?25l` and show cursor `\x1B[?25h`
+- save cursor position `\x1B[s` and restore cursor position `\x1B[u`
+- device status report `\x1B[6n` (sends cursor position to stdin)
+- faint `\x1B[2m`, italic `\x1B[3m`, conceal `\x1B[8m`, and strike `\x1B[9m` text
+- erase in display `\x1B[nJ`
+- erase in line  `\x1B[nK`
+
+
+## Erase In Display/Line
+
+There are currently two similar functions, but they have a couple of issues:
+- Neither of them expose the parameter that the escape codes take.  
+- The `clear` function moves the cursor to the top left and then clears the screen.  
+This may have been done to create the same result that this escape code gave on DOS.
+
+Unlike the other added escape codes, these two only have a few valid values
+for the parameters.  
+To enforce the safety of these functions using the type system, four primitives
+and two type unions would be defined to be used as the parameters for these
+two functions.
+
+```pony
+primitive EraseAfter
+primitive EraseBefore
+primitive EraseAll
+primitive EraseBuffer
+
+type EraseDisplay is (EraseAfter | EraseBefore | EraseAll | EraseBuffer)
+type EraseLine is (EraseAfter | EraseBefore | EraseAll)
+```
+
 
 # How We Teach This
 
-The added functions would be documented as the existing functions on the `ANSI` primitive are and an example of usage would be added to `ANSI`.
+The added functions would be documented as the existing functions on the `ANSI`
+primitive are and an example of usage would be added to `ANSI`.
 
 # How We Test This
 
-I could not find existing testing for the `ANSI` primitive.  
-If there are existing tests for these functions, additional tests in the same format would be added to ensure that the new functions return the correct escape codes.  
-Most of these functions are just directly returning a string of the escape code without any parameters so they're pretty straightforward.
+The functions that have parameters would have tests added to ensure that they
+return the correct escape code for the given parameters.
+
+The functions that would have parameters and would be tested are:
+- 8-bit and 24-bit colors for the foreground and background
+- scroll up and scroll down
+- next line and previous line
+- cursor horizontal absolute
+- erase_display
+- erase_line
 
 # Drawbacks
 
-The removal of the existing color functions and the change to the `clear` and `erase` functions (if the default of zero is used) are breaking changes.
+Some escape codes may not work on all terminals.
 
 # Alternatives
 
-## Alternative to the rfc as a whole
-These escape codes can simply be printed independently of whatever is supported by functions on `ANSI`.  
-Having them available on `ANSI` simply makes it so that users do not need to look the codes up themselves.
-
-## Alternative to the breaking changes
-The existing color functions could remain and the 3-bit and 4-bit color functions could exist alongside them or not be implemented.  
-The `clear` and `erase` functions could have default values that match their existing behavior.
+Don't add these escape code functions and have users look up and print the
+escape codes they want.
 
 # Unresolved questions
 
-Should the breaking changes be made to simplify the interface?
+None
