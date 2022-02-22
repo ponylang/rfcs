@@ -35,6 +35,7 @@ escape codes within the stdlib.
 ## Erase In Display/Line
 
 There are currently two similar functions, but they have a couple of issues:
+
 - Neither of them expose the parameter that the escape codes take.  
 - The `clear` function moves the cursor to the top left and then clears the screen.  
 This may have been done to create the same result that this escape code gave on DOS.
