@@ -1,7 +1,7 @@
 - Feature Name: Change standard library object capabilities pattern
 - Start Date: 2022-02-02
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/196
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4028
 
 # Summary
 
