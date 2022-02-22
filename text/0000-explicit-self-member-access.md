@@ -80,9 +80,10 @@ The Mare compiler has successfully been using this new syntax already and has te
 # Alternatives
 
 - Remove the implicit `this.`, but don't introduce any new syntax for `this.`, which would remove the namespacing problem at the expense of a lot of extra reading and typing for everyone.
-- Use a different succinct syntax to indicate `this.`, rather than the `@` character.
-- Don't do any of this, and leave the existing problems in place.
+- Use a different succinct syntax to indicate `this.`, rather than the `@` character. For example, some other symbol could be used.
+- Add the `this` parameter to every function signature explicitly, and allow it to have any arbitrary name rather than using a fixed name like `this` or a symbol like `@`, at the expense of needing to add more boilerplate to every function signature. Questions: would the type also need to be explicit, like other parameters? Or would it be treated in a special way and allow the type name to be omitted?
+- Don't do any of these things, and leave the existing mechanisms unchanged.
 
 # Unresolved questions
 
-- None at this time.
+- If the `@` syntax is used for `this.`, then what would be the new syntax we decide to use for FFI calls and bare functions? We'd need to come up with an alternative syntax for that if we decide that the approach in this RFC is desirable.
