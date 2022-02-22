@@ -1,7 +1,7 @@
 - Feature Name: Add ponycheck to the standard library
 - Start Date: 2022-02-02
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/197
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4029
 
 # Summary
 
