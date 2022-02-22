@@ -17,7 +17,7 @@ escape codes within the stdlib.
 
 ## Added Escape Codes
 
-- 8-bit forground `\x1B[38;5;nm` and background `\x1B[48;5;nm` colors
+- 8-bit foreground `\x1B[38;5;nm` and background `\x1B[48;5;nm` colors
 - 24-bit foreground `\x1B[38;2;r;g;bm` and background `\x1B[48;2;r;g;bm` colors
 - enter alternate screen buffer `\x1B[?1049h` and leave alternate screen buffer `\x1B[?1049l`
 - bell alert `\x7`
