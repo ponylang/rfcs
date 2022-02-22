@@ -1,7 +1,7 @@
 - Feature Name: Remove logger package from standard library
 - Start Date: 2022-02-04
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/198
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4030
 
 # Summary
 
