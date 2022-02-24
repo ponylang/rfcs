@@ -3,7 +3,7 @@
 - RFC PR: (leave this empty)
 - Pony Issue: (leave this empty)
 
-Rendered RFC: https://pmetras.github.io/rfcs/
+Rendered RFC: https://github.com/pmetras/rfcs/blob/rfc-array/text/0000-array-private-classes.md
 
 # Summary
 
@@ -364,8 +364,3 @@ with `Iterator`.
 and probably others will be found in stdlib code.
 - Understand why the intersection type proposal is not considered as it seems to
 provide a better flexibility and is easier to understand.
-
-<!---
-Generate HTML with command:
-(echo -e "---\nlayout: default\ntitle: Array Private Classes\ndescription: Simpler collection iterators\nshow_downloads: false\n---\n"; pandoc -f gfm -t html ../text/0000-array-private-classes.md) > index.html
---->
