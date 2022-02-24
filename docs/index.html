@@ -1,11 +1,15 @@
-<hr />
-<h2 id="layout-post-title-array-private-classes">layout: post title: array private classes</h2>
+---
+layout: post
+title: array private classes
+---
+
 <ul>
 <li>Feature Name: array_private_classes</li>
 <li>Start Date: 2022-01-08</li>
 <li>RFC PR: (leave this empty)</li>
 <li>Pony Issue: (leave this empty)</li>
 </ul>
+<p>Rendered RFC: <a href="https://pmetras.github.io/rfcs/">https://pmetras.github.io/rfcs/</a></p>
 <h1 id="summary">Summary</h1>
 <p>Collection classes should not expose internal classes through iterators functions.</p>
 <p>Following information hiding design principle, the builtin classes of collection data structures must not be made visible through iterator functions like <code>ArrayKeys</code>, <code>ArrayValues</code> and <code>ArrayPairs</code>. These classes can be made private as they are only used as return types for <code>Array</code> functions <code>keys</code>, <code>values</code> and <code>pairs</code>. The return values for these functions are changed to the more general interface <code>Iterator</code>.</p>
@@ -197,7 +201,7 @@
     Rewind the type `A`.
     &quot;&quot;&quot;
 </code></pre>
-<p>Then one can create a rewindable iterator by combining these two interfaces:</p>
+<p>Then one can create a rewindable iterator by combining these two interfaces into a intersection type:</p>
 <pre class="pony"><code>type CollectionIterator[A] is (Iterator[A] &amp; Rewindable[Iterator[A]])
 </code></pre>
 <p>Perhaps, a more general interface name instead of <code>Rewindable</code> would be <code>Resetable</code> to define the traits of a type that can be reset to its initial state, as in the case of iterators <code>reset</code> == <code>rewind</code>.</p>
@@ -207,7 +211,7 @@
 <li>Do nothing: return public concrete classes.</li>
 <li>Update the existing return classes and add <code>rewind</code>.</li>
 <li>Add a <code>CollectionIterator</code> interface for collections.</li>
-<li>Create union type by defining a <code>Rewindable</code> interface and combine with <code>Iterator</code>.</li>
+<li>Create intersection type by defining a <code>Rewindable</code> interface and combine with <code>Iterator</code>.</li>
 <li>Change <code>Iterator</code> to add <code>rewind</code>.</li>
 </ol>
 <table>
@@ -293,3 +297,8 @@
 <li>Must analyze how <code>Range</code> and <code>Reverse</code> would be impacted if defined as <code>CollectionIterator</code>. Particularly, impact on existing client code.</li>
 <li>Possible candidates to be analyzed: <code>StringBytes</code>, <code>StringRunes</code>, <code>ByteSeqIter</code> and probably others will be found in code.</li>
 </ul>
+<!---
+Generate HTML with command:
+(echo -e "---\nlayout: post\ntitle: Array Private Classes\n---\n"; pandoc -f gfm -t html ../text/0000-array-private-classes.md) > index.html)
+--->
+
