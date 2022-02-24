@@ -297,10 +297,11 @@ show_downloads: false
 <h1 id="unresolved-questions">Unresolved questions</h1>
 <ul>
 <li>Must analyze how <code>Range</code> and <code>Reverse</code> would be impacted if defined as <code>CollectionIterator</code>. Particularly, impact on existing client code.</li>
-<li>Possible candidates to be analyzed: <code>StringBytes</code>, <code>StringRunes</code>, <code>ByteSeqIter</code> and probably others will be found in code.</li>
+<li>Possible candidates to be analyzed: <code>StringBytes</code>, <code>StringRunes</code>, <code>ByteSeqIter</code> and probably others will be found in stdlib code.</li>
+<li>Understand why the intersection type proposal is not considered as it seems to provide a better flexibility and is easier to understand.</li>
 </ul>
 <!---
 Generate HTML with command:
-(echo -e "---\nlayout: post\ntitle: Array Private Classes\n---\n"; pandoc -f gfm -t html ../text/0000-array-private-classes.md) > index.html)
+(echo -e "---\nlayout: default\ntitle: Array Private Classes\ndescription: Simpler collection iterators\nshow_downloads: false\n---\n"; pandoc -f gfm -t html ../text/0000-array-private-classes.md) > index.html
 --->
 
