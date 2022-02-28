@@ -24,7 +24,7 @@ I propose a structure of distinct subpackages including the following:
 
 + `math/big`: Arbitrary precision numbers
 + `math/series`: Mathematical series
-+ `math/constant`: Mathematical constants
++ `math/constants`: Mathematical constants
 + `math/rational`: `Rational` data type and related functions
 + `math/complex`: `Complex` data type and related functions
 + `math/(x,exp,etc)`: experimental additions, utilities, and effective "catch-all" for matters that do not neatly fit into other subpackages
