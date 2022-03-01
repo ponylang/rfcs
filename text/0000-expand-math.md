@@ -15,8 +15,8 @@ Currently, `math` includes limited functionality. This should be expanded to inc
 
 The primary goals of this initial expansion are: 
 
-1. restructure the `math` library into distinct sub-packages
-2. provide common `math` data types
+1. restructure the `math` package into distinct subpackages; allowing for separation of concerns over continuing to build a monolithic `math` package 
+2. provide common `math` data types; for example, `BigInt`, `Rational`, and `Complex`
 
 ## Structure
 
@@ -35,6 +35,8 @@ As previewed above in [Structure](#structure), expanding the `math` package shou
 
 ### `math/big`
 
+This is a package for arbitary precision numerics.
+
 Should include `BigInt`, `BigFloat`, and `BigDecimal` -- see [168](https://github.com/ponylang/rfcs/issues/168)
 
 ### `math/series`
@@ -49,13 +51,13 @@ Current `math/Fibonacci` would go into this series package.
 
 Initial values to include are those with underlying LLVM representations from the [numbers namespace](https://llvm.org/doxygen/namespacellvm_1_1numbers.html).
 
-Once these values exist in `math/constant`, they should be removed from where they are now, which is on `F32` and `F64` of [`Float`](https://github.com/ponylang/ponyc/blob/master/packages/builtin/float.pony).
+Once these values exist in `math/constant`, they could be removed from where they are now, which is on `F32` and `F64` of [`Float`](https://github.com/ponylang/ponyc/blob/master/packages/builtin/float.pony).
 
-I foresee this as a primitive `Constant` with methods for each value (e.g., `Constant.pi[A: Float](): A`).
+I foresee this as a primitive `Constant` with methods for each value (e.g., `Constant.pi[A: Float](): A(3.14.159...)`).
 
 ### `math/rational`
 
-`math/rational` should decide backing precision on `create[A: Real]` and return precision on `apply[B: Number]` -- `let x = Rational.create[U64](where numerator = 2)` gives a type which is represented by `U64`/`U64` and starts with a value of `2`/`1` which can then be returned via `x.apply[F32](): F32 => F32(2) / F32(1)`. `Rational` should be parameterized only on `Real` types and track sign via an embedded field.
+`math/rational` should decide backing precision on `create[A: Real]` and return precision on `apply[B: Number]` -- `let x = Rational.create[U64](where numerator = 2)` gives a type which is represented by embedded `U64`/`U64` and starts with a value of `2`/`1` which can then be returned via `x.apply[F32](): F32 => F32(2) / F32(1)`. `Rational` should be parameterized only on `Real` types and track sign via an embedded field.
 
 Changing the underlying precision "in-place" is done via a `prec[C: Real]` method which creates a new instance with a different precision.
 
@@ -63,7 +65,7 @@ Changing the underlying precision "in-place" is done via a `prec[C: Real]` metho
 
 ### `math/complex`
 
-`Complex` should follow similar to `math/rational` in that it is parameterized on `Real` types which are used to represent both the real and imaginary part of the number -- `let x = Complex[U128](7, 2)` is `7 + 2i`.
+`Complex` should follow similar to `math/rational` in that it is parameterized on `Real` types which are used to represent both the real and imaginary part of the number -- `Complex[U128](7, 2)` is `U128(7) + U128(2)i`.
 
 Changing the underlying precision is done via a `prec[C: Real]` method which creates a new instance of the value with a different precision.
 
