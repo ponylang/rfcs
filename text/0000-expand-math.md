@@ -53,7 +53,7 @@ Initial values to include are those with underlying LLVM representations from th
 
 Once these values exist in `math/constant`, they could be removed from where they are now, which is on `F32` and `F64` of [`Float`](https://github.com/ponylang/ponyc/blob/master/packages/builtin/float.pony).
 
-I foresee this as a primitive `Constant` with methods for each value (e.g., `Constant.pi[A: Float](): A(3.14.159...)`).
+I foresee this as a primitive `Constant` with methods for each value (e.g., `Constant.pi[A: Float](): A(3.14159...)`).
 
 ### `math/rational`
 
