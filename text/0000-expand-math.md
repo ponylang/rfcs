@@ -57,7 +57,48 @@ I foresee this as a primitive `Constant` with methods for each value (e.g., `Con
 
 ### `math/rational`
 
-`math/rational` should decide backing precision on `create[A: Real]` and return precision on `apply[B: Number]` -- `let x = Rational.create[U64](where numerator = 2)` gives a type which is represented by embedded `U64`/`U64` and starts with a value of `2`/`1` which can then be returned via `x.apply[F32](): F32 => F32(2) / F32(1)`. `Rational` should be parameterized only on `Real` types and track sign via an embedded field.
+`math/rational` should decide backing precision on `create[A: UnsignedInteger]` and return precision on `apply[B: Number]` -- `let x = Rational.create[U64](where numerator=2)` gives a type which is represented by `U64(2)`/`U64(2)` which can then be returned as any valid `Number`. `Rational` should be parameterized only on `UnsignedInteger` types and track sign via an internal field.
+
+```pony
+// Parameterized on unsigned integers as negative status is tracked by field
+class Rational[A: UnsignedInteger[A] val = USize]
+  var numerator: A
+  var denominator: A
+  var negative: Bool = false
+  
+  // Allow for creating Rationals from signed or unsigned integer arguments
+  new create[B: Integer[B] val = ISize](n: B, d: B = 1)? =>
+    // Error if denominator is zero
+    if d == B.from[U8](0) then error end
+    
+    // Produce unsigned equivalents of arguments
+    // NOTE: this produces an error of form
+    // Error:
+    //   main.pony:XX:YY: type argument is outside its constraint
+    // This is because Integer is not a subtype of UnsignedInteger
+    let n': A = if n < B.from[U8](0) then A.from[B](-n) else A.from[B](n) end
+    let n': A = if n < B.from[U8](0) then A.from[B](-n) else A.from[B](n) end
+    let d': A = if d < B.from[U8](0) then A.from[B](-d) else A.from[B](d) end
+    
+    // Find greatest common divisor and reduce fraction
+    let divisor: A = try GreatestCommonDivisor[A](n', d')? else A.from[U8](1) end
+    numerator = n' / divisor
+    denominator = d' / divisor
+    
+    // Set negative field if numerator, but not denominator is negative
+    if (n < B.from[U8](0)) and (B.from[U8](0) < d) then
+      negative = true
+    end
+    
+  fun string(): String =>
+    // Size of 10 here is a placeholder for determining the size needed
+    let output = recover String(10) end
+    if negative then output.append("-") end
+    output.append(numerator.string())
+    output.append(" / ")
+    output.append(denominator.string())
+    output
+```
 
 Changing the underlying precision "in-place" is done via a `prec[C: Real]` method which creates a new instance with a different precision.
 
