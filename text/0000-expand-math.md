@@ -9,11 +9,11 @@ This RFC proposes expanding the standard library's `math` package and the shape 
 
 # Motivation
 
-Currently, `math` includes limited functionality. This should be expanded to include math types, constants, and present a structure with further expansion in mind. An expanded `math` library will allow a unified mathematics among Pony developers.
+Currently, `math` includes limited functionality. This should be expanded to include math types, constants, and present a structure with further expansion in mind. An expanded `math` library will allow a unified mathematics among Pony developers. As was discussed during our [2022-03-01 Sync](https://sync-recordings.ponylang.io/r/2022_03_01.m4a), one core principle for including these types in the stdlib is to have a single canonical implementation of them which allow interoperability of numeric types across the Pony ecosystem. Any numeric types introduced by this RFC **must** existing within the current numerical type hierarchy by being compliant with existing numeric traits.
 
 # Detailed design
 
-The primary goals of this initial expansion are: 
+The primary goals of this initial expansion are:
 
 1. restructure the `math` package into distinct subpackages; allowing for separation of concerns over continuing to build a monolithic `math` package 
 2. provide common `math` data types; for example, `BigInt`, `Rational`, and `Complex`
@@ -143,4 +143,5 @@ The amount of subpackages is a lot and could be reduced down to one single `math
 # Unresolved questions
 
 + How expansive should the `math` library become (whether that is one package or multiple subpackages)?
-+ Do we need all of `Decimal`, `Rational`, and `Fractional` types? I am unaware of their distinction so believe adding a `Rational` (numerator and denominator) type to suffice for current neeeds.
++ Do we need all of `Decimal`, `Rational`, and `Fractional` types? I am unaware of their distinction so believe adding a `Rational` (numerator and denominator) type to suffice for current needs.
++ Do we want the types here to be additions to `math` or, since they are really more numeric types, additions alongside other numeric types within `builtin`?
