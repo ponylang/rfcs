@@ -15,8 +15,99 @@ Currently, `math` includes limited functionality. This should be expanded to inc
 
 The primary goals of this initial expansion are:
 
-1. restructure the `math` package into distinct subpackages; allowing for separation of concerns over continuing to build a monolithic `math` package 
+1. restructure the `math` package into distinct subpackages; allowing for separation of concerns over continuing to build a monolithic `math` package
 2. provide common `math` data types; for example, `BigInt`, `Rational`, and `Complex`
+
+## Numeric Hierarchy
+
+Current the Pony numerics hierarchy is as follows.
+
+```mermaid
+classDiagram
+class Any
+<<interface>> Any
+class Real
+<<trait>> Real
+class FloatingPoint
+<<trait>> FloatingPoint
+class Integer
+<<trait>> Integer
+class SignedInteger
+<<trait>> SignedInteger
+class UnsignedInteger
+<<trait>> UnsignedInteger
+
+Any <-- Real
+Real <-- FloatingPoint
+Real <-- Integer
+Integer <-- SignedInteger
+Integer <-- UnsignedInteger
+
+FloatingPoint <-- F32
+FloatingPoint <-- F64
+
+UnsignedInteger <-- U8
+UnsignedInteger <-- U16
+UnsignedInteger <-- U32
+UnsignedInteger <-- U64
+UnsignedInteger <-- U128
+UnsignedInteger <-- USize
+UnsignedInteger <-- ULong
+
+SignedInteger <-- I8
+SignedInteger <-- I16
+SignedInteger <-- I32
+SignedInteger <-- I64
+SignedInteger <-- I128
+SignedInteger <-- ISize
+SignedInteger <-- ILong
+```
+
+This RFC introduces a few more numeric types: `Rational`, `Complex`, and arbitrary precision `BigInt`. This fit into the hiearchy in the following manner.
+
+```mermaid
+classDiagram
+class Any
+<<interface>> Any
+class Real
+<<trait>> Real
+class FloatingPoint
+<<trait>> FloatingPoint
+class Integer
+<<trait>> Integer
+class SignedInteger
+<<trait>> SignedInteger
+class UnsignedInteger
+<<trait>> UnsignedInteger
+
+Any <-- Real
+Any <-- Complex
+Real <-- FloatingPoint
+Real <-- Integer
+Real <-- Rational
+Integer <-- SignedInteger
+Integer <-- UnsignedInteger
+Integer <-- BigInt
+
+FloatingPoint <-- F32
+FloatingPoint <-- F64
+
+UnsignedInteger <-- U8
+UnsignedInteger <-- U16
+UnsignedInteger <-- U32
+UnsignedInteger <-- U64
+UnsignedInteger <-- U128
+UnsignedInteger <-- USize
+UnsignedInteger <-- ULong
+
+SignedInteger <-- I8
+SignedInteger <-- I16
+SignedInteger <-- I32
+SignedInteger <-- I64
+SignedInteger <-- I128
+SignedInteger <-- ISize
+SignedInteger <-- ILong
+```
 
 ## Structure
 
