@@ -81,10 +81,10 @@ class UnsignedInteger
 <<trait>> UnsignedInteger
 
 Any <-- Real
-Any <-- Complex["Complex[A: Real]"]
+Any <-- Complex~Real~
 Real <-- FloatingPoint
 Real <-- Integer
-Real <-- Rational["Rational[A: Integer]"]
+Real <-- Rational~Integer~
 Integer <-- SignedInteger
 Integer <-- UnsignedInteger
 Integer <-- BigInt
