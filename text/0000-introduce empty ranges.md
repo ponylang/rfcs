@@ -5,9 +5,9 @@
 
 # Summary
 
-The RFC carves out a subset of cases that are currently defined as *infinite* by proposing to instead produce an *empty* `Range` in these cases. This makes `Range` behave similar to the way that Python's range() and Rust's Range() behave in these cases, allowing one to write more natural code. The proposal also addresses (fixes) a corner case that is currently unecessarily producing *infinite* Ranges.
+The RFC carves out a subset of cases that are currently defined as *infinite* by proposing to instead produce an *empty* `Range` in these cases. This makes `Range` behave more similar to the way that Python's range() and Rust's Range() behave, allowing one to write more natural code. The proposal also addresses (fixes) a corner case that is currently unecessarily producing *infinite* Ranges.
 
-Overall, while it is possible that there are uses cases in which Range(min, max) with min > max is infinite rather than empty, they are not obvious. More importantly, *unintended* infinite iterations can produce indefinitely-running actors which appears counter the design of Pony. The RFC proposes a delineation of the previously infinite cases into those cases in which a programmer would naturally expect a Range to be empty rather than infinite and cases that would remain infinite. Under the proposed changes, enough ways remain to purposely create infinite iterations using the `Range` class should there be a use case.
+Overall, while it is possible that there are uses cases in which Range(min, max) with min > max is infinite rather than empty, they are not obvious. More importantly, *unintended* infinite iterations can produce indefinitely-running actors which appears counter the design of Pony. The RFC proposes a delineation of the so-far infinite cases into those cases in which a programmer would naturally expect a Range to be empty rather than infinite and cases that would remain infinite. Under the proposed changes, enough ways remain to purposely create infinite iterations using the `Range` class should there be a use case.
 
 # Motivation
 
