@@ -11,7 +11,7 @@ Overall, while it is possible that there are uses cases in which Range(min, max)
 
 # Motivation
 
-Currently, a Range is considered infinite if either 1) the `step` is `0` or any of `min`, `max`, or `step` are `NaN`, `+Inf` or `-Inf`, or 2) if no progress can be made from `min` to `max` due to the sign of the `step`.
+Currently, a Range is considered infinite if either 1) the `step` is `0`, or any of `min`, `max`, or `step` are `NaN`, `+Inf` or `-Inf`, or 2) if no progress can be made from `min` to `max` due to the sign of the `step`.
 
 This RFC proposes to address two separate issues associated with 1) and 2):
 
@@ -43,7 +43,7 @@ This RFC proposes to address two separate issues associated with 1) and 2):
   
   Currently and counter the natural expectation, this code hangs since the Range is *infinite* when the file f existed but was empty. The reason is that in this case the Range expands to `Range[USize](1, 0, 1)` which again in Python and Rust would be considered empty but is currently infinite in Pony. While there are legitimate cases in which the current `Range` implementation returns infinite iterators, this particular case seems illogical since the iterator should produce a number of elements of `step` spacing on the *trajectory from min to max*. In the example above, no such elements can exists due to the sign mismatch between min, max, and step, and the returned Range should be empty rather than infinite -- like it is in Rust, Python, and others. The only reason why Pony creates an *infinite* range in this situation is that it, algorithmically, seems to be saying: I know there are no elements (the implementation actually checks for this "no progress possible" situation), but I will walk indefinitely in the wrong direction because you told me so and hence I am infinite, even though the number of elements on the expected tranjectory is zero. The big issue with this, beside the creation of unwanted infinite loops, is that it also precludes or makes very cumbersome the expressive use of the bounds like in the csv file example above in which the programmer *knows* and *makes use of* the fact that if the bounds (and the step) are not compatible sign-wise, the range will have zero iterations, i.e. be *empty*.
 
-  The more legitimate classification of Ranges as infinite, for example in cases when `min` and `max` are different, finite, and `step == 0`, are not changed in this RFC. For such cases, at least the argument could be made that the number of iterations should become "infinitely large. Pony currently treats the *infinite* case as important enough to provide a test with `is_infinite(): Bool`. Since currently no empty Ranges are recognized, there is also no test for the far more likely to occur empty cases. For example, Rust provides a `is_empty()` method for these cases and this RFC proposes to add `.is_empty(): Bool` to Pony that behaves like the following Rust example:
+  The more legitimate classification of Ranges as infinite, for example in cases when `min` and `max` are different, finite, and `step == 0`, are not changed in this RFC. For such cases, at least the argument could be made that the number of iterations should become infinitely large. For these, Pony currently provides a test with `is_infinite(): Bool`. Since currently no empty Ranges are recognized, there is also no test for the far more likely to occur empty cases. For example, Rust provides a `is_empty()` method for these cases and this RFC proposes to add `.is_empty(): Bool` to Pony that behaves like the following Rust example:
   
   ```rust
   assert!( (3..3).is_empty());
@@ -65,11 +65,11 @@ This RFC proposes to address two separate issues associated with 1) and 2):
   
   it is fair to mention that currently no `Pony`-labeled code on Github other than test code for Range exists that would make use of .is_infinite(). Also, the above is unnecessarily cumbersome, and again prevents the expressive use of the Range bounds with calculated values.
 
-- Secondly, case 1) above indiscriminately makes a `Range` infinite when *any* of the arguments is a floating point NaN or +-Inf. It does so on the grounds that in all such case no quantifyable progress could be made from `min` to `max` (quote from range.pony):
+- Secondly, case 1) above indiscriminately makes a `Range` infinite when *any* of the arguments is a floating point NaN or +-Inf. It does so on the grounds that in all such cases no quantifyable progress could be made from `min` to `max` (quote from range.pony):
   
   > If any of the arguments contains `NaN`, `+Inf` or `-Inf` the range is considered infinite as operations on any of them won't move `min` towards `max`.
   
-  However, this unecessarliy makes ranges infinite in which `min == max`. This proposal argues that `Range[F64](5, 5, nan)` or `Range[F64](5, 5, inf)` should be empty rather than being infinite since no single iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
+  However, this unecessarily renders ranges infinite in which `min == max`. This proposal argues that `Range[F64](5, 5, nan)` or `Range[F64](5, 5, inf)` should be empty rather than infinite since no single iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
 
 # Detailed design
 
@@ -108,12 +108,12 @@ class Range[A: (Real[A] val & Number) = USize] is Iterator[A]
 
 This RFC partitions the set of currently *infinite* cases into a subset now considered *empty* and a subset that remains *infinite*.
 
-Part of the algorithmic basis on which this distinction is made is the fact that finite numeric values including the floating point values `+Inf` and `-Inf` can be meaningfully compared in expressions like `min > max` or `max > min`. Note that if either of the `min` or `max` parameters is `NaN` such expressions are always `false`. Based on this, an obvious impossibility of *progress* of the iteration from min towards max based on the sign of the Range parameters can be tested by evaluating `((min < max) and (step < 0)) or ((min > _max) and (step > 0))` for finite and infinite bounds as well as finite and infinite values of step. In the current implementation, this expression is used and commented as `// progress into other directions` as part of the infinite condition. The sign criterion is useful insofar that it allows one to know such progress is impossible despite the magnitude of the bounds or steps, i.e, the list of points along the trajectory from min to max in the given steps empty!
+Part of the algorithmic basis on which this distinction is made is the fact that numeric values including the floating point values `+Inf` and `-Inf` can be meaningfully compared in expressions like `min > max` or `max > min`. Note that if either of the `min` or `max` parameters is `NaN` such expressions are always `false`. Based on this, an obvious impossibility of *progress* of the iteration from min towards max based on the sign of the Range parameters can be tested by evaluating `((min < max) and (step < 0)) or ((min > _max) and (step > 0))` for finite and infinite bounds as well as finite and infinite values of step. In the current implementation, this expression is used and commented as `// progress into other directions` as part of the infinite condition. The sign criterion is useful insofar that it allows one to know such progress is impossible despite the magnitude of the bounds or steps, i.e, the list of points along the trajectory from min to max in the given steps empty!
 In this RFC, this expression is used to define one portion of the now *empty* Ranges in accordance with the natural expectation and the implementation of Range in other languages. Using this test, `Range(0, 10, -1)` is *empty* and no longer *infinite*, but so is in fact `Range(0, inf, -1)`, even though any finite steps would mathematically never produce progress towards an infinite bound. While one can generally never produce a finite list of elements that would incrementally move from 0 to +Inf, we can know in the case of `Range(0, inf, -1)` that the list of elements must be empty because of the sign of the step parameter. 
 
-The other case in which a Range is now *empty* is when the bound identity `min == max` can be evaluated meaningfully even when `step == 0` or `step == nan`. In the case of identical bounds, no iteration is needed regardless of the step magnitude. For the test of equality of bounds, this proposal requires the bounds to be finite in order for the Range to be *empty*. That is, like the original implementation, the proposed one acknowledges that one `inf` cannot be meaningfully tested for equality to another `inf`.
+The other case in which a Range is now *empty* is when the bound identity `min == max` can be evaluated meaningfully even when `step` equals 0, or nan, or +-Inf. In the case of identical bounds, no iteration is needed regardless of the step magnitude. However, in order for the Range to be *empty*, this proposal requires the bounds to be finite, agreeing with the original implementation on the fact that one `inf` cannot be meaningfully tested for equality to another `inf`.
 
-The cases that would remain *infinite* under this proposal are therefore those which are: *not empty* AND which have either `+Inf`, `-Inf`, or `NaN` values in any parameter, or a zero `step` parameter.
+The cases that would remain *infinite* under this proposal are therefore those which are: *not empty* AND which have either a `+Inf`, `-Inf`, or `NaN` values in any parameter or a zero `step` parameter.
 Here is the corresponding portion of the modified range.pony, illustrating these definitions:
 
 ```pony
@@ -242,13 +242,25 @@ Tests can easily be added to `packages/collections/_test.pony` that would add a 
 
 # Drawbacks
 
-* As far as I can tell from public code, Range.is_infinite() is not used in any Pony code other than test code associated with tests for Range.
-* This should not produce any bugs in the compiler since it is a small library change only
-* Maintenance cost should be marginal.
+It is unlikely but possible that existing code purposely created infinite loops using Range iterators. However, in the Github publically accessible repositories, Range.is_infinite() is not used in any Pony code other than test code associated with tests for Range.
+This change should not produce any bugs in the compiler since it is a small library change only. The resulting maintenance cost should be marginal.
 
 # Alternatives
 
-The impact of not doing this are user code bugs in attempted uses of `Range` as shown in the motivation. At the very least the impact of loops over unintendedly infinite `Range` iterators should be minimized by either encouraging more use of `Range.is_infinite()` or by improved tutorials.
+The impact of not making this change is probably small. However, it will still likely lead to user code bugs in attempted uses of `Range` as shown in the motivation. If this RFC is not implemented, at the very least the impact of loops over unintendedly infinite `Range` iterators should be minimized by either encouraging more use of `Range.is_infinite()` or by improved tutorials that point out the deviation from the Range() objects in Python, Rust, and others. The current Range documentation states this unorthodox behavior in the doc string and provides an example (infinite_range2), but this is not prominent enough given the wide-spread use of the programming languages that behave exactly opposite.
+>  If the `step` is not moving `min` towards `max` or if it is `0`,
+>  the Range is considered infinite and iterating over it
+>  will never terminate:
+>
+>  ```pony
+>  let infinite_range1 = Range(0, 1, 0)
+>  infinite_range1.is_infinite() == true
+>
+>  let infinite_range2 = Range[I8](0, 10, -1)
+>  for _ in infinite_range2 do
+>    env.out.print("will this ever end?")
+>    env.err.print("no, never!")
+>  end
 
 # Unresolved questions
 
