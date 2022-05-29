@@ -43,7 +43,7 @@ This RFC proposes to address two separate issues associated with 1) and 2):
   
   Currently and counter the natural expectation, this code hangs since the Range is *infinite* when the file f existed but was empty. The reason is that in this case the Range expands to `Range[USize](1, 0, 1)` which again in Python and Rust would be considered empty but is currently infinite in Pony. While there are legitimate cases in which the current `Range` implementation returns infinite iterators, this particular case seems illogical since the iterator should produce a number of elements of `step` spacing on the *trajectory from min to max*. In the example above, no such elements can exists due to the sign mismatch between min, max, and step, and the returned Range should be empty rather than infinite -- like it is in Rust, Python, and others. The only reason why Pony creates an *infinite* range in this situation is that it, algorithmically, seems to be saying: I know there are no elements (the implementation actually checks for this "no progress possible" situation), but I will walk indefinitely in the wrong direction because you told me so and hence I am infinite, even though the number of elements on the expected tranjectory is zero. The big issue with this is that it precludes or makes very cumbersome the expressive use of the bounds like in the csv file example above in which the programmer *knows* and *makes use of* the fact that if the bounds (and the step) are not compatible sign-wise, the range will have zero iterations, i.e. be *empty*.
 
-  The more legitimate classification of Ranges as infinite, e.g. cases when `min` and `max` are different, finite, and `step == 0`, are not changed in this RFC. For those cases, at least the argument could be made that the number of iterations should become "infinitely large. Pony currently treats the *infinite* case as important enough to provide a test with `is_infinite(): Bool`. Since currently no empty Ranges are recognized, there is also no test for the far more likely to occur empty cases. For example, Rust provides a `is_empty()` method for these cases and this RFC proposes to add `.is_empty(): Bool` to Pony
+  The more legitimate classification of Ranges as infinite, for example in cases when `min` and `max` are different, finite, and `step == 0`, are not changed in this RFC. For such cases, at least the argument could be made that the number of iterations should become "infinitely large. Pony currently treats the *infinite* case as important enough to provide a test with `is_infinite(): Bool`. Since currently no empty Ranges are recognized, there is also no test for the far more likely to occur empty cases. For example, Rust provides a `is_empty()` method for these cases and this RFC proposes to add `.is_empty(): Bool` to Pony that behaves like the following Rust example:
   
   ```rust
   assert!( (3..3).is_empty());
@@ -65,12 +65,11 @@ This RFC proposes to address two separate issues associated with 1) and 2):
   
   it is fair to mention that currently no `Pony`-labeled code on Github other than test code for Range exists that would make use of .is_infinite(). Also, the above is unnecessarily cumbersome, and again prevents the expressive use of the Range bounds with calculated values.
 
-- Secondly, case 1) above indiscriminately makes a `Range` infinite when *any* of the arguments is a floating point NaN or +-Inf. It does so on the grounds that in all such case, no quantifyable progress could be made from `min` to `max` (quote from range.pony):
+- Secondly, case 1) above indiscriminately makes a `Range` infinite when *any* of the arguments is a floating point NaN or +-Inf. It does so on the grounds that in all such case no quantifyable progress could be made from `min` to `max` (quote from range.pony):
   
   > If any of the arguments contains `NaN`, `+Inf` or `-Inf` the range is considered infinite as operations on any of them won't move `min` towards `max`.
-  > However, this unecessarliy makes ranges infinite in which `min` == `max`.
   
-  This proposal argues that `Range[F64](5, 5, nan)` or `Range[F64](5, 5, inf)` should be empty rather than being infinite since no single iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
+  However, this unecessarliy makes ranges infinite in which `min == max`. This proposal argues that `Range[F64](5, 5, nan)` or `Range[F64](5, 5, inf)` should be empty rather than being infinite since no single iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
 
 # Detailed design
 
@@ -115,7 +114,7 @@ In this RFC, this expression is used to define one portion of the now *empty* Ra
 The other case in which a Range is now *empty* is when the bound identity `min == max` can be evaluated meaningfully, even if e.g. `step == 0`. In this case, no iteration is needed regardless of the step magnitude. For this latter equality of bounds criterion, this proposal requires the bounds to be finite in order for the Range to be *empty*. That is, like the original implementation, this new one acknowledges that one `inf` cannot be meaningfully tested for equality to another `inf`.
 
 The cases that would remain *infinite* under this proposal are therefore those which are: *not empty* AND which have either `+Inf`, `-Inf`, or `NaN` values in any parameter, or a zero `step` parameter.
-Here is the beginning of the modified range.pony, illustrating these definitions:
+Here is the corresponding portion of the modified range.pony, illustrating these definitions:
 
 ```pony
 class Range[A: (Real[A] val & Number) = USize] is Iterator[A]
@@ -151,7 +150,7 @@ class Range[A: (Real[A] val & Number) = USize] is Iterator[A]
     if _empty then _idx = _max else _idx = _min end // has_next() will return false without additional code
 ```
 
-With a so-modified Range class and a new .is_emtpy() function, here is a list of Range examples that were previously all infinite, and their new classification:
+With a so-modified Range class and a new .is_emtpy() function, here is a list of Range examples all of which were previously infinite, and their new classification:
 
 ```
 //Empty Ranges
