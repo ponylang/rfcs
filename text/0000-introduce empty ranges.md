@@ -273,7 +273,7 @@ Range(nan, nan, -inf).is_empty() == true, .is_infinite() == false
 Range(0, 10, inf).is_empty() == true, .is_infinite() == false
 Range(0, -10, -inf).is_empty() == true, .is_infinite() == false
 Range(10, 0, -inf).is_empty() == true, .is_infinite() == false
-``
+```
 
 **Infinite Ranges**
 
