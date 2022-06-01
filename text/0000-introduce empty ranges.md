@@ -36,7 +36,7 @@ produces
 -9
 ```
 
-All of the first value lie outside the range 0..10 that the user requested the Range class to generate. However, not the least based on the word *Range* -- defined by Merriam Webster as ".. 7a: a sequence, series, or scale between limits" -- the user can expect this to produce an iterator that generates all values along the *trajectory* from `min` to `max`, interspaced by `step`. Therefore, no sequence value should lie *outside* `min .. max`.
+All of the first value lie outside the range 0..10 that the user requested the Range class to generate. However, not the least based on the word *Range* -- defined by Merriam Webster as ".. 7a: a sequence, series, or scale between limits" -- the user can expect this to produce an iterator that generates all values along the *trajectory* from `min` to `max`, interspaced by `step`. Therefore, no sequence value should lie *outside* `[min, max)`.
 The reason that Pony currently behaves counter to this in the cases described abover as *infinite*, is that it gives precedence to the combination of `min` and `step` and the iterative relationship `idx = idx + step` to produce the sequence values, regardless of the limits `min`, `max`. Algorithmically, it is currently designed as if saying: I know there are no elements (the implementation actually checks for this no-progress-possible within the given bounds situation), but I will walk indefinitely in the wrong direction because you told me so and hence I am infinite. Beside the creation of possibly unwanted infinite loops, the current behavior also precludes the use of `Range` like in cases where the programmer *knows* and *makes use of* the fact that if the bounds (and the step) are not compatible sign-wise, the range will have zero iterations.
 As an example of what would be `expressive` use of the Range bounds, consider the following code fragment:
 
@@ -131,7 +131,7 @@ Summarizing this, the proposed algorithm for the Range classification is outline
 ```
 no_progress = ((min <= max) and (step <= 0) or (min >= max) and (step >= 0))
 progress = not no_progress = ((min > max) or (step > 0)) and ((min < max) or (step < 0))
-                           = (((min > max ) or (step > 0)) and (min < max)) or (((min > max ) or (step > 0)) and (step < 0)) // (min > max) and (min < max) == false; (step > 0) and (step < 0) == false
+                           = (((min > max ) or (step > 0)) and (min < max)) or (((min > max ) or (step > 0)) and (step < 0))
                            = ((step > 0) and (min < max)) or ((min > max ) and (step < 0))
                            = ((min < max) and (step > 0)) or ((min > max ) and (step < 0))
 ```
@@ -205,6 +205,7 @@ Here is a list of Range examples all of which were previously infinite, and thei
 The changes proposed here are performance-wise mostly related to the `Range` constructor. Due to the proposed design, no code changes in the performance critical `.has_next()` and `.next()` calls were necessary. Therefore only the performance impact of the modified constructor (`create`) was estimated with the following crude code (where RangeOld is the renamed original code and Range the new one):
 
 ```pony
+...
 // runtime new constructor
 var t0 = Time.millis()
 for i in RangeOld(0, 10_000_000) do // original implementation
@@ -215,13 +216,14 @@ var t1 = Time.millis()
 // runtime current constructor
 t0 = Time.millis()
 for i in RangeOld(0, 10_000_000) do // original implementation
-  let r = RangeOld[A].create(min, max, step) // new implementation
+  let r = RangeOld[A].create(min, max, step) // original implementation
 end
 t1 = Time.millis()
+...
 ```
-This was compiled with `--debug` so that the optimizer would not remove the not further used range instances and run 10 times to obtain an average runtime for a variety of Range types.
-![Range constructor performance delta](https://github.com/stefandd/ponystuff/blob/main/ponyc-contrib/rfcs/assets/0000-introduce%20empty%20ranges-fig1.png)
-As you can see in the performance graph, the new constructor code is only marginally slower in the integer Range creation but a bit faster than the current code for the floating point Ranges.
+This was compiled with `--debug` so that the optimizer would not remove the not-further-used range instances; it was run 10 times to obtain an average runtime for a variety of Range types.
+![Range constructor performance delta](https://github.com/stefandd/ponystuff/blob/main/ponyc-contrib/rfcs/assets/0000-introduce%20empty%20ranges-fig1.png | width=640)
+As you can see in the performance graph, the new constructor code is only marginally slower in the integer Range creation but a bit faster than the current code for all of the floating point Ranges.
 
 # How We Teach This
 
@@ -310,7 +312,6 @@ This is a breaking change. Any existing code that relies on currently infinite i
 for i in Range[F64](F64(0) / F64(0)) do
   // runs forever unless "broken" out of
 ```
-
 would no longer work as intended.
 
 The current implementation also provides an `.is_infinite()` function to test whether the iterator will indefinitely return values. This function could be used in user code to *avoid* iterating over Ranges that might currently be infinite or to produce appropriate errors. Reducing the number of cases in which Ranges are infinite as proposed here might therefore produce side effects in existing code even if that code does not purposely use infinite Ranges as control structures like the first example. This could for example render undisplayed error messages that were used in combination with such tests. It is fair to state that a search of public Pony code on Github did not yield any uses of `.is_infinite()` outside test code associated with tests for the Range implementation. This could be taken as a sign that infinite Ranges and guarding code against their effects are not widely used. It is also worth noting that `.is_infinite()` will still return true for all remaining infinite Range cases so that any use as a guard should likely remain intact.
