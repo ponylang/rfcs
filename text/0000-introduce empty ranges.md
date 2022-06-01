@@ -36,8 +36,8 @@ produces
 -9
 ```
 
-All of the first value lie outside the range 0..10 that the user requested the Range class to generate. However, not the least based on the word *Range* -- defined by Merriam Webster as ".. 7a: a sequence, series, or scale between limits" -- the user can expect this to produce an iterator that generates all values along the *trajectory* from `min` to `max`, interspaced by `step`. Therefore, no sequence value should lie *outside* `[min, max)`.
-The reason that Pony currently behaves counter to this in the cases described abover as *infinite*, is that it gives precedence to the combination of `min` and `step` and the iterative relationship `idx = idx + step` to produce the sequence values, regardless of the limits `min`, `max`. Algorithmically, it is currently designed as if saying: I know there are no elements (the implementation actually checks for this no-progress-possible within the given bounds situation), but I will walk indefinitely in the wrong direction because you told me so and hence I am infinite. Beside the creation of possibly unwanted infinite loops, the current behavior also precludes the use of `Range` like in cases where the programmer *knows* and *makes use of* the fact that if the bounds (and the step) are not compatible sign-wise, the range will have zero iterations.
+All of these but the first value lie outside the range 0..10 that the user requested the Range class to generate. However, not the least based on the word *Range* -- defined by Merriam Webster as ".. 7a: a sequence, series, or scale between limits" -- the user can expect this to produce an iterator that generates all values along the *trajectory* from `min` to `max`, interspaced by `step`. Therefore, no sequence value should lie *outside* `[min, max)`.
+The reason that Pony currently behaves counter to this in the cases described above as *infinite*, is that it gives precedence to the combination of `min` and `step` and the iterative relationship `idx = idx + step` to produce the sequence values, regardless of the limits `min`, `max`. Algorithmically, it is currently designed as if saying: I know there are no elements (the implementation actually checks for this no-progress-possible within the given bounds situation), but I will walk indefinitely in the wrong direction because you told me so and hence I am infinite. Beside the creation of possibly unwanted infinite loops, the current behavior also precludes the use of `Range` like in cases where the programmer *knows* and *makes use of* the fact that if the bounds (and the step) are not compatible sign-wise, the range will have zero iterations.
 As an example of what would be `expressive` use of the Range bounds, consider the following code fragment:
 
 ```pony
@@ -74,7 +74,7 @@ Another problematic example of the current implementation is the response to any
 ```
 
 Under the same argument regarding the iterator needing to adhere to the stated bounds `min, max`, this and some Range constellations that indefinitely produce `+-Inf` should also instead return empty ranges. `NaN` is not a value and can therefore not possibly lie within any valid range. The same is true when one of the bound parameters is `NaN`. Under this RFC Range iterators that use `NaN` in any parameter are *empty*.
-As stated above, Pony currently consideres those Ranges *infinite* including those were the `min, max` bounds are finite and identical but the `step` parameter is `+-Inf`. These cases too would be treated as empty since no iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
+As stated above, Pony currently considers those Ranges *infinite* including those were the `min, max` bounds are finite and identical but the `step` parameter is `+-Inf`. These cases too would be treated as empty since no iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
 
 # Detailed design
 
@@ -124,7 +124,7 @@ Another case in which a Range is now *empty* is when the bound equality `min == 
 
 As already stated, the current `Range` implementation treats the occurrence of `+-Inf` or `NaN` parameters in *any* of the `min, max, step` parameters as sufficient condition for *infinite*. This RFC considers the opposite: the no-progress expression cannot be meaningfully evaluated if any one of the 3 tested parameters is not a number, and one can also not decide whether any iterations `idx + NaN` lie within the given numerical range, or, if `min` or `max` are `NaN`, what that range is in the first place. Any occurrence of `NaN` in the Range parameters therefore produces an *empty* Range. Similarly, while a `step` argument of `+-Inf` may "pass" the inspection by the *no-progress criterion*, no finite points within the mathematical range `[min, max)` can be computed, including when `min, max` themselves are `inf`. Therefore, such Ranges are *empty*, too. A `step` argument of `0` satisfies the *no-progress criterion* and produces an *empty* Range.
 
-The cases that would remain *infinite* under this proposal are then only those which fullfill the following condition: they are *not empty* (as per the evaluation above) AND their upper bound is either of the type `+Inf` or `-Inf`. Typical examples would be `Range[F64](0, inf, 1)` or `Range[F64](0, -inf, -1)`. We can't allow a lower bound that is not finite, because then the elements returned on .next() calls again would not be finite.
+The cases that would remain *infinite* under this proposal are then only those which fulfill the following condition: they are *not empty* (as per the evaluation above) AND their upper bound is either of the type `+Inf` or `-Inf`. Typical examples would be `Range[F64](0, inf, 1)` or `Range[F64](0, -inf, -1)`. We can't allow a lower bound that is not finite, because then the elements returned on .next() calls again would not be finite.
 
 Summarizing this, the proposed algorithm for the Range classification is outlined in a close-to-code form. The following expressions are useful:
 
@@ -182,7 +182,7 @@ class Range[A: (Real[A] val & Number) = USize] is Iterator[A]
     end
 ```
 
-Importantly, the original code for `.has_next()` and `.next()` does not require any changes! A modifcation that conserves the implementation "trick" to initialize `_idx = _max` for empty Ranges is required to `.rewind()`. Also, analogous to the existing `.is_infinite(): Bool` function, there is also a new `.is_empty()`.
+Importantly, the original code for `.has_next()` and `.next()` does not require any changes! A modification that conserves the implementation "trick" to initialize `_idx = _max` for empty Ranges is required to `.rewind()`. Also, analogous to the existing `.is_infinite(): Bool` function, there is also a new `.is_empty()`.
 
 ```
   fun ref rewind() =>
@@ -352,7 +352,7 @@ The current docstring contains roughly two parts: the first part, which would re
 
 which could, for example, be modified to:
 
-> If `inc` is nonzero, but cannot produce progress towards max because of its sign, the `Range` is considered empty and will not be produce any iterations. The `Range` is also empty if either `min` equals `max`, independent of the value of the step parameter `inc`, or if `inc` is zero.
+> If `inc` is nonzero, but cannot produce progress towards max because of its sign, the `Range` is considered empty and will not produce any iterations. The `Range` is also empty if either `min` equals `max`, independent of the value of the step parameter `inc`, or if `inc` is zero.
 > 
 >   ```pony
 >   let empty_range1 = Range(0, 10, -1)
@@ -398,11 +398,11 @@ for i in Range[F64](F64(0) / F64(0)) do
 ```
 would no longer work as intended.
 
-The current implementation also provides an `.is_infinite()` function to test whether the iterator will indefinitely return values. This function could be currently be in use in to *avoid* iterating over Ranges that might infinite or to produce appropriate errors. Since this RFC reduces the number of cases in which Ranges are infinite, this might produce side effects in existing code even if that code does not purposely use infinite Ranges as control structures like the first example. This could for example prevent certain error messages from getting displayed that were used in combination with such tests. It is on the other hand fair to state that a search of public Pony code on Github did not yield any uses of `.is_infinite()` outside test code associated with tests for the Range implementation. This could be taken as a sign that infinite Ranges and guarding code against their effects are not widely used. It is also worth noting that `.is_infinite()` will still return true for all remaining infinite Range cases so that any use as a guard should likely remain intact.
+The current implementation also provides an `.is_infinite()` function to test whether the iterator will indefinitely return values. This function could be currently be in use in to *avoid* iterating over Ranges that might be infinite or to produce appropriate errors. Since this RFC reduces the number of cases in which Ranges are infinite, this might produce side effects in existing code even if that code does not purposely use infinite Ranges as control structures like the first example. This could for example prevent certain error messages from getting displayed that were used in combination with such tests. It is on the other hand fair to state that a search of public Pony code on Github did not yield any uses of `.is_infinite()` outside test code associated with tests for the Range implementation. This could be taken as a sign that infinite Ranges and guarding code against their effects are not widely used. It is also worth noting that `.is_infinite()` will still return true for all remaining infinite Range cases so that any use as a guard should likely remain intact.
 
 # Alternatives
 
-A fair alternative is to leave everythin as it is. Pony has been in fairly wide-spread use academically and to some degree even commercially, without anyone reporting the issues that for the author were the reason to start working on this RFC -- which was hanging (eventually running out of memory) Pony code. One could therefore speculate that the side effects and instances in which currently infinite Ranges are created are sufficiently documented and known by the majority of users of Pony.
+A fair alternative is to leave everything as it is. Pony has been in fairly wide-spread use academically and to some degree even commercially, without anyone reporting the issues that for the author were the reason to start working on this RFC -- which was hanging (eventually running out of memory) Pony code. One could therefore speculate that the side effects and instances in which currently infinite Ranges are created are sufficiently documented and known by the majority of users of Pony.
 Nonetheless, as laid out in the summary and motivation sections, the use of the word Range suggests a behavior that is different from the current one. Therefore, if this RFC is not accepted, I'd suggest to better point out how Pony's use of `Range` is contrary to both the mathematical meaning and the use of iterator objects of that name in many other programming languages, and how this can lead to infinite loops over unintendedly infinite `Range` iterators. The current Range docstring does state this behavior and provides an example (infinite_range2), but this is possibly not prominent enough given the gravity of the discrepancy between reasonable expectation and behavior.
 
 >  If the `step` is not moving `min` towards `max` or if it is `0`,
