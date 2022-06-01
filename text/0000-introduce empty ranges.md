@@ -222,7 +222,7 @@ t1 = Time.millis()
 ...
 ```
 This was compiled with `--debug` so that the optimizer would not remove the not-further-used range instances; it was run 10 times to obtain an average runtime for a variety of Range types.
-![Range constructor performance delta](https://github.com/stefandd/ponystuff/blob/main/ponyc-contrib/rfcs/assets/0000-introduce%20empty%20ranges-fig1.png | width=640)
+<img src="https://github.com/stefandd/ponystuff/blob/main/ponyc-contrib/rfcs/assets/0000-introduce%20empty%20ranges-fig1.png" width="669" height="484">
 As you can see in the performance graph, the new constructor code is only marginally slower in the integer Range creation but a bit faster than the current code for all of the floating point Ranges.
 
 # How We Teach This
