@@ -196,8 +196,90 @@ Importantly, the original code for `.has_next()` and `.next()` does not require 
 
 Here is a list of Range examples all of which were previously infinite, and their new classification:
 
+**Empty Ranges**
+
 ```
-// newly empty Ranges
+Range(0, 10, -1), .is_empty() == true, .is_infinite() == false
+Range(10, 0, 1), .is_empty() == true, .is_infinite() == false
+Range(10, 10, 1), .is_empty() == true, .is_infinite() == false
+Range(10, 10, -1), .is_empty() == true, .is_infinite() == false
+Range(10, 10, 0), .is_empty() == true, .is_infinite() == false
+Range(-10, -10, 1), .is_empty() == true, .is_infinite() == false
+Range(-10, -10, -1), .is_empty() == true, .is_infinite() == false
+Range(-10, -10, 0), .is_empty() == true, .is_infinite() == false
+Range(0, 10, -1).is_empty() == true, .is_infinite() == false
+Range(10, 0, 1).is_empty() == true, .is_infinite() == false
+Range(10, 10, 1).is_empty() == true, .is_infinite() == false
+Range(10, 10, -1).is_empty() == true, .is_infinite() == false
+Range(10, 10, 0).is_empty() == true, .is_infinite() == false
+Range(10, 10, inf).is_empty() == true, .is_infinite() == false
+Range(10, 10, -inf).is_empty() == true, .is_infinite() == false
+Range(-10, -10, 1).is_empty() == true, .is_infinite() == false
+Range(-10, -10, -1).is_empty() == true, .is_infinite() == false
+Range(-10, -10, 0).is_empty() == true, .is_infinite() == false
+Range(-10, -10, inf).is_empty() == true, .is_infinite() == false
+Range(-10, -10, -inf).is_empty() == true, .is_infinite() == false
+Range(0, 10, -inf).is_empty() == true, .is_infinite() == false
+Range(10, 0, inf).is_empty() == true, .is_infinite() == false
+Range(0, inf, -10).is_empty() == true, .is_infinite() == false
+Range(0, inf, -inf).is_empty() == true, .is_infinite() == false
+Range(0, -inf, 10).is_empty() == true, .is_infinite() == false
+Range(0, -inf, inf).is_empty() == true, .is_infinite() == false
+Range(inf, 0, 10).is_empty() == true, .is_infinite() == false
+Range(inf, 0, inf).is_empty() == true, .is_infinite() == false
+Range(-inf, 0, -10).is_empty() == true, .is_infinite() == false
+Range(-inf, 0, -inf).is_empty() == true, .is_infinite() == false
+Range(-inf, inf, -10).is_empty() == true, .is_infinite() == false
+Range(-inf, inf, -inf).is_empty() == true, .is_infinite() == false
+Range(inf, -inf, 10).is_empty() == true, .is_infinite() == false
+Range(inf, -inf, inf).is_empty() == true, .is_infinite() == false
+Range(0, inf, 0).is_empty() == true, .is_infinite() == false
+Range(0, inf, inf).is_empty() == true, .is_infinite() == false
+Range(0, -inf, 0).is_empty() == true, .is_infinite() == false
+Range(0, -inf, -inf).is_empty() == true, .is_infinite() == false
+Range(inf, 0, 0).is_empty() == true, .is_infinite() == false
+Range(inf, 0, -10).is_empty() == true, .is_infinite() == false
+Range(inf, 0, -inf).is_empty() == true, .is_infinite() == false
+Range(-inf, 0, 0).is_empty() == true, .is_infinite() == false
+Range(-inf, 0, 10).is_empty() == true, .is_infinite() == false
+Range(-inf, 0, inf).is_empty() == true, .is_infinite() == false
+Range(inf, inf, 1).is_empty() == true, .is_infinite() == false
+Range(inf, inf, -1).is_empty() == true, .is_infinite() == false
+Range(inf, inf, 0).is_empty() == true, .is_infinite() == false
+Range(inf, inf, inf).is_empty() == true, .is_infinite() == false
+Range(inf, inf, -inf).is_empty() == true, .is_infinite() == false
+Range(-inf, -inf, 1).is_empty() == true, .is_infinite() == false
+Range(-inf, -inf, -1).is_empty() == true, .is_infinite() == false
+Range(-inf, -inf, 0).is_empty() == true, .is_infinite() == false
+Range(-inf, -inf, inf).is_empty() == true, .is_infinite() == false
+Range(-inf, -inf, -inf).is_empty() == true, .is_infinite() == false
+Range(0, 10, nan).is_empty() == true, .is_infinite() == false
+Range(10, 10, nan).is_empty() == true, .is_infinite() == false
+Range(-10, -10, nan).is_empty() == true, .is_infinite() == false
+Range(inf, 0, nan).is_empty() == true, .is_infinite() == false
+Range(0, inf, nan).is_empty() == true, .is_infinite() == false
+Range(-inf, 0, nan).is_empty() == true, .is_infinite() == false
+Range(0, -inf, nan).is_empty() == true, .is_infinite() == false
+Range(nan, 0, inf).is_empty() == true, .is_infinite() == false
+Range(0, nan, inf).is_empty() == true, .is_infinite() == false
+Range(nan, 0, -inf).is_empty() == true, .is_infinite() == false
+Range(0, nan, -inf).is_empty() == true, .is_infinite() == false
+Range(inf, inf, nan).is_empty() == true, .is_infinite() == false
+Range(-inf, -inf, nan).is_empty() == true, .is_infinite() == false
+Range(nan, nan, 0).is_empty() == true, .is_infinite() == false
+Range(nan, nan, 1).is_empty() == true, .is_infinite() == false
+Range(nan, nan, inf).is_empty() == true, .is_infinite() == false
+Range(nan, nan, -inf).is_empty() == true, .is_infinite() == false
+Range(0, 10, inf).is_empty() == true, .is_infinite() == false
+Range(0, -10, -inf).is_empty() == true, .is_infinite() == false
+Range(10, 0, -inf).is_empty() == true, .is_infinite() == false
+``
+
+**Infinite Ranges**
+
+```
+Range(0, inf, 10).is_empty() == false, .is_infinite() == true
+Range(0, -inf, -10).is_empty() == false, .is_infinite() == true
 ```
 
 ## Performance Notes
@@ -304,7 +386,7 @@ which could, for example, be modified to:
 > ``` 
 > 
 
-Tests for the correct behavior can be added to `packages/collections/_test.pony` by adding a `_assert_empty` function analogous to the existing `_assert_infinite` function while adjusting the latter by removing cases that are no longer infinite from the current `_assert_infinite` tests.
+Tests for the correct behavior can be added to `packages/collections/_test.pony` by adding a `_assert_empty` function analogous to the existing `_assert_infinite` function while adjusting the latter by removing cases that are no longer infinite from the current `_assert_infinite` tests. The tests will cover the ones listed as examples in the Details section.
 
 # Drawbacks
 
