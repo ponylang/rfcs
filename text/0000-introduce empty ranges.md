@@ -221,7 +221,7 @@ t1 = Time.millis()
 ```
 This was compiled with `--debug` so that the optimizer would not remove the not further used range instances.
 
-![Fig1 - performance graph](/0000-introduce empty ranges-fig1.png)
+![Range constructor performance delta](https://github.com/stefandd/ponystuff/blob/main/ponyc-contrib/rfcs/assets/0000-introduce%20empty%20ranges-fig1.png)
 
 # How We Teach This
 
