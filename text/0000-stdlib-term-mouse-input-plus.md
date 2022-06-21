@@ -23,6 +23,7 @@ Enhance ANSI terminal support in package `term` with mouse input handling, addit
 - [Alternatives](#alternatives)
 - [Reference Implementation](#reference-implementation)
 - [Unresolved questions](#unresolved-questions)
+- [References](#references)
 
 ## Motivation
 
@@ -49,21 +50,21 @@ Enable richer text UI applications with both key and mouse input and improved us
 * `button` is either 0 (left), 1 (middle), 2 (right)
 * `x` and `y` are the character coordinates below the mouse cursor
 
-`fun ref mouse_up(button: U8, x: U16, y: U16)` 
+`fun ref mouse_up(button: U8, x: U16, y: U16) => None` 
 * This method is called whenever a mouse button is released
 * `button` is either 0 (left), 1 (middle), 2 (right)
 * `x` and `y` are the character coordinates below the mouse cursor
 
-`fun ref mouse_move(x: U16, y: U16)`
+`fun ref mouse_move(x: U16, y: U16) => None`
 * This method is called whenever the mouse is moved while no button is pressed
 * `x` and `y` are the character coordinates below the mouse cursor
 
-`fun ref mouse_drag(button: U8, x: U16, y: U16)`
+`fun ref mouse_drag(button: U8, x: U16, y: U16) => None`
 * This method is called whenever the mouse is moved while a button is pressed
 * `button` is either 0 (left), 1 (middle), 2 (right)
 * `x` and `y` are the character coordinates below the mouse cursor
 
-`fun ref mouse_wheel(direction: U8, x: U16, y: U16)`
+`fun ref mouse_wheel(direction: U8, x: U16, y: U16) => None`
 * This method is called whenever the mouse wheel is rolled in either direction. 
 * `direction` is either 0 or 1
 * `x` and `y` are the character coordinates below the mouse cursor
@@ -72,16 +73,16 @@ Enable richer text UI applications with both key and mouse input and improved us
 
 The following new methods return escape codes that can be used to enable/disable different capabilities.
 
-| Method                                   | Description                               |
-| ---------------------------------------- | ----------------------------------------- |
-| `fun cursor_save() : String`             | Save current cursor position              |
-| `fun cursor_restore() : String`          | Restore last saved cursor position        |
-| `fun cursor_hide() : String`             | Hide the terminal cursor                  |
-| `fun cursor_show() : String`             | Show the terminal cursor                  |
-| `fun switch_to_alt_screen() : String`    | Switch to the alternate screen buffer [1] |
-| `fun switch_to_normal_screen() : String` | Switch back to the normal screen buffer   |
-| `fun mouse_enable() : String`            | Enable mouse input events                 |
-| `fun mouse_disable() : String`           | Disable mouse input handling              |
+| Method                                   | Description                                |
+| ---------------------------------------- | ------------------------------------------ |
+| `fun cursor_save() : String`             | Save current cursor position               |
+| `fun cursor_restore() : String`          | Restore last saved cursor position         |
+| `fun cursor_hide() : String`             | Hide the terminal cursor                   |
+| `fun cursor_show() : String`             | Show the terminal cursor                   |
+| `fun switch_to_alt_screen() : String`    | Switch to the alternate screen buffer [^1] |
+| `fun switch_to_normal_screen() : String` | Switch back to the normal screen buffer    |
+| `fun mouse_enable() : String`            | Enable mouse input events                  |
+| `fun mouse_disable() : String`           | Disable mouse input handling               |
 
 ### Enhance `ANSITerm`
 
@@ -116,14 +117,14 @@ When `ANSITerm` is instantiated:
 
 Trapping `SIGINT` and `SIGTSTP` by default will mean that an existing terminal app that doesn't use any of the additional capabilities will no longer be interrupted/stopped by `^C/^Z`. 
 
-* To preserve backwards compatibility, define a trait `ANSITermOptions` that with default options.
+* To preserve backwards compatibility, define a trait `ANSITermOptions` with default options.
 ```pony
 trait ANSITermOptions
   fun capture_ctrl_c() : Bool => false
   fun capture_ctrl_z() : Bool => false
 ```
 
-* Modify the `ANSITerm` construction to take an options parameter with default value of an object literal based on the trait.
+* Modify the `ANSITerm` constructor to take an options parameter with default value of an object literal based on the trait.
 ```pony
 actor ANSITerm
   // ...
@@ -178,4 +179,18 @@ The proposed changes have been implemented by making a copy of the `term` packag
 
 ## Unresolved questions
 
-None yet.
+> Some possible questions and draft answers on which I am open to be convinced otherwise. :)
+
+1. Should the mouse coordinates use `U32` to match the coordinate types used by `ANSI.cursor()` method?
+     * I was surprised to see `U32` used for text cursor coordinates as the terminal codes barely support 16-bit coordinate values. 
+     * Nonetheless, I think the answer here is YES to avoid unnecessary conversions across methods for text coordinates.
+2. Should on/off method pairs instead be defined as a single method with a boolean parameter? E.g. `cursor_visibility(show: Bool)` instead of `cursor_hide()/cursor_show()`
+     * I prefer the verbs of the two methods, 
+     * Still, having a single method with a boolean parameter is OK as long as it doesn't reduce the clarity of the method, especially since in `ANSI` the methods return escape codes.
+3. Should separate screen buffer switching functions instead be defined as a single method with a type union parameter? E.g. `switch_to_screen(screen: AlternateScreen | NormalScreen)`
+     * I don't recommend this. 
+     * Two clearly named methods achieve the same goal and avoid polluting the name-space without any improvement in readability.
+
+## References
+
+[^1] "The Alternate Screen Buffer" in *XTerm Control Sequences*; [link](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer)
