@@ -7,41 +7,16 @@
 
 Enhance ANSI terminal support in package `term` with mouse input handling, additional ANSI escape codes to support alt buffer and cursor switching, and capture of SIGINT and SIGTSTP to handle `^C` and `^Z` as input.
 
-**Table of contents**
-- [Summary](#summary)
-- [Motivation](#motivation)
-- [Detailed design](#detailed-design)
-  - [New `ANSINotify` methods](#new-ansinotify-methods)
-  - [New `ANSI` escape codes](#new-ansi-escape-codes)
-  - [Enhance `ANSITerm`](#enhance-ansiterm)
-    - [Mouse input handling](#mouse-input-handling)
-    - [Ctrl-C and Ctrl-Z input handling](#ctrl-c-and-ctrl-z-input-handling)
-  - [ANSI terminal options](#ansi-terminal-options)
-- [How We Teach This](#how-we-teach-this)
-- [How We Test This](#how-we-test-this)
-- [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
-- [Reference Implementation](#reference-implementation)
-- [Questions](#questions)
-- [References](#references)
-
 ## Motivation
 
-> Why are we doing this? 
-
-Improve ANSI terminal application capabilities when implementing text-based UIs.
-
-> What use cases does it support? 
-
-Mouse input handling, alt buffer switching, cursor hiding and capturing missing control keys.
-
-> What is the expected outcome?
-
-Enable richer text UI applications with both key and mouse input and improved user experience.
+The purpose of this proposal is to improve terminal application capabilities when implementing text-based UIs to enable richer text UI applications with both key and mouse input and improved user experience.
+The proposal add the following funcationality to the existing `term` package:
+* mouse input handling), 
+* screen switching between normal and alternate buffer [^1] 
+* cursor hiding and 
+* capturing missing control keys.
 
 ## Detailed design
-
-> This is the bulk of the RFC. Explain the design in enough detail for somebody familiar with the language to understand, and for somebody familiar with the compiler to implement. This should get into specifics and corner-cases, and include examples of how the feature is used.
 
 ### New `ANSINotify` methods
 
@@ -150,12 +125,9 @@ Via changes to the package's generated documentation.
 
 ## How We Test This
 
-> How do we assure that the initial implementation works? How do we assure going forward that the new functionality works after people make changes? Do we need unit tests? Something more sophisticated? What's the scope of testing? Does this change impact the testing of other parts of Pony? Is our standard CI coverage sufficient to test this change? Is manual intervention required?
+Most of this proposal is additive. The one area where code is modified is the input stream processing; yet even then the changes there are additive in that a new character is matches when in `_EscapeCSI` state after which all handling is via new states.
 
-_Currently there is an example for `ANSITerm` and `Readline`; otherwise there are no tests in the repo._
-
-* Add a new example that surfaces the new functionality to enable mouse input, screen switching.
-* Any suggestions?
+This will require manual testing to ensure that (a) the new functionality works as advertised and (b) the changes to not adversely affect the existing functionality. 
 
 ## Drawbacks
 
@@ -165,13 +137,7 @@ None other than that this introduces new, albeit a small amount of, changes that
 
 ## Alternatives
 
-> What other designs have been considered? 
-
-This extends the extending design in the `term` package.
-
-> What is the impact of not doing this?
-
-Richer terminal apps will need to rely on implementing their own terminal input handling. 
+As an alternative, instead of extending `term` someone could directly integrate with `ncurses`, for example, to implement rich terminal UIs.
 
 ## Reference Implementation
 
@@ -184,12 +150,10 @@ The proposed changes have been implemented by making a copy of the `term` packag
 1. ✅ Should the mouse coordinates use `U32` to match the coordinate types used by `ANSI.cursor()` method?
      * I was surprised to see `U32` used for text cursor coordinates as the terminal codes barely support 16-bit coordinate values. 
      * Nonetheless, I think the answer here is YES to avoid unnecessary conversions across methods for text coordinates.
-2. ❓ Should on/off method pairs instead be defined as a single method with a boolean parameter? E.g. `cursor_visibility(show: Bool)` instead of `cursor_hide()/cursor_show()`
-     * I prefer the verbs of the two methods, 
-     * Still, having a single method with a boolean parameter is OK as long as it doesn't reduce the clarity of the method, especially since in `ANSI` the methods return escape codes.
-3. ❓ Should separate screen buffer switching functions instead be defined as a single method with a type union parameter? E.g. `switch_to_screen(screen: AlternateScreen | NormalScreen)`
-     * I don't recommend this. 
-     * Two clearly named methods achieve the same goal and avoid polluting the class name-space without any improvement in readability.
+2. ✅ Should on/off method pairs instead be defined as a single method with a boolean parameter? E.g. `cursor_visibility(show: Bool)` instead of `cursor_hide()/cursor_show()`
+     * Keep the separate methods. 
+3. ✅ Should separate screen buffer switching functions instead be defined as a single method with a type union parameter? E.g. `switch_to_screen(screen: AlternateScreen | NormalScreen)`
+     * Keep the separate methods
 
 ## References
 
