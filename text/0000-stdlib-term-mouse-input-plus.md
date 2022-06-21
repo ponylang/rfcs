@@ -22,7 +22,7 @@ Enhance ANSI terminal support in package `term` with mouse input handling, addit
 - [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 - [Reference Implementation](#reference-implementation)
-- [Unresolved questions](#unresolved-questions)
+- [Questions](#questions)
 - [References](#references)
 
 ## Motivation
@@ -45,26 +45,26 @@ Enable richer text UI applications with both key and mouse input and improved us
 
 ### New `ANSINotify` methods
 
-`fun ref mouse_down(button: U8, x: U16, y: U16)`
+`fun ref mouse_down(button: U8, x: U32, y: U32)`
 * This method is called whenever a mouse button is pressed
 * `button` is either 0 (left), 1 (middle), 2 (right)
 * `x` and `y` are the character coordinates below the mouse cursor
 
-`fun ref mouse_up(button: U8, x: U16, y: U16) => None` 
+`fun ref mouse_up(button: U8, x: U32, y: U32) => None` 
 * This method is called whenever a mouse button is released
 * `button` is either 0 (left), 1 (middle), 2 (right)
 * `x` and `y` are the character coordinates below the mouse cursor
 
-`fun ref mouse_move(x: U16, y: U16) => None`
+`fun ref mouse_move(x: U32, y: U32) => None`
 * This method is called whenever the mouse is moved while no button is pressed
 * `x` and `y` are the character coordinates below the mouse cursor
 
-`fun ref mouse_drag(button: U8, x: U16, y: U16) => None`
+`fun ref mouse_drag(button: U8, x: U32, y: U32) => None`
 * This method is called whenever the mouse is moved while a button is pressed
 * `button` is either 0 (left), 1 (middle), 2 (right)
 * `x` and `y` are the character coordinates below the mouse cursor
 
-`fun ref mouse_wheel(direction: U8, x: U16, y: U16) => None`
+`fun ref mouse_wheel(direction: U8, x: U32, y: U32) => None`
 * This method is called whenever the mouse wheel is rolled in either direction. 
 * `direction` is either 0 or 1
 * `x` and `y` are the character coordinates below the mouse cursor
@@ -177,19 +177,19 @@ Richer terminal apps will need to rely on implementing their own terminal input 
 
 The proposed changes have been implemented by making a copy of the `term` package and creating a temporary derivative with the enhancements. When/if the RFC is approved, I will be able to supply the implementation via a PR.
 
-## Unresolved questions
+## Questions
 
 > Some possible questions and draft answers on which I am open to be convinced otherwise. :)
 
-1. Should the mouse coordinates use `U32` to match the coordinate types used by `ANSI.cursor()` method?
+1. ✅ Should the mouse coordinates use `U32` to match the coordinate types used by `ANSI.cursor()` method?
      * I was surprised to see `U32` used for text cursor coordinates as the terminal codes barely support 16-bit coordinate values. 
      * Nonetheless, I think the answer here is YES to avoid unnecessary conversions across methods for text coordinates.
-2. Should on/off method pairs instead be defined as a single method with a boolean parameter? E.g. `cursor_visibility(show: Bool)` instead of `cursor_hide()/cursor_show()`
+2. ❓ Should on/off method pairs instead be defined as a single method with a boolean parameter? E.g. `cursor_visibility(show: Bool)` instead of `cursor_hide()/cursor_show()`
      * I prefer the verbs of the two methods, 
      * Still, having a single method with a boolean parameter is OK as long as it doesn't reduce the clarity of the method, especially since in `ANSI` the methods return escape codes.
-3. Should separate screen buffer switching functions instead be defined as a single method with a type union parameter? E.g. `switch_to_screen(screen: AlternateScreen | NormalScreen)`
+3. ❓ Should separate screen buffer switching functions instead be defined as a single method with a type union parameter? E.g. `switch_to_screen(screen: AlternateScreen | NormalScreen)`
      * I don't recommend this. 
-     * Two clearly named methods achieve the same goal and avoid polluting the name-space without any improvement in readability.
+     * Two clearly named methods achieve the same goal and avoid polluting the class name-space without any improvement in readability.
 
 ## References
 
