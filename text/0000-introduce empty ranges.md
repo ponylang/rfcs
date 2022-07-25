@@ -5,8 +5,10 @@
 
 # Summary
 
-The RFC addresses the fact that for certain parameters, Pony currently creates infinite Range iterators that produce infinite numbers of values that lie *outside* the range of values `min` and `max` provided to `Range`. For example the Range iterator `Range(10, 0)` produces the infinite sequence `10, 11, 12, ..` on subsequent calls to `.next()` where all but the first element do not lie within the range 10..0. However, it is argued here that an iterator using the name `Range` can be expected to produce a sequence of values that lie within the `min, max` bounds. This expectation can be met by introducing and in such and similar cases returning *empty* ranges. One unexpected side effect of Pony's current behavior is that even though finite bounds are given, an *infinite* iterator can be created from them which, when used without consideration for this side effect, can produce indefinitely-running actors and "hanging" programs.
-The RFC proposes a delineation of the so-far *infinite* cases into one of two types: those at are now *empty*, and those which remain *infinite* even under this RFC.
+The RFC addresses the fact that for certain parameters, Pony currently creates infinite Range iterators that produce infinite numbers of values *outside* the range of values `min` and `max` provided to `Range`. For example the Range iterator `Range(10, 0)` produces the infinite sequence `10, 11, 12, ..` on subsequent calls to `.next()` where all but the first element do not lie within the range 10..0. One unexpected side effect of Pony's current behavior is that even though finite bounds are given, indefinitely-running actors and "hanging" programs can be produced. The fact that this RFC would bring Pony's Range much more in line with other common implementations of Range iterators that do allow floating point parameters and even infinite arguments -- for example Numpy's `arange()` function -- can be seen as a validating circumstance, but a more important goal is to prevent unintended infinitely iterating Range objects and indefinitely-running actors.
+
+It is argued here that an iterator using the name `Range` should produce a sequence of values that lie within the `min, max` bounds. Therefore, most of what are now *infinite* ranges should instead be *empty* ranges (where `.has_next() == false`). The RFC proposes a delineation of the so-far *infinite* cases into one of two types: those that are now *empty*, and those which remain *infinite*.
+A smaller issue proposed to be fixed by this RFC is the naming of the Range bounds `min` and `max`. Especially when an implementation allows for descending Ranges like Pony's does -- e.g. `Range(-10, -20, -1)`, naming the first parameter `min` and the second `max` is clearly mathematically wrong. Therefore if accepted, in the actual implementation these will be renamed to `start` and `end`. However, to not confuse things, they will still be named `min, max` throughout here.
 
 # Motivation
 
@@ -78,7 +80,7 @@ As stated above, Pony currently considers those Ranges *infinite* including thos
 
 # Detailed design
 
-## Implementation
+## Current Implementation
 
 Currently, a Range is considered infinite if either 1) the `step` is `0`, any of `min`, `max`, or `step` are `NaN`, `+Inf` or `-Inf`, or 2) if no progress can be made from `min` to `max` due to the sign of the `step`. Here is the corresponding relevant portion of the current range.pony implementation:
 
@@ -113,20 +115,40 @@ Currently, a Range is considered infinite if either 1) the `step` is `0`, any of
 >         or ((_min > _max) and (_inc > 0)) 
 > ```
 
-This RFC partitions the set of currently *infinite* `Range` cases into those now considered *empty*, and a very small set of those that remain *infinite*.
+## Proposed reclassifications
 
-For this, two criteria are postulated that are required for a Range to not be empty. Numeric values including the floating point values `+Inf` and `-Inf` can be meaningfully compared in expressions like `min > max` or `max > min`. Based on this, an obvious absence of *progress* of the iteration from min towards max based on the sign of the Range parameters can be tested by `((min <= max) and (step <= 0)) or ((min >= _max) and (step >= 0))` ("no-progress" criterion) for finite and infinite bounds as well as finite and infinite values of step (note that if either of the `min` or `max` parameters is `NaN` such expressions are always `false` and this special case is discussed further below). Here, besides the obvious sign-incompatibility of the three Range parameters, the cases of equal bounds `min == max` and `step == 0` are included, since the former wouldn't satisfy `[min, min)` (and also doesn't require any progress) and the latter prevents any progress. In the current implementation of Range, a somewhat similar couple of expressions are used with the comment `// no progress` and `// progress into other directions`, but they are treated as a sufficient condition for *infinite*. Here, this criterion is used as part of a test for empty Ranges because it allows us to know in which cases the generation of values between min and max is impossible, irrespective of the magnitude of the bounds or steps, in other words, no valid *trajectory* from min to max does exists with the provided parameters. The second important criterion used here is that for a Range iterators to be not empty, it must only produce finite values even when infinite bounds are specified, and if that is not possible, the Range is again *empty*.
+This RFC partitions the set of currently *infinite* `Range` cases into those now considered *empty*, and a very small set of those that remain *infinite*. To discuss this discrimination, we first list three criteria. All three must be met for a currently *infinite* Range to *not* now be reclassified as empty -- if either of these criteria is violated, the Range is *empty*; if all three are met, any currently *infinite* Range remains so under this proposal.
 
-Combining these two criteria, for a `Range` to not be *empty*, progress from `min` to `max` must be possible (no-progess is `false`), and the iterator that realizes this progress must produce *finite* values that lie within `[min, max)`.
+  Criterion 1 - progress from `min` to `max` must be possible. This necessitates the "no-progress expression" (discussion below) to be `false` .
+  Criterion 2 - the iterator that realizes the progress must produce *finite* values that lie within `[min, max)`.
+  Criterion 3 - none of the parameters `min, max, step` can be float `NaN`. (discussion below)
 
-Using this test, `Range(0, 10, -1)` is *empty* and no longer *infinite*, but so is in fact `Range(0, inf, -1)` that is also considered *infinite* currently. While one can generally never produce a complete list of elements that would incrementally move from say 0 to +Inf, we can know in the case of `Range(0, inf, -1)` that the Range must be *empty* because of the incompatible sign of the step parameter relative to the signs of `min` and `max` (progress impossible).
-Another case in which a Range is now *empty* is when the bound equality `min == max` can be evaluated meaningfully, independent of whether `step` equals e.g. `0` or `+-Inf` such as for example `Range(10, 10, 0)`. In the case of equal and finite bounds, no value can exist that satisfies `[min, min)`. In case of infinite bound values, the range is also empty because one `inf` cannot be meaningfully tested for equality to another `inf` and even if it could, the second criterion would be violated in that a sequence of values would contain non-finite values.
+### Criterion 1 -- no-progress expression
 
-As already stated, the current `Range` implementation treats the occurrence of `+-Inf` or `NaN` parameters in *any* of the `min, max, step` parameters as sufficient condition for *infinite*. This RFC considers the opposite: the no-progress expression cannot be meaningfully evaluated if any one of the 3 tested parameters is a `NaN` value, and one can also not decide whether any .next() iterations which add NaN lie within the given numerical range, or, if `min` or `max` are `NaN`, what that range is in the first place. Any occurrence of `NaN` in the Range parameters therefore produces an *empty* Range. Similarly, while a `step` argument of `+-Inf` may "pass" the inspection by the *no-progress criterion*, no finite points within the mathematical range `[min, max)` can be computed, including when `min, max` themselves are `inf`. Therefore, such Ranges are *empty*, too. A `step` argument of `0` satisfies the *no-progress criterion* and produces an *empty* Range.
+The first criterion is related to the question whether progress from `min` to `max` is possible or needed. Numerical values including the floating point values `+Inf` and `-Inf` can be meaningfully compared in expressions like `min > max` or `max > min`. Based on this, an obvious absence of *progress* of the iteration from min towards max based on the sign of the Range parameters can be tested by the following "no-progress expression": `((min <= max) and (step <= 0)) or ((min >= _max) and (step >= 0))`, for both finite and infinite bounds.
 
-The cases that would remain *infinite* under this proposal are then only those which fulfill the following condition: they are *not empty* (as per the evaluation above) AND their upper bound is either `+Inf` or `-Inf`. Typical examples would be `Range[F64](0, inf, 1)` or `Range[F64](0, -inf, -1)`. We can't allow a lower bound that is not finite, because then the elements returned on .next() calls would again not be finite.
+Besides the cases with obvious sign-incompatibility of the three Range parameters, this expression also covers the cases of equal bounds `min == max` and `step == 0`. Equal bounds correspond to `[N, N)` which cannot contain any value, and the case of `step == 0` to a situation where no progress is possible. In the current implementation of Range, a somewhat similar couple of expressions are used with the comment `// no progress` and `// progress into other directions`, but they are treated as a sufficient condition for *infinite*. Here, this criterion is used to test for empty Ranges because no valid *trajectory* from min to max does exists with the provided parameters.
 
-Summarizing this, the proposed algorithm for the Range classification is outlined in a close-to-code form. The following expressions are useful:
+#### Examples for empty Ranges that violate criterion 1
+
+`Range(0, 10, -1)` is *empty* nd no longer *infinite*, but so is in fact `Range(0, inf, -1)` that is also considered *infinite* currently. While one can generally never produce a complete list of elements that would incrementally move from say 0 to +Inf, we can know in the case of `Range(0, inf, -1)` that the Range must be *empty* because of the incompatible sign of the step parameter relative to the signs of `min` and `max`.
+Other cases of Ranges that are now *empty* is when the bound equality `min == max` can be evaluated meaningfully, independent of whether `step` equals e.g. `0` or `+-Inf` like in case of `Range(10, 10, 0)`.
+
+### Criterion 2 -- finite/infinite `min` or `step` parameters
+
+This criterion is enforced because the Range iterator produces new values by adding `step` to the last value. If an iteration value becomes e.g. `+Inf`, adding `step` does not change the value - the iterator again produces `+Inf`. Therefore, the iterator makes no progress numerically (indirectly violating Criterion 1). Also, while a `step` argument of `+-Inf` may "pass" the inspection by the "no-progress expression", e.g. `Range(0, 10, Inf)`, no finite points within the mathematical range `[min, max)` can be computed iteratively when `step` is `+-Inf`. This is also the case when `min` itself is `+-Inf`. Therefore, Ranges where `min` or `step` are infinite are *empty*, too.
+
+### Criterion 3 -- `NaN` parameters
+
+The current `Range` implementation treats the occurrence of `+-Inf` or `NaN` parameters in *any* of the `min, max, step` parameters as sufficient condition for *infinite*. This RFC considers the opposite: the no-progress expression cannot be meaningfully evaluated if any one of the 3 tested parameters is a `NaN` value, and one can also not decide whether any .next() iterations which add `NaN` lie within the given numerical range, or, if `min` or `max` are `NaN`, what that range is in the first place. Any occurrence of `NaN` in the Range parameters therefore produces an *empty* Range. 
+
+### Ranges that remain infinite
+
+The cases that would remain infinite under this proposal are then only those which fulfill the following condition: they are not empty (as per the evaluation above) AND their upper bound is either +Inf or -Inf. Typical examples would be `Range[F64](0, inf, 1)` or `Range[F64](0, -inf, -1)`.
+
+## New Implementation
+
+For the discussion of the proposed algorithm, an expression of "progress" instead of "no-progress" is used.
 
 ```
 no_progress = ((min <= max) and (step <= 0) or (min >= max) and (step >= 0))
@@ -136,10 +158,10 @@ progress = not no_progress = ((min > max) or (step > 0)) and ((min < max) or (st
                            = ((min < max) and (step > 0)) or ((min > max ) and (step < 0))
 ```
 
-The above discussed combined criterion for *empty* was: either the no_progress criterion is true, or the generated values would not be finite. Finite values require both `min` and `step` to be finite, since the values are generated by an iterative addition of `step` to `min`. Therefore, one can state:
+This is useful because `progress` allows to simultaneously test for both criteria 1 and 3 since `NaN` in any `min, max, step` automatically renders `progress` `false`. Criterion 2 is tested by `min.finite() and step.finite()`. Therefore the following expression allow an easiy classification of the Ranges:
 
 ```
-not_empty = progress and min.finite() and step.finite() // .finite() => the value is not `+-Inf` and not `NaN`
+not_empty = progress and min.finite() and step.finite() // .finite() => true if not `+-Inf` and not `NaN`
 infinite = not_empty and max.infinite()
 empty = not not_empty
 ```
@@ -200,79 +222,71 @@ Here is a list of Range examples all of which were previously infinite, and thei
 
 ```
 Range(0, 10, -1), .is_empty() == true, .is_infinite() == false
+Range(0, 10, -inf).is_empty() == true, .is_infinite() == false
+Range(0, 10, inf).is_empty() == true, .is_infinite() == false
+Range(0, -10, -inf).is_empty() == true, .is_infinite() == false
 Range(10, 0, 1), .is_empty() == true, .is_infinite() == false
+Range(10, 0, inf).is_empty() == true, .is_infinite() == false
+Range(10, 0, -inf).is_empty() == true, .is_infinite() == false
 Range(10, 10, 1), .is_empty() == true, .is_infinite() == false
 Range(10, 10, -1), .is_empty() == true, .is_infinite() == false
 Range(10, 10, 0), .is_empty() == true, .is_infinite() == false
+Range(10, 10, inf).is_empty() == true, .is_infinite() == false
+Range(10, 10, -inf).is_empty() == true, .is_infinite() == false
 Range(-10, -10, 1), .is_empty() == true, .is_infinite() == false
 Range(-10, -10, -1), .is_empty() == true, .is_infinite() == false
 Range(-10, -10, 0), .is_empty() == true, .is_infinite() == false
-Range(0, 10, -1).is_empty() == true, .is_infinite() == false
-Range(10, 0, 1).is_empty() == true, .is_infinite() == false
-Range(10, 10, 1).is_empty() == true, .is_infinite() == false
-Range(10, 10, -1).is_empty() == true, .is_infinite() == false
-Range(10, 10, 0).is_empty() == true, .is_infinite() == false
-Range(10, 10, inf).is_empty() == true, .is_infinite() == false
-Range(10, 10, -inf).is_empty() == true, .is_infinite() == false
-Range(-10, -10, 1).is_empty() == true, .is_infinite() == false
-Range(-10, -10, -1).is_empty() == true, .is_infinite() == false
-Range(-10, -10, 0).is_empty() == true, .is_infinite() == false
 Range(-10, -10, inf).is_empty() == true, .is_infinite() == false
 Range(-10, -10, -inf).is_empty() == true, .is_infinite() == false
-Range(0, 10, -inf).is_empty() == true, .is_infinite() == false
-Range(10, 0, inf).is_empty() == true, .is_infinite() == false
+Range(0, inf, 0).is_empty() == true, .is_infinite() == false
 Range(0, inf, -10).is_empty() == true, .is_infinite() == false
 Range(0, inf, -inf).is_empty() == true, .is_infinite() == false
+Range(0, -inf, 0).is_empty() == true, .is_infinite() == false
 Range(0, -inf, 10).is_empty() == true, .is_infinite() == false
 Range(0, -inf, inf).is_empty() == true, .is_infinite() == false
-Range(inf, 0, 10).is_empty() == true, .is_infinite() == false
-Range(inf, 0, inf).is_empty() == true, .is_infinite() == false
-Range(-inf, 0, -10).is_empty() == true, .is_infinite() == false
-Range(-inf, 0, -inf).is_empty() == true, .is_infinite() == false
-Range(-inf, inf, -10).is_empty() == true, .is_infinite() == false
-Range(-inf, inf, -inf).is_empty() == true, .is_infinite() == false
-Range(inf, -inf, 10).is_empty() == true, .is_infinite() == false
-Range(inf, -inf, inf).is_empty() == true, .is_infinite() == false
-Range(0, inf, 0).is_empty() == true, .is_infinite() == false
 Range(0, inf, inf).is_empty() == true, .is_infinite() == false
-Range(0, -inf, 0).is_empty() == true, .is_infinite() == false
 Range(0, -inf, -inf).is_empty() == true, .is_infinite() == false
 Range(inf, 0, 0).is_empty() == true, .is_infinite() == false
+Range(inf, 0, 10).is_empty() == true, .is_infinite() == false
+Range(inf, 0, inf).is_empty() == true, .is_infinite() == false
 Range(inf, 0, -10).is_empty() == true, .is_infinite() == false
 Range(inf, 0, -inf).is_empty() == true, .is_infinite() == false
+Range(inf, -inf, 10).is_empty() == true, .is_infinite() == false
+Range(inf, -inf, inf).is_empty() == true, .is_infinite() == false
 Range(-inf, 0, 0).is_empty() == true, .is_infinite() == false
+Range(-inf, 0, -10).is_empty() == true, .is_infinite() == false
+Range(-inf, 0, -inf).is_empty() == true, .is_infinite() == false
 Range(-inf, 0, 10).is_empty() == true, .is_infinite() == false
 Range(-inf, 0, inf).is_empty() == true, .is_infinite() == false
+Range(-inf, inf, -10).is_empty() == true, .is_infinite() == false
+Range(-inf, inf, -inf).is_empty() == true, .is_infinite() == false
+Range(inf, inf, 0).is_empty() == true, .is_infinite() == false
 Range(inf, inf, 1).is_empty() == true, .is_infinite() == false
 Range(inf, inf, -1).is_empty() == true, .is_infinite() == false
-Range(inf, inf, 0).is_empty() == true, .is_infinite() == false
 Range(inf, inf, inf).is_empty() == true, .is_infinite() == false
 Range(inf, inf, -inf).is_empty() == true, .is_infinite() == false
+Range(-inf, -inf, 0).is_empty() == true, .is_infinite() == false
 Range(-inf, -inf, 1).is_empty() == true, .is_infinite() == false
 Range(-inf, -inf, -1).is_empty() == true, .is_infinite() == false
-Range(-inf, -inf, 0).is_empty() == true, .is_infinite() == false
 Range(-inf, -inf, inf).is_empty() == true, .is_infinite() == false
 Range(-inf, -inf, -inf).is_empty() == true, .is_infinite() == false
 Range(0, 10, nan).is_empty() == true, .is_infinite() == false
+Range(0, inf, nan).is_empty() == true, .is_infinite() == false
+Range(0, -inf, nan).is_empty() == true, .is_infinite() == false
+Range(0, nan, inf).is_empty() == true, .is_infinite() == false
+Range(0, nan, -inf).is_empty() == true, .is_infinite() == false
 Range(10, 10, nan).is_empty() == true, .is_infinite() == false
 Range(-10, -10, nan).is_empty() == true, .is_infinite() == false
 Range(inf, 0, nan).is_empty() == true, .is_infinite() == false
-Range(0, inf, nan).is_empty() == true, .is_infinite() == false
 Range(-inf, 0, nan).is_empty() == true, .is_infinite() == false
-Range(0, -inf, nan).is_empty() == true, .is_infinite() == false
 Range(nan, 0, inf).is_empty() == true, .is_infinite() == false
-Range(0, nan, inf).is_empty() == true, .is_infinite() == false
 Range(nan, 0, -inf).is_empty() == true, .is_infinite() == false
-Range(0, nan, -inf).is_empty() == true, .is_infinite() == false
 Range(inf, inf, nan).is_empty() == true, .is_infinite() == false
 Range(-inf, -inf, nan).is_empty() == true, .is_infinite() == false
 Range(nan, nan, 0).is_empty() == true, .is_infinite() == false
 Range(nan, nan, 1).is_empty() == true, .is_infinite() == false
 Range(nan, nan, inf).is_empty() == true, .is_infinite() == false
 Range(nan, nan, -inf).is_empty() == true, .is_infinite() == false
-Range(0, 10, inf).is_empty() == true, .is_infinite() == false
-Range(0, -10, -inf).is_empty() == true, .is_infinite() == false
-Range(10, 0, -inf).is_empty() == true, .is_infinite() == false
 ```
 
 **Infinite Ranges**
@@ -402,7 +416,10 @@ The current implementation also provides an `.is_infinite()` function to test wh
 
 # Alternatives
 
-A fair alternative is to leave everything as it is. Pony has been in fairly wide-spread use academically and to some degree even commercially, without anyone reporting the issues that for the author were the reason to start working on this RFC -- which was hanging (eventually running out of memory) Pony code. One could therefore speculate that the side effects and instances in which currently infinite Ranges are created are sufficiently documented and known by the majority of users of Pony.
+An alternative would be a reinterpretation of the user-provided parameters in the currently *infinite* cases. For example, the currently infinite `Range(0, 10, -1)` could be re-arranged to mean `Range(10, 0, -1)`. An argument against transforming Range(0, 10, -1) into Range(10, 0, -1) is that Range evaluates expressions using the provided parameters in their meaning of `min` and `max` or `start` and `end`. In conjunction with the step parameter there is a directionality (trajectory) which does not only control the numbers of the sequence but also the order within the sequence. Instead of `0, 1, .., 9` the Range would produce  `10, 9, .., 1` -- different numbers in a different order.
+Furthermore, having empty Ranges when using `Range` with calculated, non-literal bounds also has an *expressive* use (see CSV reader example in Motivation section) which the reinterpretation of the parameters to always return a non-empty Range would preclude.
+
+Another fair alternative is to leave everything as it is. Pony has been in fairly wide-spread use academically and to some degree even commercially, without anyone reporting the issues that for the author were the reason to start working on this RFC -- which was hanging (eventually running out of memory) Pony code. One could therefore speculate that the side effects and instances in which currently infinite Ranges are created are sufficiently documented and known by the majority of users of Pony.
 Nonetheless, as laid out in the summary and motivation sections, the use of the word Range suggests a behavior that is different from the current one. Therefore, if this RFC is not accepted, I'd suggest to better point out how Pony's use of `Range` is contrary to both the mathematical meaning and the use of iterator objects of that name in many other programming languages, and how this can lead to infinite loops over unintendedly infinite `Range` iterators. The current Range docstring does state this behavior and provides an example (infinite_range2), but this is possibly not prominent enough given the gravity of the discrepancy between reasonable expectation and behavior.
 
 >  If the `step` is not moving `min` towards `max` or if it is `0`,
@@ -419,7 +436,3 @@ Nonetheless, as laid out in the summary and motivation sections, the use of the 
 >   env.err.print("no, never!")
 > end 
 > ```
-
-# Unresolved questions
-
-None
