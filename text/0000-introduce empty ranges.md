@@ -75,8 +75,7 @@ Another problematic example of the current implementation is the response to any
 -nan(ind)
 ```
 
-Under the same argument regarding the iterator needing to adhere to the stated bounds `min, max`, this and some Range constellations that indefinitely produce `+-Inf` should also instead return empty ranges. `NaN` is not a value and can therefore not possibly lie within any valid range. The same is true when one of the bound parameters is `NaN`. Under this RFC Range iterators that use `NaN` in any parameter are *empty*.
-As stated above, Pony currently considers those Ranges *infinite* including those were the `min, max` bounds are finite and identical but the `step` parameter is `+-Inf`. These cases too would be treated as empty since no iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
+`NaN` is not a value and can therefore not possibly lie within any valid range. The same is true when one of the bound parameters is `NaN`. Under this RFC Range iterators that use `NaN` in any parameter are *empty*. Pony currently also considers those Ranges *infinite* were the `min, max` bounds are finite and identical but the `step` parameter is `+-Inf`. These cases too would be treated as empty since no iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
 
 # Detailed design
 
@@ -117,17 +116,17 @@ Currently, a Range is considered infinite if either 1) the `step` is `0`, any of
 
 ## Proposed reclassifications
 
-This RFC partitions the set of currently *infinite* `Range` cases into those now considered *empty*, and a very small set of those that remain *infinite*. To discuss this discrimination, we first list three criteria. All three must be met for a currently *infinite* Range to *not* now be reclassified as empty -- if either of these criteria is violated, the Range is *empty*; if all three are met, any currently *infinite* Range remains so under this proposal.
+This RFC partitions the set of currently *infinite* `Range` cases into those now considered *empty*, and a very small set of those that remain *infinite*. To discuss this discrimination, we first list three criteria. All three must be met for a currently *infinite* Range to *not* now be reclassified as empty -- if either of these criteria is violated, the Range is *empty*; if all three are met, a currently *infinite* Range remains so under this proposal.
 
-  Criterion 1 - progress from `min` to `max` must be possible. This necessitates the "no-progress expression" (discussion below) to be `false`.
+  **Criterion 1** - progress from `min` to `max` must be possible. This necessitates the "no-progress expression" (discussion below) to be `false`.
   
-  Criterion 2 - the iterator that realizes the progress must produce *finite* values that lie within `[min, max)`.
+  **Criterion 2** - the iterator that realizes the progress must produce *finite* values that lie within `[min, max)`.
   
-  Criterion 3 - none of the parameters `min, max, step` can be float `NaN`. (discussion below)
+  **Criterion 3** - none of the parameters `min, max, step` can be float `NaN`. (discussion below)
 
 ### Criterion 1 -- no-progress expression
 
-The first criterion is related to the question whether progress from `min` to `max` is possible or needed. Numerical values including the floating point values `+Inf` and `-Inf` can be meaningfully compared in expressions like `min > max` or `max > min`. Based on this, an obvious absence of *progress* of the iteration from min towards max based on the sign of the Range parameters can be tested by the following "no-progress expression": `((min <= max) and (step <= 0)) or ((min >= _max) and (step >= 0))`, for both finite and infinite bounds.
+The first criterion is related to the question whether progress from `min` to `max` is possible or needed. Numerical values including the floating point values `+Inf` and `-Inf` can be meaningfully compared in expressions like `min > max` or `max > min`. Based on this, an obvious absence of *progress* of the iteration from min towards max based on the sign of the Range parameters can be tested by the following *no-progress expression*: `((min <= max) and (step <= 0)) or ((min >= max) and (step >= 0))`, for both finite and infinite bounds.
 
 Besides the cases with obvious sign-incompatibility of the three Range parameters, this expression also covers the cases of equal bounds `min == max` and `step == 0`. Equal bounds correspond to `[N, N)` which cannot contain any value, and the case of `step == 0` to a situation where no progress is possible. In the current implementation of Range, a somewhat similar couple of expressions are used with the comment `// no progress` and `// progress into other directions`, but they are treated as a sufficient condition for *infinite*. Here, this criterion is used to test for empty Ranges because no valid *trajectory* from min to max does exists with the provided parameters.
 
