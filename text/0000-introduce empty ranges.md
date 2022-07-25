@@ -119,8 +119,10 @@ Currently, a Range is considered infinite if either 1) the `step` is `0`, any of
 
 This RFC partitions the set of currently *infinite* `Range` cases into those now considered *empty*, and a very small set of those that remain *infinite*. To discuss this discrimination, we first list three criteria. All three must be met for a currently *infinite* Range to *not* now be reclassified as empty -- if either of these criteria is violated, the Range is *empty*; if all three are met, any currently *infinite* Range remains so under this proposal.
 
-  Criterion 1 - progress from `min` to `max` must be possible. This necessitates the "no-progress expression" (discussion below) to be `false` .
+  Criterion 1 - progress from `min` to `max` must be possible. This necessitates the "no-progress expression" (discussion below) to be `false`.
+  
   Criterion 2 - the iterator that realizes the progress must produce *finite* values that lie within `[min, max)`.
+  
   Criterion 3 - none of the parameters `min, max, step` can be float `NaN`. (discussion below)
 
 ### Criterion 1 -- no-progress expression
@@ -134,11 +136,11 @@ Besides the cases with obvious sign-incompatibility of the three Range parameter
 `Range(0, 10, -1)` is *empty* nd no longer *infinite*, but so is in fact `Range(0, inf, -1)` that is also considered *infinite* currently. While one can generally never produce a complete list of elements that would incrementally move from say 0 to +Inf, we can know in the case of `Range(0, inf, -1)` that the Range must be *empty* because of the incompatible sign of the step parameter relative to the signs of `min` and `max`.
 Other cases of Ranges that are now *empty* is when the bound equality `min == max` can be evaluated meaningfully, independent of whether `step` equals e.g. `0` or `+-Inf` like in case of `Range(10, 10, 0)`.
 
-### Criterion 2 -- finite/infinite `min` or `step` parameters
+### Criterion 2 -- finite iterator values only
 
 This criterion is enforced because the Range iterator produces new values by adding `step` to the last value. If an iteration value becomes e.g. `+Inf`, adding `step` does not change the value - the iterator again produces `+Inf`. Therefore, the iterator makes no progress numerically (indirectly violating Criterion 1). Also, while a `step` argument of `+-Inf` may "pass" the inspection by the "no-progress expression", e.g. `Range(0, 10, Inf)`, no finite points within the mathematical range `[min, max)` can be computed iteratively when `step` is `+-Inf`. This is also the case when `min` itself is `+-Inf`. Therefore, Ranges where `min` or `step` are infinite are *empty*, too.
 
-### Criterion 3 -- `NaN` parameters
+### Criterion 3 -- no `NaN` parameters
 
 The current `Range` implementation treats the occurrence of `+-Inf` or `NaN` parameters in *any* of the `min, max, step` parameters as sufficient condition for *infinite*. This RFC considers the opposite: the no-progress expression cannot be meaningfully evaluated if any one of the 3 tested parameters is a `NaN` value, and one can also not decide whether any .next() iterations which add `NaN` lie within the given numerical range, or, if `min` or `max` are `NaN`, what that range is in the first place. Any occurrence of `NaN` in the Range parameters therefore produces an *empty* Range. 
 
