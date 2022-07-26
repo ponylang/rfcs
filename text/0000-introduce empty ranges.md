@@ -56,7 +56,7 @@ As an example of what would be `expressive` use of the Range bounds, consider th
 
 This currently leads to a hanging actor/memory crash because the Range(1, f.size()) instead of being empty iterates infinitely in cases when the file "data.csv" exists but is empty, leading to an empty array in f. This code isn't particularly elegant or safe (a guard regarding f.size() should be put here), but it can still serve an example for how a programmer who would expect this Range to be empty in case of an empty f Array could utilize the Range parameters directly to ensure that the for loop is not executed by writing `Range(1, f.size())`.
 
-Another problematic example of the current implementation is the response to any of the parameters being `Nan`.
+Another problematic example of the current implementation is the response to any of the parameters being `NaN`.
 
 ```pony
   let nan = F64 = F64(0) / F64(0)
