@@ -122,7 +122,7 @@ Currently, a Range is considered infinite if either 1) the `step` is `0`, any of
 
 This RFC partitions the set of currently *infinite* `Range` cases into those now considered *empty*, and a very small set of those that remain *infinite*. To discuss this discrimination, we first list three criteria. All three must be met for a currently *infinite* Range to *not* now be reclassified as empty -- if either of these criteria is violated, the Range is *empty*; if all three are met, a currently *infinite* Range remains so under this proposal.
 
-  **Criterion 1** - progress from `min` to `max` must be possible. This necessitates the "no-progress expression" (discussion below) to be `false`.
+  **Criterion 1** - progress from `min` to `max` must be possible and necessary. This necessitates the "no-progress expression" (discussion below) to be `false`.
   
   **Criterion 2** - the iterator that realizes the progress must produce *finite* values that lie within `[min, max)`.
   
@@ -425,19 +425,3 @@ An alternative would be a reinterpretation of the user-provided parameters in th
 Furthermore, having empty Ranges when using `Range` with calculated, non-literal bounds also has an *expressive* use (see CSV reader example in Motivation section) which the reinterpretation of the parameters to always return a non-empty Range would preclude.
 
 Another fair alternative is to leave everything as it is. Pony has been in fairly wide-spread use academically and to some degree even commercially, without anyone reporting the issues that for the author were the reason to start working on this RFC -- which was hanging (eventually running out of memory) Pony code. One could therefore speculate that the side effects and instances in which currently infinite Ranges are created are sufficiently documented and known by the majority of users of Pony.
-Nonetheless, as laid out in the summary and motivation sections, the use of the word Range suggests a behavior that is different from the current one. Therefore, if this RFC is not accepted, I'd suggest to better point out how Pony's use of `Range` is contrary to both the mathematical meaning and the use of iterator objects of that name in many other programming languages, and how this can lead to infinite loops over unintendedly infinite `Range` iterators. The current Range docstring does state this behavior and provides an example (infinite_range2), but this is possibly not prominent enough given the gravity of the discrepancy between reasonable expectation and behavior.
-
->  If the `step` is not moving `min` towards `max` or if it is `0`,
->  the Range is considered infinite and iterating over it
->  will never terminate:
-> 
-> ```pony
-> let infinite_range1 = Range(0, 1, 0)
-> infinite_range1.is_infinite() == true
-> 
-> let infinite_range2 = Range[I8](0, 10, -1)
-> for _ in infinite_range2 do
->   env.out.print("will this ever end?")
->   env.err.print("no, never!")
-> end 
-> ```
