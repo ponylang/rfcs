@@ -79,7 +79,7 @@ Another problematic example of the current implementation is the response to any
 -nan(ind)
 ```
 
-`NaN` is not a value and can therefore not possibly lie within any valid range. The same is true when one of the bound parameters is `NaN`. Under this RFC Range iterators that use `NaN` in any parameter are *empty*. Pony currently also considers those Ranges *infinite* were the `min, max` bounds are finite and identical but the `step` parameter is `+-Inf`. These cases too would be treated as empty since no iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
+`NaN` is not a value and can therefore not possibly lie within any valid range. The same is true when one of the bound parameters is `NaN`. Under this RFC Range iterators that use `NaN` in any parameter are *empty*. Pony currently also considers those Ranges *infinite* where the `min, max` bounds are finite and identical but the `step` parameter is `+-Inf`. These cases too would be treated as empty since no iteration is necessary to advance from `min` to `max` regardless of the magnitude of `step`.
 
 # Detailed design
 
