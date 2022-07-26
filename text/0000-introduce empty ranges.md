@@ -428,4 +428,4 @@ Another fair alternative is to leave everything as it is. Pony has been in fairl
 
 # Unresolved questions
 
-The function `.is_empty()` was added to the proposal as a counter part to `.is_infinite()`. However, it would be fair to ask whether such an `.is_empty()` is really necessary if we already have a `.has_next()`? For infinite loops it makes sense to have an `.is_infinite()` since it informs that `.has_next()` will *remain* `true`. In the opposite case of empty Ranges, `.has_next()` will be `false` right away so an `.is_empty()` is somewhat redundant.
+The function `.is_empty()` was added to the proposal as a counterpart to `.is_infinite()`. However, it would be fair to ask whether such an `.is_empty()` is really necessary since there already is a `.has_next()`. While for infinite loops it makes sense to have an `.is_infinite()` which informs that `.has_next()` will *remain* `true`, in the opposite case of empty Ranges, `.has_next()` will be `false` right away, and an `.is_empty()` is therefore somewhat redundant.
