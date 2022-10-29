@@ -42,7 +42,7 @@ And erase will be updated accordingly:
     match direction
     | EraseRight => "\x1B[0K"
     | EraseLeft => "\x1B[1K"
-    else "\x1B[2K"
+    | EraseLine => "\x1B[2K"
     end
 ```
 
