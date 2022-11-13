@@ -54,9 +54,9 @@ detailed in this RFC.
 
 # How We Test This
 
-Just about every approach we as an option is a very simple implementation where
-unit tests wouldn't add any additional value. No new tests will be added. No
-existing tests will be updated.
+Just about every approach we have as an option is a very simple implementation
+where unit tests wouldn't add any additional value. No new tests will be added.
+No existing tests will be updated.
 
 # Drawbacks
 
