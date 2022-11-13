@@ -1,7 +1,7 @@
 - Feature Name: Add erase codes to term package
 - Start Date: 2022-10-26
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/203
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4245
 
 # Summary
 
