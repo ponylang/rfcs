@@ -1,7 +1,7 @@
 - Feature Name: Introduction of empty Ranges
 - Start Date: 2022-05-29
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/201
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4255
 
 # Summary
 
@@ -96,7 +96,7 @@ Currently, a Range is considered infinite if either 1) the `step` is `0`, any of
 >   let _forward: Bool
 >   let _infinite: Bool
 >   var _idx: A
-> 
+>
 >   new create(min: A, max: A, inc: A = 1) =>
 >     _min = min
 >     _max = max
@@ -115,7 +115,7 @@ Currently, a Range is considered infinite if either 1) the `step` is `0`, any of
 >       is_float_infinite
 >         or ((_inc == 0) and (min != max))    // no progress
 >         or ((_min < _max) and (_inc < 0)) // progress into other directions
->         or ((_min > _max) and (_inc > 0)) 
+>         or ((_min > _max) and (_inc > 0))
 > ```
 
 ## Proposed reclassifications
@@ -123,9 +123,9 @@ Currently, a Range is considered infinite if either 1) the `step` is `0`, any of
 This RFC partitions the set of currently *infinite* `Range` cases into those now considered *empty*, and a very small set of those that remain *infinite*. To discuss this discrimination, we first list three criteria. All three must be met for a currently *infinite* Range to *not* now be reclassified as empty -- if either of these criteria is violated, the Range is *empty*; if all three are met, a currently *infinite* Range remains so under this proposal.
 
   **Criterion 1** - progress from `min` to `max` must be possible and necessary. This necessitates the "no-progress expression" (discussion below) to be `false`.
-  
+
   **Criterion 2** - the iterator that realizes the progress must produce *finite* values that lie within `[min, max)`.
-  
+
   **Criterion 3** - none of the parameters `min, max, step` can be float `NaN`. (discussion below)
 
 ### Criterion 1 -- no-progress expression
@@ -145,7 +145,7 @@ This criterion is enforced because the Range iterator produces new values by add
 
 ### Criterion 3 -- no `NaN` parameters
 
-The current `Range` implementation treats the occurrence of `+-Inf` or `NaN` parameters in *any* of the `min, max, step` parameters as sufficient condition for *infinite*. This RFC considers the opposite: the no-progress expression cannot be meaningfully evaluated if any one of the 3 tested parameters is a `NaN` value, and one can also not decide whether any .next() iterations which add `NaN` lie within the given numerical range, or, if `min` or `max` are `NaN`, what that range is in the first place. Any occurrence of `NaN` in the Range parameters therefore produces an *empty* Range. 
+The current `Range` implementation treats the occurrence of `+-Inf` or `NaN` parameters in *any* of the `min, max, step` parameters as sufficient condition for *infinite*. This RFC considers the opposite: the no-progress expression cannot be meaningfully evaluated if any one of the 3 tested parameters is a `NaN` value, and one can also not decide whether any .next() iterations which add `NaN` lie within the given numerical range, or, if `min` or `max` are `NaN`, what that range is in the first place. Any occurrence of `NaN` in the Range parameters therefore produces an *empty* Range.
 
 ### Ranges that remain infinite
 
@@ -337,42 +337,42 @@ The current docstring contains roughly two parts: the first part, which would re
 > If the `step` is not moving `min` towards `max` or if it is `0`,
 > the Range is considered infinite and iterating over it
 > will never terminate:
-> 
+>
 > ```pony
 > let infinite_range1 = Range(0, 1, 0)
 > infinite_range1.is_infinite() == true
-> 
+>
 > let infinite_range2 = Range[I8](0, 10, -1)
 > for _ in infinite_range2 do
 > env.out.print("will this ever end?")
 > env.err.print("no, never!")
 > end
 > ```
-> 
+>
 > When using `Range` with  floating point types (`F32` and `F64`)
 > `inc` steps < 1.0 are possible. If any of the arguments contains
 > `NaN`, `+Inf` or `-Inf` the range is considered infinite as operations on
 > any of them won't move `min` towards `max`.
 > The actual values produced by such a `Range` are determined by what IEEE 754
 > defines as the result of `min` + `inc`:
-> 
+>
 > ```pony
 > for and_a_half in Range[F64](0.5, 100) do
 > handle_half(and_a_half)
 > end
-> 
+>
 > // this Range will produce 0 at first, then infinitely NaN
 > let nan: F64 = F64(0) / F64(0)
 > for what_am_i in Range[F64](0, 1000, nan) do
 > wild_guess(what_am_i)
 > end
 > ```
-> 
+>
 
 which could, for example, be modified to:
 
 > If `inc` is nonzero, but cannot produce progress towards max because of its sign, the `Range` is considered empty and will not produce any iterations. The `Range` is also empty if either `min` equals `max`, independent of the value of the step parameter `inc`, or if `inc` is zero.
-> 
+>
 >   ```pony
 >   let empty_range1 = Range(0, 10, -1)
 >   let empty_range2 = Range(0, 10, 0)
@@ -381,29 +381,29 @@ which could, for example, be modified to:
 >   empty_range2.is_empty() == true
 >   empty_range3.is_empty() == true
 >   ```
->   
+>
 >   When using `Range` with  floating point types (`F32` and `F64`)
 >   `inc` steps < 1.0 are possible. If any arguments contains
 >   `NaN`, the range is considered empty. It is also empty if the lower bound `min` or the step `inc` are `+Inf` or `-Inf`. However, if only the upper bound `max` is `+Inf` or `-Inf` and the step parameter `inc` has the same sign, then the range is considered infinite and will iterate indefinitely.
-> 
+>
 > ```pony
 >   let p_inf: F64 = F64.max_value() + F64.max_value()
 >   let n_inf: F64 = -p_inf
 >   let nan: F64 = F64(0) / F64(0)
->   
+>
 >   let infinite_range1 = Range[F64](0, p_inf, 1)
 >   let infinite_range2 = Range[F64](0, n_inf, -1_000_000)
 >   infinite_range1.is_infinite() == true
 >   infinite_range2.is_infinite() == true
->   
+>
 >   for i in Range[F64](0.5, 100, nan) do
 >     // will not be executed
 >   end
 >   for i in Range[F64](0.5, 100, p_inf) do
 >     // will not be executed
 >   end
-> ``` 
-> 
+> ```
+>
 
 Tests for the correct behavior can be added to `packages/collections/_test.pony` by adding a `_assert_empty` function analogous to the existing `_assert_infinite` function while adjusting the latter by removing cases that are no longer infinite from the current `_assert_infinite` tests. The tests will cover the ones listed as examples in the Details section.
 
