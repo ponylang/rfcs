@@ -55,10 +55,10 @@ class val UseFFIDecl is (AST & UseDecl)
   let partial: (Question | None)
   let guard: (IfDefCond | None)
 
-  new val create(this.name, this.return_type, this.params, this.partial, this.guard, this.attachments)
+  new val create(this.name, this.return_type, this.params, this.partial, this.guard, this.attachments) => None
 ```
 
-Note that there is now no syntactical body of the method, but the compiler will add a body that does the appropriate assignments.
+Note that there is now no syntactical body of the method apart from the obligatory `None` expression, and the compiler will add a body that does the appropriate assignments.
 
 Of course, "assign parameters" can be used alongside normal parameters, and not every field need be associated to an "assign parameter". Assign parameters can also have a "default value" as normal parameters can, which specifies the value to use if the caller does not supply an argument for that position. The following refactored example demonstrates all of those concepts:
 
