@@ -79,8 +79,6 @@ class val UseFFIDecl is (AST & UseDecl)
 
 As you can see, this syntax opens new opportunities but shouldn't preclude any old ones. Thus, it is not a breaking change or required learning, and it merely offers convenience for those looking for it. There are no new keywords or symbols needed in the parser.
 
-For many more syntax examples, see [the `.mare` files in the Mare compiler's codebase](https://github.com/jemc/mare/tree/master/src/prelude), where this syntax already exists and is parsed by the parser, along with the other syntax changes included there. This RFC and others to come are attempting to try to get some general consensus agreement on the desireability of at least some of the syntax changes that have been introduced in that work.
-
 ## Compiler implementation discussion
 
 Internally, the names of these parameters are anonymous/hygienic ids, meaning that they cannot be used by any explicit code and will not collide with any such names - they are are anonymous references that are immediately assigned at the beginning of the function body.
