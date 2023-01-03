@@ -79,6 +79,8 @@ class val UseFFIDecl is (AST & UseDecl)
 
 As you can see, this syntax opens new opportunities but shouldn't preclude any old ones. Thus, it is not a breaking change or required learning, and it merely offers convenience for those looking for it. There are no new keywords or symbols needed in the parser.
 
+Note that there these "assign params" don't have a name, so these parameters would not be usable with named arguments at the call site - only positional arguments.
+
 ## Compiler implementation discussion
 
 Internally, the names of these parameters are anonymous/hygienic ids, meaning that they cannot be used by any explicit code and will not collide with any such names - they are are anonymous references that are immediately assigned at the beginning of the function body.
