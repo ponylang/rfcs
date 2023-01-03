@@ -44,7 +44,7 @@ class val UseFFIDecl is (AST & UseDecl)
 
 The change proposed in this RFC introduces "assign parameters", which allow a field to be referenced in the position of a parameter, indicating that the argument passed for that parameter position should be immediately assigned to the field rather than given its own name in the local scope.
 
-Each field will be referenced with its `this.`-prefixed identifier, just as it would be referenced in the body of a method. Here is the same example from above, rewritten now in just 9 lines compared to the earlier 22:
+Each field will be referenced with its `this.`-prefixed identifier, just as it would be referenced in the body of a method (though unlike in that context, the `this.` prefix would be required rather than optional here). Here is the same example from above, rewritten now in just 9 lines compared to the earlier 22:
 
 ```pony
 class val UseFFIDecl is (AST & UseDecl)
