@@ -9,8 +9,6 @@ The syntax change would allow a field to be referenced in the position of a para
 
 # Motivation
 
-*Note: The syntax examples and text of this RFC assume that the RFC for "explicit self member access" with the `@` character have already been accepted and included in the language. If you haven't read the other RFC yet, please review that first, then read this one with that context.*
-
 In current Pony syntax, there can be significant code redundancy required to build simple data classes that take the arguments of their constructors and simply assign them to the field of the same name.
 
 One must declare the field, with its name and type, then declare the parameter with the same name and type in a particular position, then write an assignment statement in the body of the method.
@@ -27,26 +25,26 @@ class val UseFFIDecl is (AST & UseDecl)
   let guard: (IfDefCond | None)
 
   new val create(
-    name: (Id | LitString),
-    return_type: TypeArgs,
-    params: Params,
-    partial: (Question | None),
-    guard: (IfDefCond | None) = None,
-    attachments: (Attachments | None) = None)
+    name': (Id | LitString),
+    return_type': TypeArgs,
+    params': Params,
+    partial': (Question | None),
+    guard': (IfDefCond | None) = None,
+    attachments': (Attachments | None) = None)
   =>
-    @attachments = attachments
-    @name = name
-    @return_type = return_type
-    @params = params
-    @partial = partial
-    @guard = guard
+    this.attachments = attachments'
+    this.name = name'
+    this.return_type = return_type'
+    this.params = params'
+    this.partial = partial'
+    this.guard = guard'
 ```
 
 # Detailed design
 
 The change proposed in this RFC introduces "assign parameters", which allow a field to be referenced in the position of a parameter, indicating that the argument passed for that parameter position should be immediately assigned to the field rather than given its own name in the local scope.
 
-Each field will be referenced with its `@`-prefixed identifier, just as it would be referenced in the body of a method. Here is the same example from above, rewritten now in just 9 lines compared to the earlier 22:
+Each field will be referenced with its `this.`-prefixed identifier, just as it would be referenced in the body of a method. Here is the same example from above, rewritten now in just 9 lines compared to the earlier 22:
 
 ```pony
 class val UseFFIDecl is (AST & UseDecl)
@@ -57,7 +55,7 @@ class val UseFFIDecl is (AST & UseDecl)
   let partial: (Question | None)
   let guard: (IfDefCond | None)
 
-  new val create(@name, @return_type, @params, @partial, @guard, @attachments)
+  new val create(this.name, this.return_type, this.params, this.partial, this.guard, this.attachments)
 ```
 
 Note that there is now no syntactical body of the method, but the compiler will add a body that does the appropriate assignments.
@@ -73,10 +71,10 @@ class val UseFFIDecl is (AST & UseDecl)
   let partial: (Question | None)
   let guard: (IfDefCond | None)
 
-  new val create(name: String, @return_type, @params, @attachments = None) =>
-    @name = Id(name)
-    @partial = None
-    @guard = None
+  new val create(name: String, this.return_type, this.params, this.attachments = None) =>
+    this.name = Id(name)
+    this.partial = None
+    this.guard = None
 ```
 
 As you can see, this syntax opens new opportunities but shouldn't preclude any old ones. Thus, it is not a breaking change or required learning, and it merely offers convenience for those looking for it. There are no new keywords or symbols needed in the parser.
