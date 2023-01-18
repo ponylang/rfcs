@@ -21,7 +21,7 @@ The main frustration appears to come from the way this collision sort of behaves
 class Greeting
   var _message : String
   new create(message': String) => _message = message'
-  fun message(): String => message'
+  fun message(): String => _message
 ```
 
 One trouble with such refactors is that they seem to constitute "extra busywork" for the programmer. Another more serious problem is that any such
