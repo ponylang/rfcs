@@ -1,7 +1,7 @@
 - Feature Name: explicit_self_member_access
 - Start Date: 2020-05-24
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/174
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4318
 
 # Summary
 
