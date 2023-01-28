@@ -1,7 +1,7 @@
 - Feature Name: Remove json package from the standard library
 - Start Date: 2023-01-02
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/208
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4319
 
 # Summary
 
