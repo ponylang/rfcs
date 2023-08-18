@@ -11,7 +11,7 @@ jobs:
     container:
       image: ponylang/shared-docker-ci-release:20191107
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - run: bash .ci-scripts/pr-label.bash
         env:
           API_CREDENTIALS: ${{ secrets.PONYLANG_MAIN_API_TOKEN }}
