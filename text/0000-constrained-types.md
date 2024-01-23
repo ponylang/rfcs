@@ -145,7 +145,7 @@ Make this a ponylang organization library. I personally want this functionality 
 
 ## `Error` collection type
 
-I think that `Array[String val]` is a good error representation that is easy to work with and gives people enough of what they would need without taking on a lot of generics fiddling that might make the library harder to use. That said, we could look at making Error generic over the the error representation and use something like `Array[A]`.
+I think that `Array[String val]` is a good error representation that is easy to work with and gives people enough of what they would need without taking on a lot of generics fiddling that might make the library harder to use. That said, we could look at making `Error` generic over the error representation and use something like `Array[A]`.
 
 Additionally, if we thought it would be useful to get back a collection of errors that can be updated by calling code without changing the collection within the `Error` type, we could use a persistent collection type like `persistent/Vec`. Using a persistent collection would allow for additional errors to be "added on" later while the collection in `Error` would itself remain unchanged.
 
