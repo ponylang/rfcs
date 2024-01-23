@@ -105,6 +105,20 @@ actor Foo
 
 In our example usage code, we are creating a constrained type `LessThan10` that enforces that the value is between 0 and 9.
 
+Some key points from the design:
+
+## We can only validate immutable objects
+
+Validating a mutable item is pointless as it could change and go outside of our constraints after it has been validated. All validated items must be immutable.
+
+## `Error` is immutable
+
+We don't want to allow error mesages to be changed after validation is done. Because everything being validated is sendable, we can wrap an entire validator in a `recover` block and build up error messages on a `ref` Error before lifting to `val`.
+
+## Validators are not composable
+
+There's no safe way with the Pony type system that I can see to make a Validator composable. You can say for example that `SmallRange` is `GreaterThan5 & LessThan10` and then use a `SmallRange` where one a `LessThan10` is called for.
+
 # How We Teach This
 
 There's a few areas of teaching. One, the package documentation should have a couple of "here's how to use" examples with explanation as well as an explanation of why you would want to use the package instead of say checking a U64 repeatedly for being `< 10`.
@@ -125,15 +139,17 @@ Adding this to the standard library means that if we decide we want to change it
 
 # Alternatives
 
-Re where this lives:
+## Where this lives:
 
 Make this a ponylang organization library. I personally want this functionality and will create the library and maintain under the organization if we decided to not include in the standard library.
 
-Re design:
+## `Error` collection type
 
 I think that `Array[String val]` is a good error representation that is easy to work with and gives people enough of what they would need without taking on a lot of generics fiddling that might make the library harder to use. That said, we could look at making Error generic over the the error representation and use something like `Array[A]`.
 
-Re names:
+Additionally, if we thought it would be useful to get back a collection of errors that can be updated by calling code without changing the collection within the `Error` type, we could use a persistent collection type like `persistent/Vec`. Using a persistent collection would allow for additional errors to be "added on" later while the collection in `Error` would itself remain unchanged.
+
+## Names
 
 I'm generally happy with the names, but I would entertain that `Validated` instead of `Valid` reads better. So:
 
@@ -146,6 +162,8 @@ instead of:
 ```pony
 type LessThan10 is Valid[U64, LessThan10Validator]
 ```
+
+If we made that change then `ValidConstructor` should become `ValidatedConstructor`.
 
 # Unresolved questions
 
