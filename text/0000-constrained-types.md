@@ -121,7 +121,7 @@ There's no safe way with the Pony type system that I can see to make a `Validato
 
 # How We Teach This
 
-There's a few areas of teaching. One, the package documentation should have a couple of "here's how to use" examples with explanation as well as an explanation of why you would want to use the package instead of say checking a U64 repeatedly for being `< 10`.
+There's a few areas of teaching. One, the package documentation should have a couple of "here's how to use" examples with explanation as well as an explanation of why you would want to use the package instead of say checking a `U64` repeatedly for being `< 10`.
 
 Additionally, each "class" in the package should have documentation as well as each method.
 
