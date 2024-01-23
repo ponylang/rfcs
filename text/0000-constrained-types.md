@@ -13,7 +13,7 @@ We often want to take a basic type and apply constraints to it. For example, we 
 
 A common approach to doing this is to create a class that wraps our type and only allows the class to be created if the constraints are met. I believe it would be nice to include a way to participate in this common pattern in the standard library.
 
-By providing an approved mechanism in the standard library, we can demonstrate to Pony user's how to encode our constrained types within the type system.
+By providing an approved mechanism in the standard library, we can demonstrate to Pony users how to encode our constrained types within the type system.
 
 # Detailed design
 
