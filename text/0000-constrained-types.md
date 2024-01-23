@@ -24,7 +24,7 @@ type ValidationResult is (Validated | Error)
 
 primitive Validated
 
-class Error
+class val Error
   let _errors: Array[String val] = _errors.create()
 
   new create(e: (String val | None) = None) =>
@@ -35,7 +35,7 @@ class Error
   fun ref apply(e: String val) =>
     _errors.push(e)
 
-  fun ref errors(): Array[String val] =>
+  fun ref errors(): this->Array[String val] =>
     _errors
 
 interface val Validator[T]
@@ -67,12 +67,14 @@ type MakeLessThan10 is ValidConstructor[U64, LessThan10Validator]
 
 primitive LessThan10Validator is Validator[U64]
   fun apply(i: U64): ValidationResult =>
-    if i < 10 then
-      Validated
-    else
-      let s: String val = i.string() + " isn't less than 10"
-      Error(s)
+    recover val
+      if i < 10 then
+        Validated
+      else
+        let s: String val = i.string() + " isn't less than 10"
+        Error(s)
     end
+  end
 
 actor Main
   new create(env: Env) =>
