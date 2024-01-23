@@ -117,7 +117,7 @@ We don't want to allow error mesages to be changed after validation is done. Bec
 
 ## Validators are not composable
 
-There's no safe way with the Pony type system that I can see to make a Validator composable. You can say for example that `SmallRange` is `GreaterThan5 & LessThan10` and then use a `SmallRange` where one a `LessThan10` is called for.
+There's no safe way with the Pony type system that I can see to make a `Validator` composable. You can say for example that `SmallRange` is `GreaterThan5 & LessThan10` and then use a `SmallRange` where one a `LessThan10` is called for.
 
 # How We Teach This
 
