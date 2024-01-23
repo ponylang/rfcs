@@ -125,7 +125,7 @@ There's a few areas of teaching. One, the package documentation should have a co
 
 Additionally, each "class" in the package should have documentation as well as each method.
 
-Finally, I think it makes sense to add a Pony Pattern that highlites constrained types (under a domain modeling section) and points to usage of this new package.
+Finally, I think it makes sense to add a Pony Pattern that highlights constrained types (under a domain modeling section) and points to usage of this new package.
 
 # How We Test This
 
