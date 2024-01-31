@@ -20,11 +20,11 @@ By providing an approved mechanism in the standard library, we can demonstrate t
 The entire standard library addition can be included in a single file in a new package. The package will be called `constrained_types`.
 
 ```pony
-type ValidationResult is (ValidationSuccess | ValidationErrors)
+type ValidationResult is (ValidationSuccess | ValidationFailure)
 
 primitive ValidationSuccess
 
-class val ValidationErrors
+class val ValidationFailure
   let _errors: Array[String val] = _errors.create()
 
   new create(e: (String val | None) = None) =>
@@ -52,10 +52,10 @@ class val Constrained[T: Any val, F: Validator[T]]
     _value
 
 primitive MakeConstrained[T: Any val, F: Validator[T] val]
-  fun apply(value: T): (Constrained[T, F] | ValidationErrors) =>
+  fun apply(value: T): (Constrained[T, F] | ValidationFailure) =>
     match F(value)
     | ValidationSuccess => Constrained[T, F]._create(value)
-    | let e: ValidationErrors => e
+    | let e: ValidationFailure => e
     end
 ```
 
@@ -72,7 +72,7 @@ primitive LessThan10Validator is Validator[U64]
         ValidationSuccess
       else
         let s: String val = i.string() + " isn't less than 10"
-        ValidationErrors(s)
+        ValidationFailure(s)
     end
   end
 
@@ -81,7 +81,7 @@ actor Main
     let prints = MakeLessThan10(U64(10))
     match prints
     | let p: LessThan10 => Foo(env.out, p).go()
-    | let e: ValidationErrors =>
+    | let e: ValidationFailure =>
       for s in e.errors().values() do
         env.err.print(s)
       end
@@ -111,9 +111,9 @@ Some key points from the design:
 
 Creating a constrained mutable object is pointless as it could change and go outside of our constraints after it has been validated. All constrained items must be immutable.
 
-## `ValidationErrors` is immutable
+## `ValidationFailure` is immutable
 
-We don't want to allow error mesages to be changed after validation is done. Because everything being validated is sendable, we can wrap an entire validator in a `recover` block and build up error messages on a `ref` `ValidationErrors` before lifting to `val`.
+We don't want to allow error mesages to be changed after validation is done. Because everything being validated is sendable, we can wrap an entire validator in a `recover` block and build up error messages on a `ref` `ValidationFailure` before lifting to `val`.
 
 ## Validators are not composable
 
@@ -143,11 +143,11 @@ Adding this to the standard library means that if we decide we want to change it
 
 Make this a ponylang organization library. I personally want this functionality and will create the library and maintain under the organization if we decided to not include in the standard library.
 
-## `ValidationErrors` collection type
+## `ValidationFailure` collection type
 
-I think that `Array[String val]` is a good error representation that is easy to work with and gives people enough of what they would need without taking on a lot of generics fiddling that might make the library harder to use. That said, we could look at making `ValidationErrors` generic over the error representation and use something like `Array[A]`.
+I think that `Array[String val]` is a good error representation that is easy to work with and gives people enough of what they would need without taking on a lot of generics fiddling that might make the library harder to use. That said, we could look at making `ValidationFailure` generic over the error representation and use something like `Array[A]`.
 
-Additionally, if we thought it would be useful to get back a collection of errors that can be updated by calling code without changing the collection within the `ValidationErrors` type, we could use a persistent collection type like `persistent/Vec`. Using a persistent collection would allow for additional errors to be "added on" later while the collection in `ValidationErrors` would itself remain unchanged.
+Additionally, if we thought it would be useful to get back a collection of errors that can be updated by calling code without changing the collection within the `ValidationFailure` type, we could use a persistent collection type like `persistent/Vec`. Using a persistent collection would allow for additional errors to be "added on" later while the collection in `ValidationFailure` would itself remain unchanged.
 
 # Unresolved questions
 
