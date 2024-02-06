@@ -1,7 +1,7 @@
 - Feature Name: Constrained Types
 - Start Date: 2024-01-22
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/213
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4492
 
 # Summary
 
