@@ -26,7 +26,7 @@ What is a bugfix?
 
 Bugfixes do not have to go through the RFC process. The definition of "bugfix" is still evolving. Some things we consider to be bug fixes:
 
-   - Fixing performance issues that are found in existing implementations. 
+   - Fixing performance issues that are found in existing implementations.
    - Principal of least surprise bugs. Sometimes, we design APIs that surprise the user and don't operate as they would expect. We consider addressing these to fall under the category of "bugfix".
 
 As we move forward, we will add more rules to our list of "items that don't need an RFC". If there is doubt about whether a change/addition requires an RFC, the issue will be resolved by a quorum vote of active committers to the project.
@@ -54,11 +54,11 @@ In short, to get a major feature added to Pony, one must first get the RFC merge
 * Fill in the RFC. Put care into the details: RFCs that do not present convincing motivation, demonstrate understanding of the impact of the design, or are disingenuous about the drawbacks or alternatives tend to be poorly-received.
 * Submit a pull request. As a pull request the RFC will receive design feedback from the larger community, and the author should be prepared to revise it in response.
 * Build consensus and integrate feedback. RFCs that have broad support are much
-more likely to make progress than those that don't receive any comments. 
+more likely to make progress than those that don't receive any comments.
 * We may request that the author and/or relevant stakeholders to get together to discuss the issues in greater detail.
 * The Pony committers will discuss the RFC PR, as much as possible in the comment thread of the PR itself. Offline discussion will be summarized on the PR comment thread.
 * You can make edits, big and small, to the RFC to clarify or change the design, but make changes as new commits to the PR, and leave a comment on the PR explaining your changes. Specifically, do not squash or rebase commits after they are visible on the PR.
-* Once both proponents and opponents have clarified and defended positions and the conversation has settled, the RFC will enter its *final comment period* (FCP). This is a final opportunity for the community to comment on the PR and is a reminder for all committers to be aware of the RFC. It is up to the author of the RFC to decide when the RFC officially enters the *final comment period*. Once they have indicated to repository maintainers that they wish for the RFC to move into the *final comment period*, the *final comment period* tag will be added to PR and an email with information about the PR will be sent to the pony+dev@groups.io development mailing list.
+* Once both proponents and opponents have clarified and defended positions and the conversation has settled, the RFC will enter its *final comment period* (FCP). This is a final opportunity for the community to comment on the PR and is a reminder for all committers to be aware of the RFC. It is up to the author of the RFC to decide when the RFC officially enters the *final comment period*. Once they have indicated to repository maintainers that they wish for the RFC to move into the *final comment period*, the *final comment period* tag will be added to PR and a notification of the change in status will appear in the next issue of the Pony weekly newsletter "Last Week in Pony".
 * The FCP lasts one week. It may be extended if consensus between committers cannot be reached. At the end of the FCP,  the committers will either accept the RFC by merging the pull request, assigning the RFC a number (corresponding to the pull request number), at which point the RFC is 'active', or reject it by closing the pull request. Currently, consensus means a quorum of active core developers agree to adopt the RFC in principle.
 
 ## The RFC life-cycle
@@ -69,7 +69,7 @@ Furthermore, the fact that a given RFC has been accepted and is 'active' implies
 
 Modifications to active RFC's can be done in follow-up PR's. We strive to write each RFC in a manner that it will reflect the final design of the feature; but the nature of the process means that we cannot expect every merged RFC to actually reflect what the end result will be at the time of the next major release.
 
-In general, once accepted, RFCs should not be substantially changed. Only very minor changes should be submitted as amendments. More substantial changes should be new RFCs, with a note added to the original RFC. Exactly what counts as a "very minor change" is up to the committers to decide. 
+In general, once accepted, RFCs should not be substantially changed. Only very minor changes should be submitted as amendments. More substantial changes should be new RFCs, with a note added to the original RFC. Exactly what counts as a "very minor change" is up to the committers to decide.
 
 ## Reviewing RFC's
 
