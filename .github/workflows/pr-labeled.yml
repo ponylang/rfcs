@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check to see if LWIP update is needed
     container:
-      image: ponylang/shared-docker-ci-release:20191107
+      image: ponylang/shared-docker-ci-release-a-library:release
     steps:
       - uses: actions/checkout@v2
       - run: bash .ci-scripts/pr-label.bash
