@@ -31,7 +31,7 @@ fun rfind(s: String box, offset: ISize = -1, nth: USize = 0): USize ?
 
 # How We Teach This
 
-N/A
+Through the standard library documentation and the associated release notes.
 
 # How We Test This
 
@@ -47,4 +47,4 @@ Keep the existing method signature to avoid breaking changes introduced by this 
 
 # Unresolved questions
 
-N/A
+None at this time.
