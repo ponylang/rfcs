@@ -35,7 +35,7 @@ Through the standard library documentation and the associated release notes.
 
 # How We Test This
 
-Standard CI and the compiler should identify most areas that need to be addressed. Additionally, any documentation, code examples, and guides should be reviewed and updated to reflect the new behavior.
+Standard CI and the compiler should identify any additional code areas that are needed. Sean T. Allen did a review of the tutorial, pony patterns, and the website and found no changes that would be needed to reflect the new behavior.
 
 # Drawbacks
 
