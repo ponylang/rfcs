@@ -1,6 +1,6 @@
 - Feature Name: string_find_usize
 - Start Date: 2024-12-09
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/216
 - Pony Issue: (leave this empty)
 
 # Summary
