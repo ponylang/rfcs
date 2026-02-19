@@ -21,6 +21,8 @@ It takes lessons learned from Matthias' immutable-json. From Patrocles' jay. Fro
 
 # Detailed design
 
+https://github.com/ponylang/ponyc/issues/4833 needs to be merged before this RFC happens and JSONNull changed to None.
+ 
 ## json-ng
 
 From https://github.com/ponylang/json-ng we will move the following into the ponyc repo.
@@ -34,7 +36,15 @@ Additionally:
 - Add a README.md to `examples/json`
 - Add a .gitignore to `examples/json`
 
+Any references to `json-ng` in anything that is moving will be changed to `json`.
+
 Finally, the json-ng repository will have its README updated to note that it has been included in the standard library and the repo will be archived.
+
+## iregex
+
+The json-ng library contains a private iregex library use to support the JSONPath functionality. We will make the iregex functionality public and include it in the standard library.
+
+The new json library will need to be updated to use the now public iregex. The private iregex implementation will have been moved at this point.
 
 ## ponylang/json
 
@@ -44,7 +54,7 @@ ponylang/json should have its README updated to point to the new json library in
 
 The inclusion will be announced via Last Week in Pony.
 
-Users will be able to learn to use via the documentation that is part of json-ng. There's reasonably extension docstrings along with the example that should be able to get any experienced Pony programmer going.
+Users will be able to learn to use via the documentation that is part of json-ng. There's reasonably extensive docstrings along with the example that should be able to get any experienced Pony programmer going.
 
 # How We Test This
 
@@ -58,10 +68,6 @@ I don't see drawbacks here. I think json-ng combines the best of what folks have
 
 We could design a different library. We already decided when we moved pony-lsp into ponyc that we were going to include a JSON library in the standard library. The question now is, is this the right one?
 
-Assuming we go forward with this RFC, we should consider extracting the IRegex library that is private to json-ng into a package that can live as its own package in the standard library. This would provide basic regex capabilities in the standard library without any dependencies on external libraries.
-
-Lastly, we should discuss https://github.com/ponylang/ponyc/issues/4833 and if we want to address that. If we do, there would be a small change to json-ng that ideally, we want to do before it is moved into the standard library. At the moment, it has a JsonNull type that could be swapped out for None. We can't use None at the moment as it conflicts with the None used in the persistent HashMap.
-
 # Unresolved questions
 
-Should IRegex support remain private to json-ng or should it be extracted to its own package after json-ng is incorporated into the standard library.
+None
