@@ -60,13 +60,12 @@ actor SignalHandler is AsioEventNotify
     Create a signal handler.
     """
 
-  be raise() =>
+  be raise(auth: SignalAuth) =>
     """
-    Raise the signal. No additional auth is required because the
-    capability was already verified when this handler was created.
+    Raise the signal.
     """
 
-  be dispose() =>
+  be dispose(auth: SignalAuth) =>
     """
     Dispose of the signal handler, unsubscribing from the signal.
     """
@@ -77,7 +76,7 @@ The key changes:
 - `auth: SignalAuth` is now the first parameter to the constructor.
 - The runtime maintains a list of subscribers for each signal number. When a signal arrives, all subscribers are notified with the signal count. The order of notification is undefined.
 - `dispose()` removes this handler from the subscriber list. This is important because the signal dispatch mechanism holds a reference to each subscriber — without explicit disposal, handlers will never be garbage collected.
-- `raise()` does not require a separate auth parameter because the capability was already verified at construction time.
+- `raise()` and `dispose()` both require `SignalAuth` because any actor with a reference to the handler can send these messages — auth gates the operations themselves, not just construction.
 
 ## `SignalNotify` interface
 
