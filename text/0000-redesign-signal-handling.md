@@ -5,7 +5,7 @@
 
 # Summary
 
-Redesign signal handling to use a centralized dispatch mechanism with capability security and support for multiple subscribers per signal. The current implementation has inconsistent cross-platform behavior and lacks the auth requirements that other I/O primitives in the standard library have.
+Redesign signal handling to use a centralized dispatch mechanism with capability security, validated signal types, and support for multiple subscribers per signal. The current implementation has inconsistent cross-platform behavior, lacks the auth requirements that other I/O primitives in the standard library have, and allows registration of handlers for fatal signals that cannot be meaningfully handled.
 
 # Motivation
 
@@ -33,9 +33,71 @@ primitive SignalAuth
 
 `SignalAuth` is derived directly from `AmbientAuth`. There is no intermediate `NetAuth`-style grouping — signals are a distinct resource category.
 
+## Validated signal type: `ValidSignal`
+
+A constrained type that only permits handleable signals. Fatal signals (SIGILL, SIGTRAP, SIGABRT, SIGFPE, SIGBUS, SIGSEGV) and uncatchable signals (SIGKILL, SIGSTOP) are rejected by the validator.
+
+```pony
+use "constrained_types"
+
+primitive SignalValidator is Validator[U32]
+  """
+  Validates that a signal number is handleable via the ASIO mechanism.
+  Only signals that can be safely caught and dispatched to Pony actors
+  are accepted. Fatal and uncatchable signals are rejected.
+  """
+  fun apply(sig: U32): ValidationResult =>
+    if _is_handleable(sig) then
+      ValidationSuccess
+    else
+      ValidationFailure(sig.string() + " is not a handleable signal")
+    end
+
+  fun _is_handleable(sig: U32): Bool =>
+    // Whitelist: only signals that can be meaningfully handled.
+    // Each branch covers the handleable signals for that platform.
+    ifdef bsd or osx then
+      (sig == Sig.hup()) or (sig == Sig.int()) or (sig == Sig.quit())
+        or (sig == Sig.emt()) or (sig == Sig.pipe()) or (sig == Sig.alrm())
+        or (sig == Sig.term()) or (sig == Sig.urg()) or (sig == Sig.tstp())
+        or (sig == Sig.cont()) or (sig == Sig.chld()) or (sig == Sig.ttin())
+        or (sig == Sig.ttou()) or (sig == Sig.io()) or (sig == Sig.xcpu())
+        or (sig == Sig.xfsz()) or (sig == Sig.vtalrm()) or (sig == Sig.prof())
+        or (sig == Sig.winch()) or (sig == Sig.info()) or (sig == Sig.usr1())
+        or (sig == Sig.usr2()) or (sig == Sig.sys())
+        or _is_rt(sig)
+    elseif linux then
+      (sig == Sig.hup()) or (sig == Sig.int()) or (sig == Sig.quit())
+        or (sig == Sig.pipe()) or (sig == Sig.alrm()) or (sig == Sig.term())
+        or (sig == Sig.urg()) or (sig == Sig.stkflt()) or (sig == Sig.tstp())
+        or (sig == Sig.cont()) or (sig == Sig.chld()) or (sig == Sig.ttin())
+        or (sig == Sig.ttou()) or (sig == Sig.io()) or (sig == Sig.xcpu())
+        or (sig == Sig.xfsz()) or (sig == Sig.vtalrm()) or (sig == Sig.prof())
+        or (sig == Sig.winch()) or (sig == Sig.pwr()) or (sig == Sig.usr1())
+        or (sig == Sig.usr2()) or (sig == Sig.sys())
+        or _is_rt(sig)
+    else
+      false
+    end
+
+  fun _is_rt(sig: U32): Bool =>
+    ifdef bsd then
+      (sig >= 65) and (sig <= 126)
+    elseif linux then
+      (sig >= 32) and (sig <= 64)
+    else
+      false
+    end
+
+type ValidSignal is Constrained[U32, SignalValidator]
+type MakeValidSignal is MakeConstrained[U32, SignalValidator]
+```
+
+The validator uses a whitelist — only known handleable signals pass validation. Unknown or arbitrary signal numbers are rejected by default. Each platform branch lists exactly the signals from the `Sig` primitive that are safe to handle via the ASIO mechanism. Real-time signals are validated by range.
+
 ## Updated `SignalHandler`
 
-The `SignalHandler` actor gains a required `SignalAuth` parameter:
+The `SignalHandler` actor gains required `SignalAuth` and `ValidSignal` parameters:
 
 ```pony
 actor SignalHandler is AsioEventNotify
@@ -53,7 +115,7 @@ actor SignalHandler is AsioEventNotify
   to garbage collect the handler.
   """
 
-  new create(auth: SignalAuth, notify: SignalNotify iso, sig: U32,
+  new create(auth: SignalAuth, notify: SignalNotify iso, sig: ValidSignal,
     wait: Bool = false)
   =>
     """
@@ -74,6 +136,7 @@ actor SignalHandler is AsioEventNotify
 The key changes:
 
 - `auth: SignalAuth` is now the first parameter to the constructor.
+- `sig` is now `ValidSignal` instead of `U32`. Fatal and uncatchable signals cannot be registered — the constrained type prevents construction with those signal numbers.
 - The runtime maintains a list of subscribers for each signal number. When a signal arrives, all subscribers are notified with the signal count. The order of notification is undefined.
 - `dispose()` removes this handler from the subscriber list. This is important because the signal dispatch mechanism holds a reference to each subscriber — without explicit disposal, handlers will never be garbage collected.
 - `raise()` and `dispose()` both require `SignalAuth` because any actor with a reference to the handler can send these messages — auth gates the operations themselves, not just construction.
@@ -136,15 +199,22 @@ The IOCP backend on Windows has signal handling support using the C `signal()` f
 ## Usage example
 
 ```pony
+use "constrained_types"
 use "signals"
 
 actor Main
   new create(env: Env) =>
     let auth = SignalAuth(env.root)
 
-    // Multiple handlers for the same signal
-    SignalHandler(auth, LogHandler(env.out), Sig.term())
-    SignalHandler(auth, CleanupHandler(env.out), Sig.term() where wait = true)
+    // Validate the signal number at the boundary
+    match MakeValidSignal(Sig.term())
+    | let sig: ValidSignal =>
+      // Multiple handlers for the same signal
+      SignalHandler(auth, LogHandler(env.out), sig)
+      SignalHandler(auth, CleanupHandler(env.out), sig where wait = true)
+    | let err: ValidationFailure =>
+      env.err.print("Cannot handle this signal")
+    end
 
 class LogHandler is SignalNotify
   let _out: OutStream
@@ -171,22 +241,28 @@ class CleanupHandler is SignalNotify
     _out.print("Cleanup handler disposed")
 ```
 
-## Fatal signals
+## Fatal and uncatchable signals
 
-Fatal signals (SIGFPE, SIGILL, SIGSEGV, SIGABRT) are explicitly out of scope for this RFC. The ASIO event mechanism is not suitable for handling fatal signals because the process may be in an undefined state when they fire. Users who need to handle fatal signals should use FFI to register C-level signal handlers directly.
+Fatal signals (SIGILL, SIGTRAP, SIGABRT, SIGFPE, SIGBUS, SIGSEGV) and uncatchable signals (SIGKILL, SIGSTOP) cannot be registered with `SignalHandler`. The `SignalValidator` rejects them at the type boundary — a `ValidSignal` can never contain one of these signal numbers.
+
+The ASIO event mechanism is not suitable for fatal signals because the process may be in an undefined state when they fire. SIGKILL and SIGSTOP cannot be caught at the OS level. Users who need to handle fatal signals should use FFI to register C-level signal handlers directly.
+
+Note that `SignalRaise` still accepts raw `U32` values and does not use `ValidSignal`. Raising a fatal signal (e.g., SIGABRT to intentionally crash) is a legitimate operation — it is only *handling* them via the ASIO mechanism that is prevented.
 
 # How We Teach This
 
 The `signals` package documentation should include:
 
-- A package-level docstring explaining the subscription model and the requirement for auth, with a complete usage example.
+- A package-level docstring explaining the subscription model, the requirement for auth, and the use of `ValidSignal` to prevent registration of fatal signals, with a complete usage example.
 - Docstrings on `SignalHandler` explaining multi-subscriber semantics and the importance of disposing handlers.
 - Docstrings on `SignalAuth` explaining its role in capability security, consistent with how `TCPAuth`/`UDPAuth` are documented.
+- Docstrings on `SignalValidator` explaining which signals are accepted and why fatal and uncatchable signals are rejected.
 
-The release notes for the version containing this change should call out the breaking change to `SignalHandler` and `SignalRaise` constructors and provide a migration example showing the before and after.
+The release notes for the version containing this change should call out the breaking changes to `SignalHandler` and `SignalRaise` and provide a migration example showing the before and after.
 
 # How We Test This
 
+- Validator tests: verify that all handleable signals pass `SignalValidator` and that all fatal signals (ill, trap, abrt, fpe, bus, segv) and uncatchable signals (kill, stop) are rejected.
 - Unit tests for basic subscribe and receive: register a handler, raise the signal, verify the handler is called.
 - Unit tests for multiple handlers: register two handlers for the same signal, raise the signal, verify both are called.
 - Unit tests for dispose: register a handler, dispose it, raise the signal, verify the handler is not called.
@@ -195,7 +271,7 @@ The release notes for the version containing this change should call out the bre
 
 # Drawbacks
 
-This is a breaking change. All existing code that creates a `SignalHandler` or calls `SignalRaise` will need to be updated to pass a `SignalAuth` parameter. However, the migration is mechanical — add `SignalAuth(env.root)` at the point where signals are set up and thread it through.
+This is a breaking change. All existing code that creates a `SignalHandler` or calls `SignalRaise` will need to be updated to pass a `SignalAuth` parameter, and `SignalHandler` callers must also validate the signal number through `MakeValidSignal`. The auth migration is mechanical — add `SignalAuth(env.root)` at the point where signals are set up. The `ValidSignal` requirement adds a match expression at the call site, but this is a one-time cost at the boundary where signal numbers enter the system.
 
 # Alternatives
 
@@ -211,4 +287,4 @@ We could keep the existing single-handler-per-signal behavior and simply documen
 
 # Unresolved questions
 
-None at this time. The core design decisions — centralized dispatch, auth requirement, multiple subscribers, undefined notification order, fatal signals out of scope — have been discussed and agreed upon. Implementation details such as the internal data structure for subscriber lists are left to the implementer.
+None at this time. The core design decisions — centralized dispatch, auth requirement, validated signal types, multiple subscribers, undefined notification order, fatal signal prevention — have been discussed and agreed upon. Implementation details such as the internal data structure for subscriber lists are left to the implementer.
