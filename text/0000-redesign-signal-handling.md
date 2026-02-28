@@ -188,13 +188,27 @@ The `Sig` primitive is unchanged. It provides portable signal number constants a
 
 ## Runtime changes
 
-The ASIO subsystem needs to change how it tracks signal subscriptions. Currently, each signal maps to at most one ASIO event. The new design maintains a list of ASIO events per signal number. When a signal fires, the runtime iterates over the list and notifies all subscribers. When a handler is disposed, its event is removed from the list. When the last subscriber for a signal is removed, the signal disposition is restored to the default OS behavior.
+### Current architecture
 
-The order of notification across subscribers is explicitly undefined. This avoids creating implicit dependencies between handlers and gives the runtime freedom to use whatever data structure is most efficient.
+Each ASIO backend stores at most one `asio_event_t*` per signal number:
 
-The subscriber list must be safe to read from signal handler context. The current implementation uses atomic operations on a single-slot array; a multi-subscriber list will need equivalent care. The specific synchronization strategy is left to the implementer.
+- **epoll (Linux):** `PONY_ATOMIC(asio_event_t*) sighandlers[128]` — a fixed-size array indexed by signal number. Registration uses `atomic_compare_exchange_strong` with acquire-release ordering; if the slot is non-NULL, the registration silently fails. Each registered signal gets its own `eventfd`. The C signal handler does `eventfd_write(ev->fd, 1)` to notify the ASIO thread, which reads the accumulated count and sends an `asio_msg_t` to the owning actor.
+- **kqueue (macOS/BSD):** No signal handler array. Each signal is registered as a `EVFILT_SIGNAL` kevent with the subscriber's `asio_event_t*` stored as `udata`. Using `EV_ADD` with the same signal identifier replaces the `udata`, so the last registration wins. The kernel delivers the signal count directly via the kevent's `data` field.
+- **IOCP (Windows):** `asio_event_t* sighandlers[32]` — a non-atomic array, safe because all modifications are serialized through the ASIO thread's request queue (`ASIO_SET_SIGNAL` / `ASIO_CANCEL_SIGNAL`). The C signal handler calls `pony_asio_event_send` directly with a count of 1. Windows `signal()` is one-shot, so the handler must re-register itself on each invocation.
 
-The IOCP backend on Windows has signal handling support using the C `signal()` function. The multi-subscriber changes described here would need to be applied to the IOCP backend as well, following the same design.
+### Required changes
+
+The single-slot-per-signal design must change to a list of subscribers per signal number. The key constraint is that the C signal handler runs in signal context (async-signal-safe calls only), so the fan-out to multiple subscribers should happen in the ASIO thread, not in the signal handler itself.
+
+**Signal handler (C level):** The C signal handler's job stays minimal — it signals that a particular signal number fired. On Linux, it writes to a single eventfd per signal number (not per subscriber). On macOS, the kernel delivers the kevent. On Windows, it posts to the IOCP completion port. The C signal handler does not need to know how many subscribers exist.
+
+**Subscriber list:** Each backend replaces its single `asio_event_t*` per signal with a list of `asio_event_t*` entries. On Linux, the `sighandlers` array changes from `PONY_ATOMIC(asio_event_t*)` to a structure containing an eventfd and a list of subscribers. The eventfd is shared across all subscribers for the same signal — the C signal handler writes to it once, and the ASIO thread fans out.
+
+**Fan-out in the ASIO thread:** When the ASIO thread detects that a signal fired (via epoll readiness on the eventfd, a kevent with `EVFILT_SIGNAL`, or an IOCP completion), it reads the signal count and iterates the subscriber list for that signal, calling `pony_asio_event_send(ev, ASIO_SIGNAL, count)` for each subscriber. The order of iteration is undefined.
+
+**Registration and unregistration:** To avoid thread-safety complexity with list operations, signal registration and unregistration should be serialized through the ASIO thread's request queue on all backends. The IOCP backend already works this way (`ASIO_SET_SIGNAL` / `ASIO_CANCEL_SIGNAL` requests processed in the ASIO thread). The epoll and kqueue backends currently handle signal registration inline from the calling thread — they should adopt the same queued approach for consistency and safety.
+
+When the first subscriber for a signal registers, the ASIO thread installs the OS signal handler and creates the notification channel (eventfd on Linux, kevent on macOS, `signal()` on Windows). When the last subscriber for a signal unsubscribes, the ASIO thread restores `SIG_DFL` and tears down the notification channel.
 
 ## Usage example
 
