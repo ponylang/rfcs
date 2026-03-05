@@ -1,7 +1,7 @@
 - Feature Name: json-ng
 - Start Date: 2026-02-14
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/219
+- Pony Issue: https://github.com/ponylang/ponyc/issues/4924
 
 # Summary
 
