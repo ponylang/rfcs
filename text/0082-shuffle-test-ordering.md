@@ -1,7 +1,7 @@
 - Feature Name: shuffle_test_ordering
 - Start Date: 2026-03-16
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/224
+- Pony Issue: https://github.com/ponylang/ponyc/issues/5075
 
 # Summary
 
