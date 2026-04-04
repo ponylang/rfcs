@@ -5,7 +5,7 @@
 
 # Summary
 
-Adapt the stdlib [`json` package][json-package] in order to add means to encode arbitrary [`JsonValue`][JsonValue]s into `String` or `Array[U8]`. And while we are at it, provide a matching API for decode `String` or `Array[U8]` into [`JsonValue`] for completeness.
+Adapt the stdlib [`json` package][json-package] in order to add a `JsonPrinter` primitive exposing functions to encode arbitrary [`JsonValue`][JsonValue]s into `String iso^`, in a similar manner as the existing `JsonParser` for parsing [`JsonValue`][JsonValue] from String.
 
 # Motivation
 
@@ -17,49 +17,44 @@ This package needs a consistent and convenient way to encode and decode json byt
 
 # Detailed design
 
-This PR suggests adding a new primitive called `Json`:
+This PR suggests adding a new primitive called `JsonPrinter`:
 
 ```pony
-primitive Json
-  fun print(value: JsonValue, pretty: Bool = false): String =>
-    if pretty then
-      _JsonPrint.pretty(value)
-    else
-      _JsonPrint.compact(value)
-    end
+primitive JsonPrinter
+  """
+  Serialize any `JsonValue` to a JSON string.
+  """
+  fun print(value: JsonValue): String iso^ =>
+    """Compact JSON serialization of any `JsonValue`."""
+    _JsonPrint.compact(value)
 
-  fun parse(source: String): (JsonValue | JsonParseError) =>
-    JsonParser.parse(source)
+  fun pretty(value: JsonValue, indent: String = "  "): String iso^ =>
+    """Pretty-printed JSON serialization of any `JsonValue`."""
+    _JsonPrint.pretty(value, indent)
 ```
 
 All the bits and pieces for encoding arbitrary values are there already, they just aren't exposed. `_JsonPrint` is private.
 
-The naming of the functions is not settled yet. The dual of `encode` and `decode` would be ideal, but the `JsonParser` already returns `JsonParseError`, hence `parse` makes more sense for the decoding step, but it lacks a proper dual name for the process of decoding. For further discussion of the naming, see [Alternatives](#alternatives).
-
-Proper docstrings are missing, obviously. They should explain what can be expected, under which conditions errors are raised etc. and also list usage examples. They were left out for brevity.
-
-We might want to remove the `JsonObject.string()` and `JsonArray.string()` (and `.string_pretty()`) functions. As all [JsonValue][JsonValue] members implement `ToString` and thus all have a `.string()` method, but don't all produce valid JSON, this might be a source of confusion. This would also shrink the amount of different ways to achieve one thing to one: `Json.print()`.
-
-The `JsonParser` primitive should also be removed and the contents of its `parse()` method should be moved to the `Json.parse()` method, to have only one way of decoding a string as JSON.
+To avoid confusion and misuse, the methods `JsonObject.string()` and `JsonArray.string()` (and `.string_pretty()`) are being renamed to `JsonObject.print()`, `JsonArray.print()` and `JsonObject.pretty_print()`, `JsonArray.pretty_print()`. This has the side-effect of both `JsonObject` and `JsonArray` and thus `JsonValue` not implementing `Stringable` anymore.
 
 # How We Teach This
 
-The package documentation of the `json` package should show usage examples of these functions most prominently and then show all other components of the crate, like `JsonValue`, `JsonPath` or `JsonNav`.
+The package documentation of the `json` package should show usage examples of the new `JsonPrinter` functions as prominently as `JsonParser` usage and then show all other components of the crate, like `JsonValue`, `JsonPath` or `JsonNav`.
 
-The intend of this primitive is to expose an easy-to-use interface for turning strings into structures JSON values and vice versa. This should answer the question of how to get from bytes or strings from the network or from files to structured JSON that can be analyzed (Pass the string to `Json.parse()`), and how to serialize Pony objects and data-structures as JSON (build a `JsonValue`, then pass it those `Json.print()`).
+The intend of this primitive is to expose an easy-to-use interface for turning JSON values into strings as a dual to `JsonParser`. This should also answer the question of how to serialize Pony objects and data-structures as JSON (build a `JsonValue`, then pass it to `JsonPrinter.print(value)`).
 
 
 # How We Test This
 
-Additional property-based tests will be added for encoding arbitrary [JsonValue][JsonValue]s via `Json.encode(...)` and parsing them again via `Json.parse(...)` and ensuring equivalence of the initial values and the ones produces by the roundtrip.
+Additional property-based tests will be added for encoding arbitrary [JsonValue][JsonValue]s via `JsonPrinter.print(...)` and parsing them again via `JsonParser.parse(...)` and ensuring equivalence of the initial values and the ones produces by the roundtrip.
 
 # Drawbacks
 
-While exposing a way of printing/encoding/serializing [JsonValue][JsonValue]s is necessary, removing `JsonParser` and `JsonObject.string` etc. might not be. These changes are breaking.
+Renaming `.string()` and `.string_pretty()` on `JsonObject` and `JsonArray` to `.print()` and `.pretty_print()` is a breaking change. It will cause libraries and applications using the `json` package to be changed in order to be compiled with the ponyc version containing this change.
 
 # Alternatives
 
-Function naming alternatives:
+Function naming alternatives for parsing/printing:
 
 - `parse` / `print` - this would follow the existing naming in the package the closest, hence considered as the best candidate.
 - `encode` / `decode` - this pair would make sense if the decoding would not expose `JsonParseError`. It feels inconsistent to create a `ParseError` from a `decode` function call.
@@ -68,8 +63,7 @@ Function naming alternatives:
 
 # Unresolved questions
 
-- Should a partial version of parsing be also exposed?
-- Should `Json.print()` expose finer controls than just the `pretty` flag?
+- Should the options, like pretty-printing or not, be exposed as optional parameters to `JsonPrinter.print()` instead of exposing `.print()` and `pretty()`?
 
 [json-package]: https://github.com/ponylang/ponyc/tree/main/packages/json
 [JsonValue]: https://github.com/ponylang/ponyc/blob/main/packages/json/json.pony#L243
