@@ -59,11 +59,10 @@ Compose the issue:
 
 - **Title**: `RFC #NN: <merged PR title>` — e.g., `RFC #82: Add --shuffle option to PonyTest`.
 - **Body**: the RFC's `# Summary` section verbatim, followed by a blank line and the final RFC URL: `https://github.com/ponylang/rfcs/blob/main/text/NNNN-<slug>.md`. The link will not resolve until the rename commit is pushed; that is fine — GitHub does not validate.
-- **Assignee**: the invoking user, via `--assignee @me`.
 
-Show the composed title, body, and assignee. Wait for confirmation.
+Show the composed title and body. Wait for confirmation.
 
-Create with `gh issue create --repo ponylang/ponyc --assignee @me --title "<title>" --body "<body>"`. Capture the new issue URL from the command output.
+Create with `gh issue create --repo ponylang/ponyc --title "<title>" --body "<body>"`. Capture the new issue URL from the command output.
 
 ### 4. Rename and update the file
 
