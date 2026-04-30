@@ -1,7 +1,7 @@
 - Feature Name: remove-serialise-package-from-stdlib
 - Start Date: 2026-03-27
 - RFC PR: https://github.com/ponylang/rfcs/pull/225
-- Pony Issue: https://github.com/ponylang/ponyc/issues/
+- Pony Issue: https://github.com/ponylang/ponyc/issues/5280
 
 # Summary
 
