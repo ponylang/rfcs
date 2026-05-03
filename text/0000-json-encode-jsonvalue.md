@@ -61,6 +61,8 @@ Function naming alternatives for parsing/printing:
 - `serialize` / `deserialize` - these terms are not used anywhere yet in pony, so didn't favor them.
 - `to_string` / `from_string` - The most humble variant of them all, getting along without any fancy terminology.
 
+Note that this RFC only includes `print` in scope, so renaming the `parse` would be out of scope unless we decided to pursue one of the above alternatives for a broader change.
+
 # Unresolved questions
 
 - Should the options, like pretty-printing or not, be exposed as optional parameters to `JsonPrinter.print()` instead of exposing `.print()` and `pretty()`?
