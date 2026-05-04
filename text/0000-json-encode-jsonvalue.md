@@ -26,11 +26,15 @@ primitive JsonPrinter
   """
   fun print(value: JsonValue): String iso^ =>
     """Compact JSON serialization of any `JsonValue`."""
-    _JsonPrint.compact(value)
+    JsonPrinter.print_with_options(value where indent = "", add_newlines = false, add_spaces = false)
 
   fun pretty(value: JsonValue, indent: String = "  "): String iso^ =>
     """Pretty-printed JSON serialization of any `JsonValue`."""
-    _JsonPrint.pretty(value, indent)
+    JsonPrinter.print_with_options(value, indent where add_newlines = true, add_spaces = true)
+
+  fun print_with_options(value: JsonValue, indent: String = "", add_newlines: Bool = false, add_spaces: Bool = false): String iso^ =>
+    """JSON serialization with all possible formatting options exposed. Defaults to compact formatting."""
+    // TBD
 ```
 
 All the bits and pieces for encoding arbitrary values are there already, they just aren't exposed. `_JsonPrint` is private.
@@ -46,7 +50,7 @@ The intend of this primitive is to expose an easy-to-use interface for turning J
 
 # How We Test This
 
-Additional property-based tests will be added for encoding arbitrary [JsonValue][JsonValue]s via `JsonPrinter.print(...)` and parsing them again via `JsonParser.parse(...)` and ensuring equivalence of the initial values and the ones produces by the roundtrip.
+The json package already has print-parse roundtrip tests with arbitrary json values. Those need to be adapted to use the public API. Furthermore several "example"-tests are needed, verifying that printing a concrete `JsonValue` yields an expected valid JSON string (i.e. bools, ints, nulls, floats, strings with values needing escape sequences etc.). Those are there to proof that we don't have a common bug in printing and parsing which makes roundtripping work, but produces invalid JSON.
 
 # Drawbacks
 
@@ -65,7 +69,7 @@ Note that this RFC only includes `print` in scope, so renaming the `parse` would
 
 # Unresolved questions
 
-- Should the options, like pretty-printing or not, be exposed as optional parameters to `JsonPrinter.print()` instead of exposing `.print()` and `pretty()`?
+- Should the options, like pretty-printing or not, be exposed as optional parameters to `JsonPrinter.print()` instead of exposing `.print()` and `.pretty()`?
 
 [json-package]: https://github.com/ponylang/ponyc/tree/main/packages/json
 [JsonValue]: https://github.com/ponylang/ponyc/blob/main/packages/json/json.pony#L243
