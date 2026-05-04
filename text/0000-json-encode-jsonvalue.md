@@ -26,18 +26,14 @@ primitive JsonPrinter
   """
   fun print(value: JsonValue): String iso^ =>
     """Compact JSON serialization of any `JsonValue`."""
-    JsonPrinter.print_with_options(value where indent = "", add_newlines = false, add_spaces = false)
+    _JsonPrint.compact(value)
 
   fun pretty(value: JsonValue, indent: String = "  "): String iso^ =>
     """Pretty-printed JSON serialization of any `JsonValue`."""
-    JsonPrinter.print_with_options(value, indent where add_newlines = true, add_spaces = true)
-
-  fun print_with_options(value: JsonValue, indent: String = "", add_newlines: Bool = false, add_spaces: Bool = false): String iso^ =>
-    """JSON serialization with all possible formatting options exposed. Defaults to compact formatting."""
-    // TBD
+    _JsonPrint.pretty(value, indent)
 ```
 
-All the bits and pieces for encoding arbitrary values are there already, they just aren't exposed. `_JsonPrint` is private.
+All the bits and pieces for encoding arbitrary values are there already, they just aren't exposed: `_JsonPrint` is private.
 
 To avoid confusion and misuse, the methods `JsonObject.string()` and `JsonArray.string()` (and `.string_pretty()`) are being renamed to `JsonObject.print()`, `JsonArray.print()` and `JsonObject.pretty_print()`, `JsonArray.pretty_print()`. This has the side-effect of both `JsonObject` and `JsonArray` and thus `JsonValue` not implementing `Stringable` anymore.
 
@@ -50,7 +46,7 @@ The intend of this primitive is to expose an easy-to-use interface for turning J
 
 # How We Test This
 
-The json package already has print-parse roundtrip tests with arbitrary json values. Those need to be adapted to use the public API. Furthermore several "example"-tests are needed, verifying that printing a concrete `JsonValue` yields an expected valid JSON string (i.e. bools, ints, nulls, floats, strings with values needing escape sequences etc.). Those are there to proof that we don't have a common bug in printing and parsing which makes roundtripping work, but produces invalid JSON.
+The [`json` package][json-package] already has print-parse roundtrip tests with arbitrary json values. Those need to be adapted to use the public API. Furthermore several "example"-tests are needed, verifying that printing a concrete `JsonValue` yields an expected valid JSON string (i.e. bools, ints, nulls, floats, strings with values needing escape sequences etc.). Those are there to proof that we don't have a common bug in printing and parsing which makes roundtripping work, but produces invalid JSON.
 
 # Drawbacks
 
@@ -58,7 +54,7 @@ Renaming `.string()` and `.string_pretty()` on `JsonObject` and `JsonArray` to `
 
 # Alternatives
 
-Function naming alternatives for parsing/printing:
+## Function naming alternatives
 
 - `parse` / `print` - this would follow the existing naming in the package the closest, hence considered as the best candidate.
 - `encode` / `decode` - this pair would make sense if the decoding would not expose `JsonParseError`. It feels inconsistent to create a `ParseError` from a `decode` function call.
@@ -67,9 +63,25 @@ Function naming alternatives for parsing/printing:
 
 Note that this RFC only includes `print` in scope, so renaming the `parse` would be out of scope unless we decided to pursue one of the above alternatives for a broader change.
 
+## Removing pretty
+
+It has also been considered to condense both `pretty` and `print` into only one exposed function `JsonPrinter.print()`, similar to `JsonPrinter.print_with_options()` below. But this makes it cumbersome to enable pretty-printing: All parameters need to be examined and understood to configure a printing mode which is equivalent to what `.pretty()` would do.
+
+```pony
+primitive JsonPrinter
+  fun print_with_options(value: JsonValue, indent: String = "", add_newlines: Bool = false, add_spaces: Bool = false): String iso^ =>
+    """JSON serialization with all possible formatting options exposed. Defaults to compact formatting."""
+    // TBD
+```
+
+## Exposing verbose `print_with_options` as third method of JsonPrinter
+
+Another alternative is to expose `print_with_options` above as third function and define `.print()` and `.pretty()` as aliases with arguments provided that are equivalent to their current formatting.
+This would allow for greater control for users, if both `.print()` and `.pretty()` formatting do not fit their needs. This was not suggested as the use-case for further control was considered way too exotic.
+
 # Unresolved questions
 
-- Should the options, like pretty-printing or not, be exposed as optional parameters to `JsonPrinter.print()` instead of exposing `.print()` and `.pretty()`?
+None.
 
 [json-package]: https://github.com/ponylang/ponyc/tree/main/packages/json
 [JsonValue]: https://github.com/ponylang/ponyc/blob/main/packages/json/json.pony#L243
