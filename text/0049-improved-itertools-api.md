@@ -1,5 +1,5 @@
 - Feature Name: improved-itertools-api
-- Start Date: 2017-08-8
+- Start Date: 2017-08-08
 - RFC PR: https://github.com/ponylang/rfcs/pull/101
 - Pony Issue: https://github.com/ponylang/ponyc/issues/2189
 

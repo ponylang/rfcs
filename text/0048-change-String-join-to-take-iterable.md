@@ -1,5 +1,5 @@
 - Feature Name: change-string-join-to-take-iterable
-- Start Date: 2017/07/25
+- Start Date: 2017-07-25
 - RFC PR: https://github.com/ponylang/rfcs/pull/98
 - Pony Issue: https://github.com/ponylang/ponyc/issues/2148
 
