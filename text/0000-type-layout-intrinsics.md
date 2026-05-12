@@ -7,7 +7,7 @@
 
 Add a small, cohesive set of compiler intrinsics that expose the in-memory
 layout of types: store size, array stride, alignment, and field offsets.
-These are exposed as methods on a new `TypeInfo` primitive and are direct
+These are exposed as methods on a new `ABIMemoryLayout` primitive and are direct
 projections of information LLVM already computes during code generation.
 
 # Motivation
@@ -42,16 +42,16 @@ build upon.
 
 # Detailed design
 
-A new primitive `TypeInfo` is added to the standard library. It exposes
+A new primitive `ABIMemoryLayout` is added to the standard library. It exposes
 four methods, all `compile_intrinsic`. Each takes the type of interest as
 a type parameter.
 
 ```pony
-primitive TypeInfo
-  fun tag size_of[T](): USize        => compile_intrinsic
-  fun tag stride_of[T](): USize      => compile_intrinsic
-  fun tag align_of[T](): USize       => compile_intrinsic
-  fun tag offset_of[T](field: String): USize => compile_intrinsic
+primitive ABIMemoryLayout
+  fun tag size_of[T](): USize => compile_intrinsic
+  fun tag stride_of[T](): USize => compile_intrinsic
+  fun tag align_of[T](): USize => compile_intrinsic
+  fun tag offsets_of[T](): Array[(String, USize)] val => compile_intrinsic
 ```
 
 Each intrinsic maps to a specific LLVM query. Where two LLVM functions
@@ -80,8 +80,8 @@ call `size_of` on that:
 
 ```pony
 let bytes = match cell
-  | let s: String => TypeInfo.size_of[String]()
-  | let n: U64    => TypeInfo.size_of[U64]()
+  | let s: String => ABIMemoryLayout.size_of[String]()
+  | let n: U64    => ABIMemoryLayout.size_of[U64]()
   end
 ```
 
@@ -92,14 +92,14 @@ The same pattern applies to `stride_of` and `align_of`.
 Allocating a buffer to hold `n` packed values:
 
 ```pony
-let buf = @pony_alloc(@pony_ctx(), (TypeInfo.size_of[Header]() * n))
+let buf = @pony_alloc(@pony_ctx(), (ABIMemoryLayout.size_of[Header]() * n))
 ```
 
 Sanity-checking that an FFI-returned buffer is large enough before
 casting:
 
 ```pony
-if returned_bytes < TypeInfo.size_of[CSocketAddr]() then
+if returned_bytes < ABIMemoryLayout.size_of[CSocketAddr]() then
   error
 end
 ```
@@ -108,7 +108,7 @@ Computing the position of a trailing variable-length field in a serial
 format:
 
 ```pony
-let payload_offset = TypeInfo.size_of[FrameHeader]()
+let payload_offset = ABIMemoryLayout.size_of[FrameHeader]()
 ```
 
 ## `stride_of[T]()`
@@ -129,19 +129,19 @@ Computing the address of element `i` in a manually managed contiguous
 buffer:
 
 ```pony
-let p_i = base.offset(TypeInfo.stride_of[Entry]() * i)
+let p_i = base.offset(ABIMemoryLayout.stride_of[Entry]() * i)
 ```
 
 Sizing the backing allocation for an array-style data structure:
 
 ```pony
-let bytes_needed = TypeInfo.stride_of[T]() * capacity
+let bytes_needed = ABIMemoryLayout.stride_of[T]() * capacity
 ```
 
-Round-tripping through a C API that takes `(void*, element_size, count)`:
+Passing element size to a C API that takes `(void*, element_size, count)`:
 
 ```pony
-@write_array(buf, TypeInfo.stride_of[T](), n)
+@write_array(buf, ABIMemoryLayout.stride_of[T](), n)
 ```
 
 ## `align_of[T]()`
@@ -155,7 +155,7 @@ Verifying that a pointer obtained from FFI is suitably aligned before
 casting it to a typed pointer:
 
 ```pony
-if (raw_ptr.usize() % TypeInfo.align_of[Header]()) != 0 then
+if (raw_ptr.usize() % ABIMemoryLayout.align_of[Header]()) != 0 then
   error  // misaligned; reading would be UB on strict-alignment targets
 end
 ```
@@ -165,61 +165,89 @@ the alignment of the type being placed:
 
 ```pony
 fun ref _align_to[T](): USize =>
-  let a = TypeInfo.align_of[T]()
+  let a = ABIMemoryLayout.align_of[T]()
   (_cursor + (a - 1)) and not (a - 1)
 ```
 
 Confirming a buffer is suitable for SIMD or DMA, both of which often
 require stricter alignment than the natural type alignment.
 
-## `offset_of[T](field: String)`
+## `offsets_of[T]()`
 
-The byte offset at which the named field begins within `T`'s layout.
-The `field` argument must be a string literal known at compile time;
-the compiler validates that `T` has a field by that name and rejects
-the call otherwise. Equivalent in spirit to C's `offsetof()` and Rust's
-`core::mem::offset_of!`.
+Returns the complete field table of `T` as an immutable array of
+`(name, byte_offset)` pairs, in declaration order. The compiler
+synthesises this array per type at codegen time; callers iterate it
+or look up a field by name.
 
 `T` must be a struct, class, actor, or tuple. Unions, interfaces, and
-traits are compile-time errors. For tuples, the `field` argument is
-the positional accessor name (`"_1"`, `"_2"`, …) — the same name used
-to access the field in source code. For classes and actors, the
-offset is measured from the start of the heap-allocated object — the
-same anchor as `size_of` — so the type-descriptor pointer occupies
-the first `USize`-sized word and user-declared fields begin after it.
+traits are compile-time errors. For tuples, the names are the
+positional accessor names (`"_1"`, `"_2"`, …) — the same names used
+to access the fields in source code. For classes and actors, offsets
+are measured from the start of the heap-allocated object — the same
+anchor as `size_of` — so the type-descriptor pointer occupies the
+first `USize`-sized word and user-declared fields begin after it.
+
+The returned `Array[(String, USize)] val` is fully immutable and safe
+to share. Both the array itself and the names inside it are `val`.
+The compiler is free to deduplicate the table across call sites for
+the same `T`; callers must not rely on identity.
 
 **Example uses:**
 
-Writing a generic serializer that reads each field of a C-compatible
-struct without naming the fields one by one:
+Inspecting the layout of a type — for documentation, debugging, or
+validating against a hand-derived expected layout for a C struct
+binding:
 
 ```pony
-let off_x = TypeInfo.offset_of[Point]("x")
-let off_y = TypeInfo.offset_of[Point]("y")
-buf.write_at(off_x, p.x)
-buf.write_at(off_y, p.y)
+for (name, off) in ABIMemoryLayout.offsets_of[Point]().values() do
+  Debug("  " + name + " @ +" + off.string())
+end
 ```
 
+Iterating the table is the natural shape when the caller cares about
+*every* field. Going further — copying every field into a buffer, say
+— additionally needs per-field type information, which is out of scope
+for this RFC (see "What these intrinsics do not do").
+
+Looking up a single field by name (the typical `offsetof`-style use)
+with a small helper:
+
+```pony
+fun _offset_of[T](name: String): (USize | None) =>
+  for (n, off) in ABIMemoryLayout.offsets_of[T]().values() do
+    if n == name then return off end
+  end
+  None
+```
+
+The helper returns `(USize | None)` rather than partial-erroring on a
+missing name, so each caller chooses its own failure policy — error,
+log, fall back to a default, or surface the absence in its own return
+type.
+
 Implementing an intrusive data structure (the Linux-kernel
-`container_of` pattern) where a node embedded in a larger struct
+`container_of` pattern), where a node embedded in a larger struct
 recovers the address of its container:
 
 ```pony
-fun container_of[Outer, Inner](inner_ptr: Pointer[Inner]): Pointer[Outer] =>
-  inner_ptr.offset(-TypeInfo.offset_of[Outer]("node").isize())
+fun container_of[Outer, Inner](inner_ptr: Pointer[Inner]): Pointer[Outer] ? =>
+  let off = (_offset_of[Outer]("node") as USize).isize()
+  inner_ptr.offset(-off)
 ```
 
 Crossing an FFI boundary where the C side hands back a pointer to a
 field, not the enclosing struct.
 
-Why a string literal? Pony has no first-class field references and
-no macro system, so a compile-time-validated string is the smallest
-addition. The compiler is already touching field names during type
-checking, so validating the literal against `T`'s field set is
-cheap and gives a clear error message ("type `T` has no field
-`foo`") at the call site. Nested paths (`"inner.field"`) are
-deliberately not supported by this RFC; they can be added later
-without breaking single-name calls.
+Why an array of pairs rather than a per-field accessor taking a
+string? Pony has no first-class field references and no macro
+system. An accessor like `offset_of[T](field: String)` would need
+the compiler to special-case "argument must be a string literal" so
+typos could be rejected at compile time; that is a new category of
+intrinsic-argument handling. Exposing the whole table once and
+letting users look up by name keeps the compiler change small and
+uniform with the other three intrinsics, at the cost of moving the
+"unknown field name" error from compile time to whatever the caller's
+lookup helper does at runtime.
 
 ## What these intrinsics do not do
 
@@ -371,13 +399,12 @@ covering:
 - Numeric primitives (`U8`, `U32`, `F64`, `I128`) — exact known sizes.
 - Structs with mixed-alignment fields where `size_of` and `stride_of`
   must differ.
-- Classes including ones with `embed`ded fields.
-- `offset_of` for every field of a representative struct, asserting
-  that consecutive offsets are non-overlapping and respect alignment.
-- `offset_of` with an invalid field name — must produce a compile
-  error, not a runtime failure.
+- Classes and actors — `offsets_of` returns the correct number of
+  entries in declaration order, with offsets that are non-overlapping
+  and respect alignment.
+- Tuples — `offsets_of` uses `"_1"`, `"_2"`, … as the names.
 - Negative tests: `size_of[SomeUnion]()`, `align_of[SomeInterface]()`,
-  `offset_of[SomeStruct]("nonexistent")` — all compile errors.
+  `offsets_of[SomeUnion]()` — all compile errors.
 
 The LLVM functions these intrinsics wrap are exercised constantly by
 LLVM's own backend; we do not need to test that LLVM is correct, only
@@ -390,10 +417,14 @@ that we are calling the right one. Standard CI coverage is sufficient.
 - The `size_of` / `stride_of` split is novel for C-trained users;
   picking the wrong one produces correct-looking code that breaks for
   types with trailing alignment padding.
-- `offset_of` introduces compile-time string validation as a new
-  category of intrinsic argument handling; future intrinsics may want
-  the same machinery, which is a small but real generalization
-  pressure on the compiler.
+- `offsets_of` returns a freshly-synthesised `Array val` per type
+  used, growing the read-only data section of the binary by a small
+  amount for each instantiated `T`. The cost scales with field count,
+  not call sites (the compiler is free to deduplicate).
+- Field-name lookups via `offsets_of` move the "unknown field name"
+  error from compile time to runtime. Users who want compile-time
+  protection must build it themselves (e.g. unit tests that exercise
+  every lookup site).
 - Exposing layout questions invites users to write code that depends
   on platform- or version-specific layouts. The intrinsics are
   inherently target-dependent (a struct's size on a 32-bit ABI may
@@ -416,11 +447,23 @@ the type chooses; making them virtual function calls would (a) impose a
 runtime cost where there is none today and (b) let types lie about
 their own size. The compiler is the source of truth.
 
-**Put the methods on individual types instead of a `TypeInfo`
+**Put the methods on individual types instead of an `ABIMemoryLayout`
 primitive** (e.g., `U32.size_of()`). Rejected because the method needs
 to work with type parameters, not just concrete types named at the
 call site, and because grouping all layout questions under one
 namespace makes them discoverable as a family.
+
+**Expose `offset_of[T](field: String): USize` instead of `offsets_of`.**
+The original draft of this RFC took the C/Rust shape directly: a
+per-field accessor whose `field` argument is required to be a string
+literal so the compiler can reject typos at compile time. Rejected
+because "intrinsic argument must be a string literal" is a new
+category of compile-time validation that doesn't exist for any other
+intrinsic today, and the team prefers to keep the compiler change
+small and uniform. The `offsets_of` shape recovers the
+single-field-lookup ergonomics with a five-line helper (see the
+`_offset_of` example above) at the cost of moving "unknown field
+name" detection to runtime.
 
 Not implementing this RFC leaves Pony users hand-computing layout
 numbers and copying them from C headers. The code keeps working until
@@ -429,9 +472,4 @@ silently breaks.
 
 # Unresolved questions
 
-- **Should `offset_of` accept nested paths** like
-  `"outer_field.inner_field"` in this RFC, or punt to a follow-up?
-  The argument for now: the parsing is trivial and avoids a near-term
-  follow-up RFC. The argument for later: every additional feature in
-  the initial drop is more compiler surface to get right; landing the
-  flat case first lets nested be added without breaking anything.
+None at this time.
