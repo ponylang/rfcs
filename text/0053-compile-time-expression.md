@@ -3,6 +3,11 @@
 - RFC PR: https://github.com/ponylang/rfcs/pull/120
 - Pony Issue: https://github.com/ponylang/ponyc/issues/2591
 
+# Status
+
+Withdrawn 2026-05-13 by [RFC 85](0085-withdraw-compile-time-expressions.md).
+The text below remains as a historical record and does not describe accepted Pony behavior.
+
 # Summary
 
 Adding compile-time expressions to pony, these are pony expressions which are evaluated by the compiler.
