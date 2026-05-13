@@ -1,7 +1,7 @@
 - Feature Name: withdraw-compile-time-expressions
 - Start Date: 2026-04-29
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/227
+- Pony Issue: https://github.com/ponylang/ponyc/issues/2591
 
 # Summary
 
