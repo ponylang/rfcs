@@ -1,7 +1,7 @@
 - Feature Name: json-encode-jsonvalue
 - Start Date: 2026-03-12
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/223
+- Pony Issue: https://github.com/ponylang/ponyc/issues/5369
 
 # Summary
 
