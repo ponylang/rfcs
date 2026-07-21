@@ -1,7 +1,7 @@
 - Feature Name: redesign-signal-handling
 - Start Date: 2026-02-27
-- RFC PR:
-- Pony Issue:
+- RFC PR: https://github.com/ponylang/rfcs/pull/220
+- Pony Issue: https://github.com/ponylang/ponyc/issues/5793
 
 # Summary
 
