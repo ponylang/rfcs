@@ -1,7 +1,7 @@
 - Feature Name: redesign-process-monitor
 - Start Date: 2026-07-22
-- RFC PR: (leave this empty)
-- Pony Issue: (leave this empty)
+- RFC PR: https://github.com/ponylang/rfcs/pull/237
+- Pony Issue: https://github.com/ponylang/ponyc/issues/5819
 
 # Summary
 
