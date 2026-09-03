@@ -3,6 +3,11 @@
 - RFC PR: https://github.com/ponylang/rfcs/pull/93
 - Pony Issue: https://github.com/ponylang/ponyc/issues/2060
 
+# Status
+
+Withdrawn 2026-09-03 by [RFC NNNN](0000-withdraw-gencap-write.md).
+The text below remains as a historical record and does not describe accepted Pony behavior.
+
 # Summary
 
 Add `#write`, a new gencap for use in type parameter constraints, implying the capability set: `{iso, trn, ref}`.
