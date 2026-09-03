@@ -1,6 +1,6 @@
 - Feature Name: withdraw-gencap-write
 - Start Date: 2026-09-03
-- RFC PR: https://github.com/ponylang/rfcs/pull/NNNN
+- RFC PR: https://github.com/ponylang/rfcs/pull/238
 - Pony Issue: https://github.com/ponylang/ponyc/issues/2060
 
 # Summary
