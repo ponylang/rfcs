@@ -5,7 +5,7 @@
 
 # Status
 
-Withdrawn 2026-09-03 by [RFC 238](0238-withdraw-gencap-write.md).
+Withdrawn 2026-09-03 by [RFC 89](0089-withdraw-gencap-write.md).
 The text below remains as a historical record and does not describe accepted Pony behavior.
 
 # Summary
