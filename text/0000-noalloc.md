@@ -136,6 +136,14 @@ Because `Digestible.digest` is `noalloc`, every type that is `Digestible` has a 
 
 For interfaces, there is no annotation to rely on — `noalloc` is not allowed on interface methods. A virtual call through an interface from a `noalloc` method is not currently verifiable. See the unresolved questions for the path forward.
 
+## FFI calls and bare lambdas
+
+A `noalloc` method cannot call a C function through FFI, and it cannot call a bare lambda. Both are opaque to the compiler: an FFI call is an external declaration with no body to inspect, and a bare lambda call is an indirect call through a function pointer that cannot be resolved to a target. In either case, the compiler cannot determine whether the callee allocates internally, so it rejects the call.
+
+This is enforced at two levels. The expression pass rejects an FFI call or a bare lambda call that appears directly in a `noalloc` method body. The LTO pass rejects any call to an external declaration (that is not a known allocation function or an LLVM intrinsic) and any indirect call through a function pointer that appears in the transitive call graph of a `noalloc` function. The expression pass catches the common case early with a clear source-level error; the LTO pass catches the transitive case, where a `noalloc` method calls an unannotated Pony method that itself calls FFI or dispatches through a bare lambda.
+
+The restriction is strict: a `noalloc` method cannot reach any C code, even runtime C shims that do not allocate, and cannot dispatch through bare lambdas, even ones whose target is allocation-free. There is no opt-in mechanism to mark an FFI call or bare lambda as safe. This closes the verification gap entirely — `noalloc` means the compiler checked every call in the chain, with no holes at trust boundaries.
+
 ## What callers get
 
 A `noalloc` method makes a stronger promise than an unannotated one, so it can be called anywhere an unannotated method is expected. That is the modular half of the design: annotate a reusable method once, and every `noalloc` caller relies on it without re-checking its body.
@@ -158,11 +166,11 @@ The performance cheat sheet already has a "watch your allocations" section, and 
 
 The tests are compiler tests in the ponyc test suite, at three layers.
 
-**Syntax.** Small programs that exercise where the annotation is accepted and rejected. `noalloc` on a `fun`, `be`, and `new` compiles; `noalloc` on a class or actor declaration does not; `noalloc` on an interface method does not.
+**Syntax.** Small programs that exercise where the annotation is accepted and rejected. `noalloc` on a `fun`, `be`, and `new` compiles; `noalloc` on a class or actor declaration does not; `noalloc` on an interface method does not. An FFI call inside a `noalloc` method does not compile; a bare lambda call inside a `noalloc` method does not compile.
 
 **Conformance.** Subtyping checks at the type level. A class implementing a `noalloc` trait method with a `noalloc` method compiles; the same class without `noalloc` on its method does not. A `noalloc` method that makes a virtual call through a non-`noalloc` interface or trait method does not compile; the same call through a `noalloc` trait method does.
 
-**LTO pass.** The allocation check itself, run on optimized LLVM IR. Each test compiles a small program in release mode, runs the heap-to-stack pass and then the `NoAllocCheck` pass, and asserts whether an allocation violation was diagnosed. Pure arithmetic passes. A `noalloc` method that allocates a `String` fails. A `noalloc` method that transitively calls an allocating method fails. A `noalloc` method that calls another `noalloc` method passes. A `noalloc` behavior with a pure body passes.
+**LTO pass.** The allocation check itself, run on optimized LLVM IR. Each test compiles a small program in release mode, runs the heap-to-stack pass and then the `NoAllocCheck` pass, and asserts whether an allocation violation was diagnosed. Pure arithmetic passes. A `noalloc` method that allocates a `String` fails. A `noalloc` method that transitively calls an allocating method fails. A `noalloc` method that calls another `noalloc` method passes. A `noalloc` behavior with a pure body passes. A `noalloc` method that transitively reaches an external declaration (via an unannotated Pony callee that calls FFI) fails. A `noalloc` method that transitively reaches an indirect call (via an unannotated Pony callee that calls through a bare lambda) fails.
 
 # Drawbacks
 
@@ -173,6 +181,8 @@ The tests are compiler tests in the ponyc test suite, at three layers.
 - **`noalloc` adds type-system surface.** It is a new signature property with variance and conformance rules on traits. That is more to specify, implement, and teach than a feature that stays out of the type system.
 
 - **Virtual calls through interfaces are not supported.** Inside a `noalloc` method, dispatch through a trait requires the trait method to be `noalloc`. Dispatch through an interface is not currently verifiable, so a virtual call through an interface is a compile error inside a `noalloc` method.
+
+- **FFI and bare lambdas are not allowed.** A `noalloc` method cannot call C code through FFI or dispatch through a bare lambda, because the compiler cannot inspect the callee's body. This is restrictive — it rules out C functions that do not allocate and bare lambdas whose targets are allocation-free. There is no way to mark an opaque call as safe.
 
 - **What passes depends on the optimizer.** The check runs on the optimized artifact, so what satisfies it depends on what the heap-to-stack pass and the rest of the release pipeline remove. That is inherent to checking the code you actually ship, and it cuts both ways: you gain when the optimizer improves, and a change to the optimizer can change what compiles.
 
@@ -185,9 +195,3 @@ The tests are compiler tests in the ponyc test suite, at three layers.
 # Unresolved questions
 
 - **How should virtual calls through interfaces work in `noalloc` paths?** `noalloc` is not allowed on interface methods because interfaces are structural and the annotation would change which types satisfy them. That leaves virtual calls through interfaces unverifiable inside a `noalloc` method. A closed-world analysis at the dispatch site — checking all types that could be the runtime target — could verify that every possible implementer's method is allocation-free, without requiring the annotation on the interface itself. Whether that analysis is practical, and what the error looks like when one implementer out of many allocates, is open.
-
-- **What should happen when a `noalloc` path reaches an FFI call or a bare lambda call?** At LTO time, C functions called through FFI are external declarations with no body to check, and bare lambda calls (`@` methods) are function pointers that cannot be resolved to a target. In both cases, the compiler cannot determine whether the callee allocates internally. The current implementation silently skips them, which means a `noalloc` method that calls a C function via FFI or dispatches through a bare lambda passes the check even if the callee allocates. For FFI, this includes C shims in the Pony runtime that are not in the allocation function list but are still external declarations. Two options:
-
-  1. **Allow these calls in `noalloc` paths, unchecked.** FFI is already a trust boundary in Pony, and bare lambdas are a similar trust-the-programmer mechanism; the user is responsible for knowing whether the callee allocates. This is permissive but means the `noalloc` guarantee has a hole at both boundaries.
-
-  2. **Disallow these calls in `noalloc` paths entirely.** Any call to an external declaration (that is not a known allocation function or LLVM intrinsic) or an indirect call through a function pointer would be an error inside a `noalloc` method's transitive call graph. This closes the gap but is restrictive — `noalloc` methods could not reach any C code, including runtime C shims that do not allocate, and could not dispatch through bare lambdas. The user would have no way to opt in to "this call is safe."
