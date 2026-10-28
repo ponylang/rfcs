@@ -1,6 +1,6 @@
 - Feature Name: add-byte-order-package
 - Start Date: 2026-10-15
-- RFC PR:
+- RFC PR: https://github.com/ponylang/rfcs/pull/243
 - Pony Issue:
 
 # Summary
