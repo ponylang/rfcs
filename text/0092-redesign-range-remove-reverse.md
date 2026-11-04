@@ -1,7 +1,7 @@
 - Feature Name: range_redesign
 - Start Date: 2026-10-14
-- RFC PR:
-- Pony Issue: https://github.com/ponylang/rfcs/issues/204
+- RFC PR: https://github.com/ponylang/rfcs/pull/242
+- Pony Issue: https://github.com/ponylang/ponyc/issues/6409
 
 # Summary
 
