@@ -1,7 +1,7 @@
 - Feature Name: noalloc
 - Start Date: 2026-07-03
-- RFC PR:
-- Pony Issue: https://github.com/ponylang/ponyc/pull/6309
+- RFC PR: https://github.com/ponylang/rfcs/pull/235
+- Pony Issue: https://github.com/ponylang/ponyc/issues/6408
 
 # Summary
 
